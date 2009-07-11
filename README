@@ -1,0 +1,4 @@
+dune-spgrid
+-----------
+
+The DUNE module dune-spgrid provides a structured, parallel grid.
