@@ -4,8 +4,8 @@
 namespace Dune
 {
 
-  template< int dim >
-  class SPDirection
+  template< int dim, int codim >
+  struct SPDirection
   {
   };
 
