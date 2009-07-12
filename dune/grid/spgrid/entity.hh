@@ -21,6 +21,8 @@ namespace Dune
 
     typedef typename Traits::Codim< 0 >::Geometry Geometry;
 
+    typedef SPEntityInfo< ctype, dimension, codimension > EntityInfo;
+
     int level () const
     {
       return entityInfo().gridLevel().level();
@@ -46,8 +48,7 @@ namespace Dune
       return geometry_;
     }
   
-  protected:
-    const SPEntityInfo< ctype, dimension, codimension > &entityInfo () const
+    const EntityInfo &entityInfo () const
     {
       return Grid::getRealImplementation( geometry_ ).entityInfo_;
     }
