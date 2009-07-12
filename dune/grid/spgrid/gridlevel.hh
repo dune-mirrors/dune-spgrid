@@ -28,6 +28,12 @@ namespace Dune
     struct GeometryCache;
 
   public:
+    template< int codim >
+    struct Codim
+    {
+      typedef GridLevel::GeometryCache< codim > GeometryCache;
+    };
+
     SPGridLevel ( const Domain &domain, const MultiIndex &n )
     : father_( 0 ),
       domain_( &domain ),
@@ -47,6 +53,7 @@ namespace Dune
         for( unsigned int dir = 0; dir < numDirections; ++dir )
           SPDirection::multiIndex( dimension, codim, dir, multiDirection_[ codim ][ dir ] );
       }
+      geometryCache_.initialize( h_, multiDirection_ );
     }
 
     SPGridLevel ( const GridLevel &father )
@@ -62,6 +69,7 @@ namespace Dune
 
       for( int codim = 0; codim <= dimension; ++codim )
         multiDirection_[ codim ] = father.multiDirection_[ codim ];
+      geometryCache_.initialize( h_, multiDirection_ );
     }
 
     const Domain &domain () const
@@ -85,6 +93,13 @@ namespace Dune
       return n_[ i ] + multiDirection_[ codim ][ dir ][ i ];
     }
 
+    template< int codim >
+    const GeometryCache< codim > geometryCache () const
+    {
+      Int2Type< codim > codimVariable;
+      return geometryCache_[ codimVariable ];
+    }
+
   private:
     const GridLevel *father_;
     const Domain *domain_;
@@ -92,6 +107,7 @@ namespace Dune
     MultiIndex n_;
     GlobalVector h_;
     std::vector< MultiIndex > multiDirection_[ dimension+1 ];
+    CodimTable< GeometryCache, 0, dimension > geometryCache_;
   };
 
 
@@ -102,6 +118,8 @@ namespace Dune
   {
     typedef GeometryCache< codim > This;
 
+    friend class SPGridLevel< ct, dim >;
+
   public:
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
@@ -110,12 +128,50 @@ namespace Dune
     typedef FieldMatrix< ctype, dimension, mydimension > Jacobian;
     typedef FieldMatrix< ctype, mydimension, dimension > JacobianTransposed;
 
-    GeometryCache ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection )
-    : volume_( multiDirection.size() ),
-      jacobianTransposed( multiDirection.size() ),
-      jacobianInverseTransposed( multiDirection.size() )
+  private:
+    initialize ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection )
     {
-      // ...
+      const unsigned int numDirections = multiDirection.size();
+
+      volume_.resize( numDirections );
+      jacobianTransposed_.resize( numDirections );
+      jacobianInverseTransposed_.resize( numDirections );
+
+      for( unsigned int dir = 0; dir < numDirections; ++dir )
+      {
+        volume_[ dir ] = ctype( 1 );
+        jacobianTransposed_[ dir ] = ctype( 0 );
+        jacobianInverseTransposed_[ dir ] = ctype( 0 );
+
+        for( int i = 0, int j = 0; i < dimension; ++i )
+        {
+          if( multiDirection[ dir ][ i ] != 0 )
+            continue;
+          volume_ *= h[ i ];
+          jacobianTransposed_[ dir ][ i ][ j ] = h[ i ];
+          jacobianInverseTransposed_[ dir ][ j ][ i ] = ctype( 1 ) / h[ i ];
+          ++j;
+        }
+      }
+    }
+
+  public:
+    const ctype &volume ( const unsigned int dir ) const
+    {
+      assert( dir < volume_.size() );
+      return volume_[ dir ];
+    }
+
+    const JacobianTransposed &jacobianTransposed ( const unsigned int dir ) const
+    {
+      assert( dir < jacobianTransposed_.size() );
+      return jacobianTransposed_[ dir ];
+    }
+
+    const Jacobian &jacobianInverseTransposed ( const unsigned int dir ) const
+    {
+      assert( dir < jacobianInverseTransposed_.size() );
+      return jacobianInverseTransposed_[ dir ];
     }
 
   private:

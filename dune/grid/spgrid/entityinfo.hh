@@ -12,12 +12,9 @@ namespace Dune
   public:
     typedef SPGridLevel< ct, dim > GridLevel;
 
-    typedef unsigned int MultiIndex[ dimension ];
+    typedef typename GridLevel::MultiIndex MultiIndex;
 
-    const GridLevel &gridLevel () const
-    {
-      return *gridLevel_;
-    }
+    typedef typename GridLevel::template Codim< codim >::GeometryCache GeometryCache;
 
     unsigned int direction () const
     {
@@ -40,23 +37,33 @@ namespace Dune
 
     const ctype volume () const
     {
-      return gridLevel().volume( codimension, direction_ );
+      return geometryCache().volume( direction_ );
     }
 
     const JacobianTransposed &jacobianTransposed () const
     {
-      return gridLevel().jacobianTransposed( codimension, direction_ );
+      return geometryCache().jacobianTransposed( direction_ );
     }
 
     const Jacobian &jacobianInverseTransposed () const
     {
-      return gridLevel().jacobianInverseTransposed( codimension, direction_ );
+      return geometryCache().jacobianInverseTransposed( direction_ );
+    }
+
+    const GridLevel &gridLevel () const
+    {
+      return *gridLevel_;
+    }
+
+    const GeometryCache &geometryCache () const
+    {
+      return gridLevel().template geometryCache< codim >();
     }
 
   private:
     const GridLevel *gridLevel_;
     unsigned int direction_;
-    MultiIndex multiIndex_[ dimension ];
+    MultiIndex multiIndex_;
   };
 
 }
