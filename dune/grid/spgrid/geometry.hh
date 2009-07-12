@@ -92,6 +92,11 @@ namespace Dune
       return entityInfo_.jacobianInverseTransposed();
     }
 
+    const GridLevel &gridLevel () const
+    {
+      return entityInfo_.gridLevel();
+    }
+
   private:
     SPEntityInfo< ctype, dimension, codimension > entityInfo_;
   };

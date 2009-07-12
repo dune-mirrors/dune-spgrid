@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <dune/grid/genericgeometry/codimtable.hh>
+
 namespace Dune
 {
 
@@ -21,6 +23,11 @@ namespace Dune
     typedef typename Domain::GlobalVector GlobalVector;
     typedef unsigned int MultiIndex[ dimension ];
 
+  private:
+    template< int codim >
+    struct GeometryCache;
+
+  public:
     SPGridLevel ( const Domain &domain, const MultiIndex &n )
     : father_( 0 ),
       domain_( &domain ),
@@ -85,6 +92,36 @@ namespace Dune
     MultiIndex n_;
     GlobalVector h_;
     std::vector< MultiIndex > multiDirection_[ dimension+1 ];
+  };
+
+
+
+  template< class ct, int dim >
+  template< int codim >
+  class SPGridLevel< ct, dim >::GeometryCache
+  {
+    typedef GeometryCache< codim > This;
+
+  public:
+    static const int codimension = codim;
+    static const int mydimension = dimension - codimension;
+
+    typedef FieldVector< ctype, mydimension > LocalVector;
+    typedef FieldMatrix< ctype, dimension, mydimension > Jacobian;
+    typedef FieldMatrix< ctype, mydimension, dimension > JacobianTransposed;
+
+    GeometryCache ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection )
+    : volume_( multiDirection.size() ),
+      jacobianTransposed( multiDirection.size() ),
+      jacobianInverseTransposed( multiDirection.size() )
+    {
+      // ...
+    }
+
+  private:
+    std::vector< ctype > volume_;
+    std::vector< JacobianTransposed > jacobianTransposed_;
+    std::vector< Jacobian > jacobianInverseTransposed_;
   };
 
 }

@@ -40,17 +40,17 @@ namespace Dune
 
     const ctype volume () const
     {
-      return gridLevel().volume( direction_ );
+      return gridLevel().volume( codimension, direction_ );
     }
 
     const JacobianTransposed &jacobianTransposed () const
     {
-      return gridLevel().jacobianTransposed( direction_ );
+      return gridLevel().jacobianTransposed( codimension, direction_ );
     }
 
     const Jacobian &jacobianInverseTransposed () const
     {
-      return gridLevel().jacobianInverseTransposed( direction_ );
+      return gridLevel().jacobianInverseTransposed( codimension, direction_ );
     }
 
   private:
