@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_DOMAIN_HH
 #define DUNE_SPGRID_DOMAIN_HH
 
+#include <dune/common/fvector.hh>
+
 namespace Dune
 {
 

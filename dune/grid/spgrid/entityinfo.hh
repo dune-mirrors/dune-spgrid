@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ENTITYINFO_HH
 #define DUNE_SPGRID_ENTITYINFO_HH
 
+#include <dune/grid/spgrid/gridlevel.hh>
+
 namespace Dune
 {
 
@@ -12,9 +14,17 @@ namespace Dune
   public:
     typedef SPGridLevel< ct, dim > GridLevel;
 
-    typedef typename GridLevel::MultiIndex MultiIndex;
+    typedef typename GridLevel::ctype ctype;
+    
+    static const int dimension = GridLevel::dimension;
 
-    typedef typename GridLevel::template Codim< codim >::GeometryCache GeometryCache;
+    typedef typename GridLevel::MultiIndex MultiIndex;
+    typedef typename GridLevel::GlobalVector GlobalVector;
+
+    typedef typename GridLevel::template GeometryCache< codim > GeometryCache;
+    typedef typename GeometryCache::LocalVector LocalVector;
+    typedef typename GeometryCache::Jacobian Jacobian;
+    typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
 
     unsigned int direction () const
     {
@@ -35,7 +45,7 @@ namespace Dune
       return origin;
     }
 
-    const ctype volume () const
+    const ctype &volume () const
     {
       return geometryCache().volume( direction_ );
     }

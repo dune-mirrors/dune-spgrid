@@ -1,9 +1,14 @@
 #ifndef DUNE_SPGRID_GRIDLEVEL_HH
 #define DUNE_SPGRID_GRIDLEVEL_HH
 
+#include <cassert>
 #include <vector>
 
+#include <dune/grid/genericgeometry/misc.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
+
+#include <dune/grid/spgrid/direction.hh>
+#include <dune/grid/spgrid/domain.hh>
 
 namespace Dune
 {
@@ -15,7 +20,7 @@ namespace Dune
 
   public:
     typedef SPDomain< ct, dim > Domain;
-    typedef SPGridLevel< dt, dim > GridLevel;
+    typedef SPGridLevel< ct, dim > GridLevel;
 
     typedef typename Domain::ctype ctype;
     static const int dimension = Domain::dimension;
@@ -23,17 +28,14 @@ namespace Dune
     typedef typename Domain::GlobalVector GlobalVector;
     typedef unsigned int MultiIndex[ dimension ];
 
-  private:
-    template< int codim >
-    struct GeometryCache;
-
   public:
     template< int codim >
-    struct Codim
-    {
-      typedef GridLevel::GeometryCache< codim > GeometryCache;
-    };
+    struct GeometryCache;
+    
+  private:
+    typedef GenericGeometry::CodimTable< GeometryCache, dimension > GeometryCacheTable;
 
+  public:
     SPGridLevel ( const Domain &domain, const MultiIndex &n )
     : father_( 0 ),
       domain_( &domain ),
@@ -53,7 +55,8 @@ namespace Dune
         for( unsigned int dir = 0; dir < numDirections; ++dir )
           SPDirection::multiIndex( dimension, codim, dir, multiDirection_[ codim ][ dir ] );
       }
-      geometryCache_.initialize( h_, multiDirection_ );
+      GenericGeometry::ForLoop< GeometryCache, 0, dimension >
+        ::apply( h_, multiDirection_, geometryCache_ );
     }
 
     SPGridLevel ( const GridLevel &father )
@@ -69,7 +72,8 @@ namespace Dune
 
       for( int codim = 0; codim <= dimension; ++codim )
         multiDirection_[ codim ] = father.multiDirection_[ codim ];
-      geometryCache_.initialize( h_, multiDirection_ );
+      GenericGeometry::ForLoop< GeometryCache, 0, dimension >
+        ::apply( h_, multiDirection_, geometryCache_ );
     }
 
     const Domain &domain () const
@@ -107,7 +111,7 @@ namespace Dune
     MultiIndex n_;
     GlobalVector h_;
     std::vector< MultiIndex > multiDirection_[ dimension+1 ];
-    CodimTable< GeometryCache, 0, dimension > geometryCache_;
+    GeometryCacheTable geometryCache_;
   };
 
 
@@ -129,7 +133,15 @@ namespace Dune
     typedef FieldMatrix< ctype, mydimension, dimension > JacobianTransposed;
 
   private:
-    initialize ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection )
+    static void
+    apply ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection,
+            GeometryCacheTable &cache )
+    {
+      Int2Type< codim > codimVariable;
+      cache[ codimVariable ].initialize( h, multiDirection );
+    }
+
+    void initialize ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection )
     {
       const unsigned int numDirections = multiDirection.size();
 
@@ -143,7 +155,8 @@ namespace Dune
         jacobianTransposed_[ dir ] = ctype( 0 );
         jacobianInverseTransposed_[ dir ] = ctype( 0 );
 
-        for( int i = 0, int j = 0; i < dimension; ++i )
+        int j = 0;
+        for( int i = 0; i < dimension; ++i )
         {
           if( multiDirection[ dir ][ i ] != 0 )
             continue;
