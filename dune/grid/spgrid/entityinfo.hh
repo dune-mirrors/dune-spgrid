@@ -32,9 +32,9 @@ namespace Dune
     GlobalVector origin () const
     {
       const GlobalVector &h = gridLevel().h();
-      GlobalVector origin;
+      GlobalVector origin = gridLevel().domain().origin();
       for( int i = 0; i < dimension; ++i )
-        origin[ i ] = multiIndex_[ i ] * h[ i ];
+        origin[ i ] += multiIndex_[ i ] * h[ i ];
       return origin;
     }
 

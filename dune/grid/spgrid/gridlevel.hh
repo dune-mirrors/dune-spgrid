@@ -12,14 +12,13 @@ namespace Dune
     typedef SPGridLevel< ct, dim > This;
 
   public:
-    static const int dimension = dim;
-
-    typedef ct ctype;
-
     typedef SPDomain< ct, dim > Domain;
     typedef SPGridLevel< dt, dim > GridLevel;
 
-    typedef FieldVector< ctype, dimension > GlobalVector;
+    typedef typename Domain::ctype ctype;
+    static const int dimension = Domain::dimension;
+
+    typedef typename Domain::GlobalVector GlobalVector;
     typedef unsigned int MultiIndex[ dimension ];
 
     SPGridLevel ( const Domain &domain, const MultiIndex &n )
@@ -33,6 +32,14 @@ namespace Dune
         n_[ i ] = n[ i ];
         h_[ i ] = width[ i ] / (ctype)n[ i ];
       }
+
+      for( int codim = 0; codim <= dimension; ++codim )
+      {
+        const unsigned int numDirections = SPDirection::numDirections( dimension, codim );
+        multiDirection_[ codim ].resize( numDirections );
+        for( unsigned int dir = 0; dir < numDirections; ++dir )
+          SPDirection::multiIndex( dimension, codim, dir, multiDirection_[ codim ][ dir ] );
+      }
     }
 
     SPGridLevel ( const GridLevel &father )
@@ -45,6 +52,14 @@ namespace Dune
         n_[ i ] = 2*father.n_[ i ];
         h_[ i ] = 0.5*father.h_[ i ];
       }
+
+      for( int codim = 0; codim <= dimension; ++codim )
+        multiDirection_[ codim ] = father.multiDirection_[ codim ];
+    }
+
+    const Domain &domain () const
+    {
+      return *domain_;
     }
 
     const GlobalVector &h () const
@@ -58,9 +73,9 @@ namespace Dune
     }
 
     unsigned int
-    n ( const unsigned int codim, const unsigned int direction, int i ) const
+    n ( const unsigned int codim, const unsigned int dir, int i ) const
     {
-      return n_[ i ] + multiDirection_[ codim ][ direction ][ i ];
+      return n_[ i ] + multiDirection_[ codim ][ dir ][ i ];
     }
 
   private:
