@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_IDSET_HH
 #define DUNE_SPGRID_IDSET_HH
 
+#include <dune/grid/common/indexidset.hh>
+
 namespace Dune
 {
 
