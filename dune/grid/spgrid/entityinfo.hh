@@ -35,8 +35,11 @@ namespace Dune
       id_( id ),
       direction_( 0 )
     {
-      for( int j = 0; j < dimension; ++j )
-        direction_ |= ((id[ j ] & 1) << j);
+      if( (codim != 0) && (codim != dimension) )
+      {
+        for( int j = 0; j < dimension; ++j )
+          direction_ |= ((id[ j ] & 1) << j);
+      }
     }
 
     unsigned int direction () const
@@ -54,15 +57,6 @@ namespace Dune
       bool equals = (gridLevel_ == other.gridLevel_);
       for( int i = 0; i < dimension; ++i )
         equals &= (id_[ i ] == other.id_[ i ]);
-    }
-
-    This father () const
-    {
-      This father( gridLevel().father() );
-      father.direction_ = direction_;
-      for( int i = 0; i < dimension; ++i )
-        father.id_[ i ] = (id_[ i ] / 2) | 1;
-      return father;
     }
 
     GlobalVector origin () const

@@ -39,6 +39,7 @@ namespace Dune
     typedef typename Traits::Codim< 0 >::Geometry Geometry;
 
     typedef SPEntityInfo< ctype, dimension, codimension > EntityInfo;
+    typedef typename EntityInfo::GridLevel GridLevel;
 
   private:
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
@@ -83,6 +84,11 @@ namespace Dune
       return Grid::getRealImplementation( geometry_ ).entityInfo_;
     }
 
+    const GridLevel &gridLevel () const
+    {
+      return entityInfo().gridLevel();
+    }
+
   private:
     Geometry geometry_;
   };
@@ -122,6 +128,7 @@ namespace Dune
   protected:
     using Base::Traits;
     using Base::entityInfo;
+    using Base::gridLevel;
 
   public:
     typedef typename Base::EntityInfo EntityInfo;
@@ -166,18 +173,22 @@ namespace Dune
 
     bool hasBoundaryIntersections () const
     {
-      const MultiIndex &midx = entityInfo().multiIndex();
-      const MultiIndex &n = entityInfo().gridLevel().n();
+      const MultiIndex &id = entityInfo().id();
+      const MultiIndex &cells = gridLevel().cells();
 
       bool hasBoundaryIntersections = false;
       for( int i = 0; i < dimension; ++i )
-        hasBoundaryIntersections |= ((midx[ i ] == 0) || (midx[ i ] == n[ i ]-1));
+        hasBoundaryIntersections |= ((id[ i ] == 1) || (id[ i ] == 2*cells[ i ]-1));
       return hasBoundaryIntersections;
     }
 
     EntityPointer father () const
     {
-      return EntityPointer( entityInfo.father() );
+      const MultiIndex &id = entityInfo().id();
+      MultiIndex fatherId;
+      for( int i = 0; i < dimension; ++i )
+        fatherId[ i ] = (id[ i ] >> 1) | 1;
+      return EntityPointer( EntityInfo( gridLevel().father(), fatherId ) );
     }
 
     const LocalGeometry &geometryInFather () const
