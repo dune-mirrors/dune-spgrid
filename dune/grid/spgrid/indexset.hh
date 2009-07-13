@@ -32,10 +32,23 @@ namespace Dune
     SPIndexSet ( const GridLevel &gridLevel );
 
   public:
-    using Base::index;
+    template< int codim >
+    IndexType index ( const MultiIndex &id ) const;
+
+    template< class Entity >
+    IndexType index ( const Entity &entity ) const
+    {
+      return index< Entity::codimension >( entity );
+    }
 
     template< int codim >
-    IndexType index ( const typename Codim< codim >::Entity &entity ) const;
+    IndexType index ( const typename Codim< codim >::Entity &entity ) const
+    {
+      assert( contains( entity ) );
+      const typename Entity::EntityInfo &entityInfo
+        = Grid::getRealImplementation( entity ).entityInfo();
+      return index< codim >( entityInfo.id() );
+    }
 
     template< int codim >
     IndexType DUNE_DEPRECATED
@@ -45,7 +58,10 @@ namespace Dune
     }
 
     IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
-                         const int i, const unsigned int codim ) const;
+                         const int i, const unsigned int codim ) const
+    {
+      // ...
+    }
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const
     {
@@ -67,7 +83,15 @@ namespace Dune
     template< class Entity >
     bool contains ( const Entity &entity ) const
     {
-      return entity.level() == gridLevel().level();
+      return contains< Entity::codimension >( entity );
+    }
+
+    template< int codim >
+    bool contains ( const typename Codim< codim >::Entity &entity )
+    {
+      const typename Codim< codim >::EntityInfo &entityInfo
+        = Grid::getRealImplementation( entity ).entityInfo();
+      return (&entity.gridLevel() == &gridLevel());
     }
 
     const GridLevel &gridLevel () const
@@ -77,8 +101,8 @@ namespace Dune
 
   private:
     const GridLevel *gridLevel_;
+    IndexType offsets_[ 1 << dimension ];
     IndexType size_[ dimension+1 ];
-    std::vector< IndexType > offsets_[ dimension+1 ];
     std::vector< GeometryType > geomTypes_[ dimension+1 ];
   };
 
@@ -87,22 +111,25 @@ namespace Dune
   SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
   : gridLevel_( &gridLevel )
   {
-    for( int codim = 0; codim <= dimension; ++codim )
+    const MultiIndex &cells = gridLevel().cells();
+    for( unsigned int codim = 0; codim <= dimension; ++codim )
     {
-      const unsigned int numDirections = gridLevel.numDirections( codim );
-      offsets_.resize( numDirections );
-      IndexType size = 0;
-      for( int direction = 0; direction < numDirections; ++direction )
-      {
-        offsets_[ direction ] = size;
-        IndexType factor = 1;
-        for( int i = 0; i < dimension; ++i )
-          factor *= gridLevel().n( direction, i );
-        size += factor;
-      }
-      size_[ codim ] = size;
-
+      size_[ codim ] = 0;
       geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+    }
+
+    for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+    {
+      IndexType factor = 1;
+      unsigned int codim = dimension;
+      for( int j = 0; j < dimension; ++j )
+      {
+        const unsigned int d = (dir >> j) & 1;
+        factor *= cells + (1-d);
+        codim -= d;
+      }
+      offsets_[ dir ] = size_[ codim ];
+      size_[ codim ] += factor;
     }
   }
 
@@ -110,50 +137,22 @@ namespace Dune
   template< class Grid >
   template< int codim >
   typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::index ( const typename Codim< codim >::Entity &entity ) const
+  SPIndexSet< Grid >::index ( const MultiIndex &id ) const
   {
-    assert( contains( entity ) );
-    const typename Entity::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
-
-    const MultiIndex &midx = entityInfo.multiIndex();
-    const MultiIndex &mdir = entityInfo.multiDirection();
     const MultiIndex &cells = gridLevel().cells();
     IndexType index = 0;
     IndexType factor = 1;
+    unsigned int dir = 0;
     for( int j = 0; j < dimension; ++j )
     {
-      index += midx[ j ] * factor;
-      factor *= cells[ j ] + mdir[ j ];
+      const unsigned int d = id[ j ] & 1;
+      index += (id[ j ] >> 1) * factor;
+      factor *= cells[ j ] + (1-d);
+      dir |= (d << j);
     }
-    const IndexType offset = offsets_[ codim ][ entityInfo.direction() ];
-    return offset + index;
+    return offsets_[ dir ] + index;
   }
 
-
-  template< class Grid >
-  typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::subIndex ( const typename Codim< codim >::Entity &entity, const int i, const unsigned int codim ) const
-  {
-    assert( contains( entity ) );
-    const typename Entity::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
-
-    const MultiIndex &midx = entityInfo.multiIndex();
-    const MultiIndex &mdir = entityInfo.girdLevel().multiDirection( codim, i/2 );
-    const MultiIndex &cells = entityInfo.gridLevel().cells();
-
-    IndexType index = 0;
-    IndexType factor = 1;
-    for( int j = 0; j < dimension; ++j )
-    {
-      // this is still wrong
-      index += (midx[ j ] + (i%1)*mdir[ j ]) * factor;
-      factor *= cells[ j ] + mdir[ j ];
-    }
-    const IndexType offset = offsets_[ codim ][ i/2 ];
-    return offset + index;
-  }
 }
 
 #endif // #ifndef DUNE_SPGRID_INDEXSET_HH

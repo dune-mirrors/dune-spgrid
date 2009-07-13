@@ -97,12 +97,6 @@ namespace Dune
       return level_;
     }
 
-    const MultiIndex &
-    MultiDirection ( const unsigned int codim, const unsigned int dir ) const
-    {
-      return multiDirection_[ codim ][ dir ];
-    }
-
     const MultiIndex &cells () const
     {
       return cells_;

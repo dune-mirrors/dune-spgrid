@@ -30,26 +30,30 @@ namespace Dune
     : gridLevel_( &gridLevel )
     {}
 
+    SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
+    : gridLevel_( &gridLevel ),
+      id_( id ),
+      direction_( 0 )
+    {
+      for( int j = 0; j < dimension; ++j )
+        direction_ |= ((id[ j ] & 1) << j);
+    }
+
     unsigned int direction () const
     {
       return direction_;
     }
 
-    const MultiIndex &multiDirection () const
+    const MultiIndex &id () const
     {
-      return gridLevel().multiDirection( codimension, direction_ );
-    }
-
-    const MultiIndex &multiIndex () const
-    {
-      return multiIndex_;
+      return id_;
     }
 
     bool equals ( const This &other ) const
     {
-      bool equals = (gridLevel_ == other.gridLevel_) & (direction_ == other.direction_);
+      bool equals = (gridLevel_ == other.gridLevel_);
       for( int i = 0; i < dimension; ++i )
-        equals &= (multiIndex_[ i ] == other.multiIndex_[ i ]);
+        equals &= (id_[ i ] == other.id_[ i ]);
     }
 
     This father () const
@@ -57,10 +61,7 @@ namespace Dune
       This father( gridLevel().father() );
       father.direction_ = direction_;
       for( int i = 0; i < dimension; ++i )
-      {
-        assert( multiIndex_[ i ] % 1 == 0 );
-        father.multiIndex_[ i ] = multiIndex_[ i ] / 2;
-      }
+        father.id_[ i ] = (id_[ i ] / 2) | 1;
       return father;
     }
 
@@ -69,7 +70,7 @@ namespace Dune
       const GlobalVector &h = gridLevel().h();
       GlobalVector origin = gridLevel().domain().origin();
       for( int i = 0; i < dimension; ++i )
-        origin[ i ] += multiIndex_[ i ] * h[ i ];
+        origin[ i ] += (id_ / 2) * h[ i ];
       return origin;
     }
 
@@ -100,8 +101,8 @@ namespace Dune
 
   private:
     const GridLevel *gridLevel_;
+    MultiIndex id_;
     unsigned int direction_;
-    MultiIndex multiIndex_;
   };
 
 }
