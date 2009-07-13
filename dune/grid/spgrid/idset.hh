@@ -56,8 +56,8 @@ namespace Dune
     const typename Codim< codim >::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
 
-    const MultiIndex &multiIndex = entityInfo.multiIndex();
-    const MultiIndex &multiDirection = entityInfo.multiDirection();
+    const MultiIndex &midx = entityInfo.multiIndex();
+    const MultiIndex &mdir = entityInfo.multiDirection();
     const MultiIndex &n = entityInfo.gridLevel().n();
 
     const unsigned int level = entity.level();
@@ -67,8 +67,8 @@ namespace Dune
     IndexType factor = 1;
     for( int j = 0; j < dimension; ++j )
     {
-      const int k = multiIndex[ j ];
-      index += (2*k + (1 - multiDirection[ j ])) * factor;
+      const int k = midx[ j ];
+      index += (2*k + (1 - mdir[ j ])) * factor;
       factor *= 2*n[ j ]+1;
 
       if( codim < dimension )
@@ -86,8 +86,8 @@ namespace Dune
     const typename Codim< 0 >::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
 
-    const MultiIndex &multiIndex = entityInfo.multiIndex();
-    const MultiIndex &multiDirection = entityInfo.girdLevel().multiDirection( codim, i/2 );
+    const MultiIndex &midx = entityInfo.multiIndex();
+    const MultiIndex &mdir = entityInfo.girdLevel().multiDirection( codim, i/2 );
     const MultiIndex &n = entityInfo.gridLevel().n();
 
     const unsigned int level = entity.level();
@@ -98,8 +98,8 @@ namespace Dune
     for( int j = 0; j < dimension; ++j )
     {
       // this is still wrong
-      const int k = multiIndex[ j ] + (i%1)*multiDirection[ j ];
-      index += (2*k + (1 - multiDirection[ j ])) * factor;
+      const int k = midx[ j ] + (i%1)*mdir[ j ];
+      index += (2*k + (1 - mdir[ j ])) * factor;
       factor *= 2*n[ j ]+1;
 
       if( codim < dimension )

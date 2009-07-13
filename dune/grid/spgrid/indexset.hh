@@ -116,15 +116,15 @@ namespace Dune
     const typename Entity::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
 
-    const MultiIndex &multiIndex = entityInfo.multiIndex();
-    const MultiIndex &multiDirection = entityInfo.multiDirection();
+    const MultiIndex &midx = entityInfo.multiIndex();
+    const MultiIndex &mdir = entityInfo.multiDirection();
     const MultiIndex &n = gridLevel().n();
     IndexType index = 0;
     IndexType factor = 1;
     for( int j = 0; j < dimension; ++j )
     {
-      index += multiIndex[ j ] * factor;
-      factor *= n[ j ] + multiDirection[ j ];
+      index += midx[ j ] * factor;
+      factor *= n[ j ] + mdir[ j ];
     }
     const IndexType offset = offsets_[ codim ][ entityInfo.direction() ];
     return offset + index;
@@ -139,8 +139,8 @@ namespace Dune
     const typename Entity::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
 
-    const MultiIndex &multiIndex = entityInfo.multiIndex();
-    const MultiIndex &multiDirection = entityInfo.girdLevel().multiDirection( codim, i/2 );
+    const MultiIndex &midx = entityInfo.multiIndex();
+    const MultiIndex &mdir = entityInfo.girdLevel().multiDirection( codim, i/2 );
     const MultiIndex &n = entityInfo.gridLevel().n();
 
     IndexType index = 0;
@@ -148,8 +148,8 @@ namespace Dune
     for( int j = 0; j < dimension; ++j )
     {
       // this is still wrong
-      index += (multiIndex[ j ] + (i%1)*multiDirection[ j ]) * factor;
-      factor *= n[ j ] + multiDirection[ j ];
+      index += (midx[ j ] + (i%1)*mdir[ j ]) * factor;
+      factor *= n[ j ] + mdir[ j ];
     }
     const IndexType offset = offsets_[ codim ][ i/2 ];
     return offset + index;

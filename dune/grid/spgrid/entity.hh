@@ -164,6 +164,17 @@ namespace Dune
       // ...
     }
 
+    bool hasBoundaryIntersections () const
+    {
+      const MultiIndex &midx = entityInfo().multiIndex();
+      const MultiIndex &n = entityInfo().gridLevel().n();
+
+      bool hasBoundaryIntersections = false;
+      for( int i = 0; i < dimension; ++i )
+        hasBoundaryIntersections |= ((midx[ i ] == 0) || (midx[ i ] == n[ i ]-1));
+      return hasBoundaryIntersections;
+    }
+
     EntityPointer father () const
     {
       return EntityPointer( entityInfo.father() );
@@ -197,11 +208,6 @@ namespace Dune
     bool mightVanish () const
     {
       return false;
-    }
-
-    bool hasBoundaryIntersections () const
-    {
-      // ...
     }
   };
 
