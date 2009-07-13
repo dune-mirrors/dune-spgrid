@@ -96,7 +96,7 @@ namespace Dune
 
     const GeometryCache &geometryCache () const
     {
-      return gridLevel().template geometryCache< codim >();
+      return gridLevel().template geometryCache< codim >( direction_ );
     }
 
   private:
