@@ -81,6 +81,12 @@ namespace Dune
       return *domain_;
     }
 
+    const GridLevel &father () const
+    {
+      assert( father_ != 0 );
+      return *father_;
+    }
+
     const GlobalVector &h () const
     {
       return h_;
