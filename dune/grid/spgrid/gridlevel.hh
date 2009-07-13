@@ -7,7 +7,7 @@
 #include <dune/grid/genericgeometry/misc.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
 
-#include <dune/grid/spgrid/direction.hh>
+#include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/domain.hh>
 
 namespace Dune
@@ -47,16 +47,7 @@ namespace Dune
         cells_[ i ] = n[ i ];
         h_[ i ] = width[ i ] / (ctype)n[ i ];
       }
-
-      for( int codim = 0; codim <= dimension; ++codim )
-      {
-        const unsigned int numDirections = SPDirection::numDirections( dimension, codim );
-        multiDirection_[ codim ].resize( numDirections );
-        for( unsigned int dir = 0; dir < numDirections; ++dir )
-          SPDirection::multiIndex( dimension, codim, dir, multiDirection_[ codim ][ dir ] );
-      }
-      GenericGeometry::ForLoop< GeometryCache, 0, dimension >
-        ::apply( h_, multiDirection_, geometryCache_ );
+      GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     }
 
     SPGridLevel ( const GridLevel &father )
@@ -69,11 +60,17 @@ namespace Dune
         cells_[ i ] = 2*father.cells_[ i ];
         h_[ i ] = 0.5*father.h_[ i ];
       }
+      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+        geometryCache_[ dir ] = father.geometryCache_[ dir ];
+    }
 
-      for( int codim = 0; codim <= dimension; ++codim )
-        multiDirection_[ codim ] = father.multiDirection_[ codim ];
-      GenericGeometry::ForLoop< GeometryCache, 0, dimension >
-        ::apply( h_, multiDirection_, geometryCache_ );
+    ~SPGridLevel ()
+    {
+      if( father_ == 0 )
+      {
+        for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+          delete geometryCache_[ dir ];
+      }
     }
 
     const Domain &domain () const
@@ -103,10 +100,10 @@ namespace Dune
     }
 
     template< int codim >
-    const GeometryCache< codim > geometryCache () const
+    const GeometryCache< codim > &geometryCache ( const unsigned int dir ) const
     {
-      Int2Type< codim > codimVariable;
-      return geometryCache_[ codimVariable ];
+      assert( bitcount( dir ) == dimension - codim );
+      return (const GeometryCache< codim > &)( *geometryCache_[ dir ] );
     }
 
   private:
@@ -115,8 +112,7 @@ namespace Dune
     unsigned int level_;
     MultiIndex cells_;
     GlobalVector h_;
-    std::vector< MultiIndex > multiDirection_[ dimension+1 ];
-    GeometryCacheTable geometryCache_;
+    void *geometryCache_[ 1 << dimension ];
   };
 
 
@@ -139,63 +135,53 @@ namespace Dune
 
   private:
     static void
-    apply ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection,
-            GeometryCacheTable &cache )
+    apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
     {
-      Int2Type< codim > codimVariable;
-      cache[ codimVariable ].initialize( h, multiDirection );
+      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+      {
+        const int mydim = bitcount( dir );
+        if( mydim == dimension - codim )
+          geometryCache[ dir ] = new This( h, dir );
+      }
     }
 
-    void initialize ( const GlobalVector &h, const std::vector< MultiIndex > &multiDirection )
+    GeometryCache ( const GlobalVector &h, const unsigned int dir )
+    : volume_( 1 ),
+      jacobianTransposed_( 0 ),
+      jacobianInverseTransposed_( 0 )
     {
-      const unsigned int numDirections = multiDirection.size();
-
-      volume_.resize( numDirections );
-      jacobianTransposed_.resize( numDirections );
-      jacobianInverseTransposed_.resize( numDirections );
-
-      for( unsigned int dir = 0; dir < numDirections; ++dir )
+      int k = 0;
+      for( int j = 0; j < dimension; ++j )
       {
-        volume_[ dir ] = ctype( 1 );
-        jacobianTransposed_[ dir ] = ctype( 0 );
-        jacobianInverseTransposed_[ dir ] = ctype( 0 );
-
-        int j = 0;
-        for( int i = 0; i < dimension; ++i )
-        {
-          if( multiDirection[ dir ][ i ] != 0 )
-            continue;
-          volume_ *= h[ i ];
-          jacobianTransposed_[ dir ][ i ][ j ] = h[ i ];
-          jacobianInverseTransposed_[ dir ][ j ][ i ] = ctype( 1 ) / h[ i ];
-          ++j;
-        }
+        if( ((dir >> j) & 1) == 0 )
+          continue;
+        volume_ *= h[ j ];
+        jacobianTransposed_[ j ][ k ] = h[ j ];
+        jacobianInverseTransposed_[ k ][ j ] = ctype( 1 ) / h[ j ];
+        ++k;
       }
     }
 
   public:
-    const ctype &volume ( const unsigned int dir ) const
+    const ctype &volume () const
     {
-      assert( dir < volume_.size() );
-      return volume_[ dir ];
+      return volume_;
     }
 
-    const JacobianTransposed &jacobianTransposed ( const unsigned int dir ) const
+    const JacobianTransposed &jacobianTransposed () const
     {
-      assert( dir < jacobianTransposed_.size() );
-      return jacobianTransposed_[ dir ];
+      return jacobianTransposed_;
     }
 
-    const Jacobian &jacobianInverseTransposed ( const unsigned int dir ) const
+    const Jacobian &jacobianInverseTransposed () const
     {
-      assert( dir < jacobianInverseTransposed_.size() );
-      return jacobianInverseTransposed_[ dir ];
+      return jacobianInverseTransposed_;
     }
 
   private:
-    std::vector< ctype > volume_;
-    std::vector< JacobianTransposed > jacobianTransposed_;
-    std::vector< Jacobian > jacobianInverseTransposed_;
+    ctype volume_;
+    JacobianTransposed jacobianTransposed_;
+    Jacobian jacobianInverseTransposed_;
   };
 
 }
