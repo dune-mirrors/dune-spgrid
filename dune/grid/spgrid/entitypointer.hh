@@ -1,8 +1,20 @@
 #ifndef DUNE_SPGRID_ENTITYPOINTER_HH
 #define DUNE_SPGRID_ENTITYPOINTER_HH
 
+#include <dune/common/typetraits.hh>
+
 namespace Dune
 {
+
+  // External Forward Declarations
+
+  template< int codim, int dim, class Grid >
+  class SPEntity;
+
+
+
+  // SPEntityPointer
+  // ---------------
 
   template< int codim, class Grid >
   class SPEntityPointer
@@ -16,7 +28,7 @@ namespace Dune
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
 
-    typedef typename Traits::Codim< codimension >::Entity Entity;
+    typedef typename Traits::template Codim< codimension >::Entity Entity;
 
     SPEntityPointer ( const This &other )
     : entity_( other.dereference() )

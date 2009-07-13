@@ -36,6 +36,13 @@ namespace Dune
       return multiIndex_;
     }
 
+    bool equals ( const This &other ) const
+    {
+      bool equals = (gridLevel_ == other.gridLevel_) & (direction_ == other.direction_);
+      for( int i = 0; i < dimension; ++i )
+        equals &= (multiIndex_[ i ] == other.multiIndex_[ i ]);
+    }
+
     GlobalVector origin () const
     {
       const GlobalVector &h = gridLevel().h();

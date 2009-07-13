@@ -47,6 +47,11 @@ namespace Dune
     {
       return geometry_;
     }
+
+    bool equals ( const This &other ) const
+    {
+      return entityInfo().equals( other.entityInfo() );
+    }
   
     const EntityInfo &entityInfo () const
     {
