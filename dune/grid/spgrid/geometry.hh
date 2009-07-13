@@ -4,6 +4,8 @@
 #include <dune/common/typetraits.hh>
 #include <dune/common/geometrytype.hh>
 
+#include <dune/grid/common/genericreferenceelements.hh>
+
 #include <dune/grid/spgrid/entityinfo.hh>
 
 namespace Dune
@@ -47,6 +49,13 @@ namespace Dune
     typedef typename EntityInfo::Jacobian Jacobian;
     typedef typename EntityInfo::JacobianTransposed JacobianTransposed;
 
+    typedef GenericReferenceElement< ctype, mydimension > ReferenceElement;
+
+    const ReferenceElement &referenceElement () const
+    {
+      return GenericReferenceElements< ctype, mydimension >::cube();
+    }
+
     GeometryType type () const
     {
       return GeometryType( GeometryType::cube, mydimension );
@@ -64,8 +73,7 @@ namespace Dune
 
     GlobalVector corner ( const int i ) const
     {
-      // this can be optimized (refCorner[ i ] is 0 or 1)
-      // return global( SPCubeCorners< ctype, mydimension >::corner( i ) );
+      return global( referenceElement().corner( i ) );
     }
 
     GlobalVector global ( const LocalVector &local ) const
