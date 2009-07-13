@@ -4,9 +4,24 @@
 namespace Dune
 {
 
+  // Internal Forward Declarations
+  // -----------------------------
+
   template< int codim, int dim, class Grid >
   class SPEntity;
 
+
+
+  // External Forward Declarations
+  // -----------------------------
+
+  template< int mydim, int cdim, class Grid >
+  class SPGeometry;
+
+
+
+  // SPBasicEntity
+  // -------------
 
   template< int codim, class Grid >
   class SPBasicEntity
@@ -18,10 +33,20 @@ namespace Dune
 
   public:
     static const int dimension = Traits::dimension;
+    static const int codimension = codim;
+    static const int mydimension = dimension - codimension;
 
     typedef typename Traits::Codim< 0 >::Geometry Geometry;
 
     typedef SPEntityInfo< ctype, dimension, codimension > EntityInfo;
+
+  private:
+    typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
+
+  public:
+    explicit SPBasicEntity ( const EntityInfo &entityInfo )
+    : geometry_( Geometry( GeometryImpl( entityInfo ) ) )
+    {}
 
     int level () const
     {
@@ -64,15 +89,28 @@ namespace Dune
 
 
 
+  // SPEntity
+  // --------
+
   template< int codim, int dim, class Grid >
   class SPEntity
   : public SPBasicEntity< codim, Grid >
   {
     typedef SPEntity< codim, dim, Grid > This;
     typedef SPBasicEntity< codim, Grid > Base;
+
+  public:
+    typedef typename Base::EntityInfo EntityInfo;
+
+    explicit Entity ( const EntityInfo &entityInfo )
+    : Base( entityInfo )
+    {}
   };
 
 
+
+  // SPEntity (for codimension 0)
+  // ----------------------------
 
   template< int dim, class Grid >
   class SPEntity
@@ -86,9 +124,14 @@ namespace Dune
     using Base::entityInfo;
 
   public:
+    typedef typename Base::EntityInfo EntityInfo;
+
+    explicit Entity ( const EntityInfo &entityInfo )
+    : Base( entityInfo )
+    {}
+
     using Base::isLeaf;
 
-  public:
     template< int codim >
     int count () const
     {
@@ -123,7 +166,7 @@ namespace Dune
 
     EntityPointer father () const
     {
-      // ...
+      return EntityPointer( entityInfo.father() );
     }
 
     const LocalGeometry &geometryInFather () const

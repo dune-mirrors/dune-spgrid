@@ -48,6 +48,18 @@ namespace Dune
         equals &= (multiIndex_[ i ] == other.multiIndex_[ i ]);
     }
 
+    This father () const
+    {
+      This father( gridLevel().father() );
+      father.direction_ = direction_;
+      for( int i = 0; i < dimension; ++i )
+      {
+        assert( multiIndex_[ i ] % 1 == 0 );
+        father.multiIndex_[ i ] = multiIndex_[ i ] / 2;
+      }
+      return father;
+    }
+
     GlobalVector origin () const
     {
       const GlobalVector &h = gridLevel().h();

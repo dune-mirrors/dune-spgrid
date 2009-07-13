@@ -30,12 +30,20 @@ namespace Dune
 
     typedef typename Traits::template Codim< codimension >::Entity Entity;
 
-    SPEntityPointer ( const This &other )
-    : entity_( other.dereference() )
+  private:
+    typedef SPEntity< codimension, dimension, Grid > EntityImpl;
+
+  public:
+    SPEntityPointer ( const EntityInfo &entityInfo )
+    : entity_( EntityImpl( entityInfo ) )
     {}
 
     SPEntityPointer ( const Entity &entity )
     : entity_( entity )
+    {}
+
+    SPEntityPointer ( const This &other )
+    : entity_( other.dereference() )
     {}
 
     void compactify ()

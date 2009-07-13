@@ -51,6 +51,10 @@ namespace Dune
 
     typedef GenericReferenceElement< ctype, mydimension > ReferenceElement;
 
+    explicit SPGeometry ( const EntityInfo &entityInfo )
+    : entityInfo_( entityInfo )
+    {}
+
     const ReferenceElement &referenceElement () const
     {
       return GenericReferenceElements< ctype, mydimension >::cube();
