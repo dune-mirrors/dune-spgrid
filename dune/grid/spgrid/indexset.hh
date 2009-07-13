@@ -147,6 +147,7 @@ namespace Dune
     IndexType factor = 1;
     for( int j = 0; j < dimension; ++j )
     {
+      // this is still wrong
       index += (multiIndex[ j ] + (i%1)*multiDirection[ j ]) * factor;
       factor *= n[ j ] + multiDirection[ j ];
     }

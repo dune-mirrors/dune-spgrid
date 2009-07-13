@@ -97,6 +97,7 @@ namespace Dune
     IndexType factor = 1;
     for( int j = 0; j < dimension; ++j )
     {
+      // this is still wrong
       const int k = multiIndex[ j ] + (i%1)*multiDirection[ j ];
       index += (2*k + (1 - multiDirection[ j ])) * factor;
       factor *= 2*n[ j ]+1;
