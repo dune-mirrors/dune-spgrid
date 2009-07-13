@@ -31,6 +31,11 @@ namespace Dune
       return direction_;
     }
 
+    const MultiIndex &multiDirection () const
+    {
+      return gridLevel().multiDirection( codimension, direction_ );
+    }
+
     const MultiIndex &multiIndex () const
     {
       return multiIndex_;

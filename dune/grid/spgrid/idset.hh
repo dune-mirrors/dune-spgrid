@@ -3,8 +3,13 @@
 
 #include <dune/grid/common/indexidset.hh>
 
+#include <dune/grid/spgrid/entityinfo.hh>
+
 namespace Dune
 {
+
+  // SPLocalIdSet
+  // ------------
 
   template< class Grid >
   class SPLocalIdSet
@@ -18,19 +23,19 @@ namespace Dune
   public:
     typedef typename Base::IdType IdType;
 
+    static const int dimension = Traits::dimension;
+
     template< int codim >
     struct Codim
     {
+      typedef SPEntityInfo< typename Traits::ctype, dimension, codim > EntityInfo;
       typedef typename Traits::template Codim< codim >::Entity Entity;
     }
 
     using Base::id;
 
     template< int codim >
-    IdType id ( const typename Codim< codim >::Entity &entity ) const
-    {
-      // ...
-    }
+    IdType id ( const typename Codim< codim >::Entity &entity ) const;
 
     template< int codim >
     IdType DUNE_DEPRECATED
@@ -39,12 +44,73 @@ namespace Dune
       DUNE_THROW( NotImplemented, "SPLocalIdSet does not implement the old subId method." );
     }
 
-    IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const
-    {
-      // ...
-    }
+    IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const;
   };
 
+
+  template< class Grid >
+  template< int codim >
+  typename SPLocalIdSet< Grid >::IdType
+  SPLocalIdSet< Grid >::id ( const typename Codim< codim >::Entity &entity ) const
+  {
+    const typename Codim< codim >::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+
+    const MultiIndex &multiIndex = entityInfo.multiIndex();
+    const MultiIndex &n = entityInfo.gridLevel().n();
+    const MultiIndex &multiDirection = entityInfo.multiDirection();
+
+    const unsigned int level = entity.level();
+    unsigned int colevel = (codim < dimension ? 0 : level);
+
+    IndexType index = 0;
+    IndexType factor = 1;
+    for( int j = 0; j < dimension; ++j )
+    {
+      const int k = multiIndex[ j ];
+      index += (2*k + (1 - multiDirection[ j ])) * factor;
+      factor *= 2*n[ j ]+1;
+
+      if( codim < dimension )
+        for( ; k & ((1 << colevel) - 1) != 0; --colevel );
+    }
+    return index | ((level - colevel) << 26);
+  }
+
+
+
+  template< class Grid >
+  typename SPLocalIdSet< Grid >::IdType
+  SPLocalIdSet< Grid >::subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const;
+  {
+    const typename Codim< 0 >::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+
+    const MultiIndex &multiIndex = entityInfo.multiIndex();
+    const MultiIndex &n = entityInfo.gridLevel().n();
+    const MultiIndex &multiDirection = entityInfo.girdLevel().multiDirection( codim, i/2 );
+
+    const unsigned int level = entity.level();
+    unsigned int colevel = (codim < dimension ? 0 : level);
+
+    IndexType index = 0;
+    IndexType factor = 1;
+    for( int j = 0; j < dimension; ++j )
+    {
+      const int k = multiIndex[ j ] + (i%1)*multiDirection[ j ];
+      index += (2*k + (1 - multiDirection[ j ])) * factor;
+      factor *= 2*n[ j ]+1;
+
+      if( codim < dimension )
+        for( ; k & ((1 << colevel) - 1) != 0; --colevel );
+    }
+    return index | ((level - colevel) << 26);
+  }
+
+
+
+  // SPGlobalIdSet
+  // -------------
 
   template< class Grid >
   class SPGlobalIdSet

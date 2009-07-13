@@ -91,10 +91,15 @@ namespace Dune
       return level_;
     }
 
-    unsigned int
-    n ( const unsigned int codim, const unsigned int dir, int i ) const
+    const MultiIndex &
+    MultiDirection ( const unsigned int codim, const unsigned int dir ) const
     {
-      return n_[ i ] + multiDirection_[ codim ][ dir ][ i ];
+      return multiDirection_[ codim ][ dir ];
+    }
+
+    const MultiIndex &n () const
+    {
+      return n_;
     }
 
     template< int codim >

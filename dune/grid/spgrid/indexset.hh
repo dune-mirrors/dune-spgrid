@@ -119,14 +119,15 @@ namespace Dune
     const typename Entity::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
 
-    const unsigned int direction = entityInfo.direction();
     const MultiIndex &multiIndex = entityInfo.multiIndex();
+    const MultiIndex &multiDirection = entityInfo.multiDirection();
+    const MultiIndex &n = gridLevel().n();
     IndexType index = 0;
     IndexType factor = 1;
     for( int i = 0; i < dimension; ++i )
     {
       index += multiIndex[ i ] * factor;
-      factor *= gridLevel().n( direction, i );
+      factor *= n[ i ] + multiDirection[ i ];
     }
     const IndexType offset = offsets_[ codim ][ entityInfo.direction() ];
     return offset + index;
