@@ -124,15 +124,38 @@ namespace Dune
     const MultiIndex &n = gridLevel().n();
     IndexType index = 0;
     IndexType factor = 1;
-    for( int i = 0; i < dimension; ++i )
+    for( int j = 0; j < dimension; ++j )
     {
-      index += multiIndex[ i ] * factor;
-      factor *= n[ i ] + multiDirection[ i ];
+      index += multiIndex[ j ] * factor;
+      factor *= n[ j ] + multiDirection[ j ];
     }
     const IndexType offset = offsets_[ codim ][ entityInfo.direction() ];
     return offset + index;
   }
 
+
+  template< class Grid >
+  typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::subIndex ( const typename Codim< codim >::Entity &entity, const int i, const unsigned int codim ) const
+  {
+    assert( contains( entity ) );
+    const typename Entity::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+
+    const MultiIndex &multiIndex = entityInfo.multiIndex();
+    const MultiIndex &multiDirection = entityInfo.girdLevel().multiDirection( codim, i/2 );
+    const MultiIndex &n = entityInfo.gridLevel().n();
+
+    IndexType index = 0;
+    IndexType factor = 1;
+    for( int j = 0; j < dimension; ++j )
+    {
+      index += (multiIndex[ j ] + (i%1)*multiDirection[ j ]) * factor;
+      factor *= n[ j ] + multiDirection[ j ];
+    }
+    const IndexType offset = offsets_[ codim ][ i/2 ];
+    return offset + index;
+  }
 }
 
 #endif // #ifndef DUNE_SPGRID_INDEXSET_HH

@@ -57,8 +57,8 @@ namespace Dune
       = Grid::getRealImplementation( entity ).entityInfo();
 
     const MultiIndex &multiIndex = entityInfo.multiIndex();
-    const MultiIndex &n = entityInfo.gridLevel().n();
     const MultiIndex &multiDirection = entityInfo.multiDirection();
+    const MultiIndex &n = entityInfo.gridLevel().n();
 
     const unsigned int level = entity.level();
     unsigned int colevel = (codim < dimension ? 0 : level);
@@ -87,8 +87,8 @@ namespace Dune
       = Grid::getRealImplementation( entity ).entityInfo();
 
     const MultiIndex &multiIndex = entityInfo.multiIndex();
-    const MultiIndex &n = entityInfo.gridLevel().n();
     const MultiIndex &multiDirection = entityInfo.girdLevel().multiDirection( codim, i/2 );
+    const MultiIndex &n = entityInfo.gridLevel().n();
 
     const unsigned int level = entity.level();
     unsigned int colevel = (codim < dimension ? 0 : level);
