@@ -45,10 +45,7 @@ namespace Dune
     }
 
     IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
-                         const int i, const unsigned int codim ) const
-    {
-      // ...
-    }
+                         const int i, const unsigned int codim ) const;
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const
     {
