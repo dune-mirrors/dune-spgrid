@@ -118,13 +118,13 @@ namespace Dune
 
     const MultiIndex &midx = entityInfo.multiIndex();
     const MultiIndex &mdir = entityInfo.multiDirection();
-    const MultiIndex &n = gridLevel().n();
+    const MultiIndex &cells = gridLevel().cells();
     IndexType index = 0;
     IndexType factor = 1;
     for( int j = 0; j < dimension; ++j )
     {
       index += midx[ j ] * factor;
-      factor *= n[ j ] + mdir[ j ];
+      factor *= cells[ j ] + mdir[ j ];
     }
     const IndexType offset = offsets_[ codim ][ entityInfo.direction() ];
     return offset + index;
@@ -141,7 +141,7 @@ namespace Dune
 
     const MultiIndex &midx = entityInfo.multiIndex();
     const MultiIndex &mdir = entityInfo.girdLevel().multiDirection( codim, i/2 );
-    const MultiIndex &n = entityInfo.gridLevel().n();
+    const MultiIndex &cells = entityInfo.gridLevel().cells();
 
     IndexType index = 0;
     IndexType factor = 1;
@@ -149,7 +149,7 @@ namespace Dune
     {
       // this is still wrong
       index += (midx[ j ] + (i%1)*mdir[ j ]) * factor;
-      factor *= n[ j ] + mdir[ j ];
+      factor *= cells[ j ] + mdir[ j ];
     }
     const IndexType offset = offsets_[ codim ][ i/2 ];
     return offset + index;

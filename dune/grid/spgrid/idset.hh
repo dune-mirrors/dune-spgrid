@@ -58,7 +58,7 @@ namespace Dune
 
     const MultiIndex &midx = entityInfo.multiIndex();
     const MultiIndex &mdir = entityInfo.multiDirection();
-    const MultiIndex &n = entityInfo.gridLevel().n();
+    const MultiIndex &cells = entityInfo.gridLevel().cells();
 
     const unsigned int level = entity.level();
     unsigned int colevel = (codim < dimension ? 0 : level);
@@ -69,7 +69,7 @@ namespace Dune
     {
       const int k = midx[ j ];
       index += (2*k + (1 - mdir[ j ])) * factor;
-      factor *= 2*n[ j ]+1;
+      factor *= 2*cells[ j ]+1;
 
       if( codim < dimension )
         for( ; k & ((1 << colevel) - 1) != 0; --colevel );
@@ -88,7 +88,7 @@ namespace Dune
 
     const MultiIndex &midx = entityInfo.multiIndex();
     const MultiIndex &mdir = entityInfo.girdLevel().multiDirection( codim, i/2 );
-    const MultiIndex &n = entityInfo.gridLevel().n();
+    const MultiIndex &cells = entityInfo.gridLevel().cells();
 
     const unsigned int level = entity.level();
     unsigned int colevel = (codim < dimension ? 0 : level);
@@ -100,7 +100,7 @@ namespace Dune
       // this is still wrong
       const int k = midx[ j ] + (i%1)*mdir[ j ];
       index += (2*k + (1 - mdir[ j ])) * factor;
-      factor *= 2*n[ j ]+1;
+      factor *= 2*cells[ j ]+1;
 
       if( codim < dimension )
         for( ; k & ((1 << colevel) - 1) != 0; --colevel );

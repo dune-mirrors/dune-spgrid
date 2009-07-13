@@ -26,6 +26,10 @@ namespace Dune
     typedef typename GeometryCache::Jacobian Jacobian;
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
 
+    SPEntityInfo ( const GridLevel &gridLevel )
+    : gridLevel_( &gridLevel )
+    {}
+
     unsigned int direction () const
     {
       return direction_;

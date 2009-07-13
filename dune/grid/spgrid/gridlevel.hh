@@ -44,7 +44,7 @@ namespace Dune
       const GlobalVector &width  = domain.width();
       for( int i = 0; i < dimension; ++i )
       {
-        n_[ i ] = n[ i ];
+        cells_[ i ] = n[ i ];
         h_[ i ] = width[ i ] / (ctype)n[ i ];
       }
 
@@ -66,7 +66,7 @@ namespace Dune
     {
       for( int i = 0; i < dimension; ++i )
       {
-        n_[ i ] = 2*father.n_[ i ];
+        cells_[ i ] = 2*father.cells_[ i ];
         h_[ i ] = 0.5*father.h_[ i ];
       }
 
@@ -103,9 +103,9 @@ namespace Dune
       return multiDirection_[ codim ][ dir ];
     }
 
-    const MultiIndex &n () const
+    const MultiIndex &cells () const
     {
-      return n_;
+      return cells_;
     }
 
     template< int codim >
@@ -119,7 +119,7 @@ namespace Dune
     const GridLevel *father_;
     const Domain *domain_;
     unsigned int level_;
-    MultiIndex n_;
+    MultiIndex cells_;
     GlobalVector h_;
     std::vector< MultiIndex > multiDirection_[ dimension+1 ];
     GeometryCacheTable geometryCache_;
