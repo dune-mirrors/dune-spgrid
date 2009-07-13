@@ -99,6 +99,11 @@ namespace Dune
       // ...
     }
 
+    bool equals ( const This &other ) const
+    {
+      return (*inside_ == *other.inside_) && (face_ == other.face_);
+    }
+
   private:
     const Entity *inside_;
     unsigned int face_;
