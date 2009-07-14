@@ -96,7 +96,7 @@ namespace Dune
 
     GlobalVector integrationOuterNormal ( const LocalVector &local ) const
     {
-      // ...
+      return gridLevel().volumeNormal();
     }
 
     GlobalVector unitOuterNormal ( const LocalVector &local ) const

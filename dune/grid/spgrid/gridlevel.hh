@@ -87,6 +87,12 @@ namespace Dune
       return (const GeometryCache< codim > &)( *geometryCache_[ dir ] );
     }
 
+    const GlobalVector &volumeNormal ( const int i ) const
+    {
+      assert( (i >= 0) && (i < numFaces) );
+      return normal_[ i ];
+    }
+
   private:
     void buildGeometry ();
 
