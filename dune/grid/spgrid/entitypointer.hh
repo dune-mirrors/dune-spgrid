@@ -3,6 +3,8 @@
 
 #include <dune/common/typetraits.hh>
 
+#include <dune/grid/spgrid/entity.hh>
+
 namespace Dune
 {
 
