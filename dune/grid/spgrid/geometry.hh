@@ -49,16 +49,9 @@ namespace Dune
     typedef typename EntityInfo::Jacobian Jacobian;
     typedef typename EntityInfo::JacobianTransposed JacobianTransposed;
 
-    typedef GenericReferenceElement< ctype, mydimension > ReferenceElement;
-
     explicit SPGeometry ( const EntityInfo &entityInfo )
     : entityInfo_( entityInfo )
     {}
-
-    const ReferenceElement &referenceElement () const
-    {
-      return GenericReferenceElements< ctype, mydimension >::cube();
-    }
 
     GeometryType type () const
     {
@@ -77,7 +70,7 @@ namespace Dune
 
     GlobalVector corner ( const int i ) const
     {
-      return global( referenceElement().corner( i ) );
+      return global( gridLevel().cube().corner( i ) );
     }
 
     GlobalVector global ( const LocalVector &local ) const
