@@ -97,6 +97,7 @@ namespace Dune
     SmartPointer< const Cube > cube_;
     const Domain *domain_;
     unsigned int level_;
+    unsigned int refDir_;
     MultiIndex cells_;
     GlobalVector h_;
     void *geometryCache_[ numDirections ];
@@ -109,7 +110,8 @@ namespace Dune
     ::SPGridLevel ( const Domain &domain, const MultiIndex &n )
   : father_( 0 ),
     domain_( &domain ),
-    level_( 0 )
+    level_( 0 ),
+    refDir_( 0 )
   {
     const GlobalVector &width  = domain.width();
     for( int i = 0; i < dimension; ++i )
@@ -127,7 +129,8 @@ namespace Dune
   : father_( refDir != 0 ? &father : father.father_ ),
     domain_( father.domain_ ),
     cube_( father.cube_ ),
-    level_( father.level_ + (refDir != 0 ? 1 : 0) )
+    level_( father.level_ + (refDir != 0 ? 1 : 0) ),
+    refDir_( refDir != 0 ? refDir : father.refDir_ )
   {
     for( int i = 0; i < dimension; ++i )
     {
