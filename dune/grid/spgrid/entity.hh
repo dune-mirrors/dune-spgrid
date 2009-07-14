@@ -221,9 +221,10 @@ namespace Dune
     EntityPointer father () const
     {
       const MultiIndex &id = entityInfo().id();
+      const unsigned int refDir = gridLevel().refinementDirection();
       MultiIndex fatherId;
       for( int i = 0; i < dimension; ++i )
-        fatherId[ i ] = (id[ i ] >> 1) | 1;
+        fatherId[ i ] = ((refDir >> i) & 1 ? (id[ i ] >> 1) | 1 : id[ i ]);
       return EntityPointer( EntityInfo( gridLevel().father(), fatherId ) );
     }
 
@@ -234,12 +235,14 @@ namespace Dune
 
     HierarchicIterator hbegin ( int maxlevel ) const
     {
-      // ...
+      assert( maxlevel > level() );
+      return HierarchicIteratorImpl( *this, maxlevel );
     }
 
     HierarchicIterator hend ( int maxlevel ) const
     {
-      // ...
+      assert( maxlevel > level() );
+      return HierarchicIteratorImpl( *this, level() );
     }
 
     bool isRegular () const

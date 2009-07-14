@@ -16,13 +16,18 @@ namespace Dune
     typedef SPEntityPointer< Grid > Base;
 
   public:
+    SPHierarchicIterator ( const Entity &entity, int maxLevel )
+    : Base( entity ),
+      maxLevel_( maxLevel )
+    {
+    }
+
     void increment ()
     {
     }
 
   private:
-    int startLevel_;
-    int endLevel_;
+    int maxLevel_;
   };
 
 }

@@ -72,6 +72,11 @@ namespace Dune
       return level_;
     }
 
+    unsigned int refinementDirection () const
+    {
+      return refDir_;
+    }
+
     const MultiIndex &cells () const
     {
       return cells_;
