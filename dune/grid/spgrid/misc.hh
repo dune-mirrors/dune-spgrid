@@ -4,7 +4,7 @@
 namespace Dune
 {
 
-  inline unsigned int bitcount ( const unsigned int i )
+  inline unsigned int bitcount ( unsigned int i )
   {
     unsigned int bitcount = 0;
     for( ; i != 0; i /= 2 )

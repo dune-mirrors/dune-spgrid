@@ -1,6 +1,10 @@
 #ifndef DUNE_SPGRID_ENTITY_HH
 #define DUNE_SPGRID_ENTITY_HH
 
+#include <dune/grid/common/gridenums.hh>
+
+#include <dune/grid/spgrid/geometry.hh>
+
 namespace Dune
 {
 
@@ -9,14 +13,6 @@ namespace Dune
 
   template< int codim, int dim, class Grid >
   class SPEntity;
-
-
-
-  // External Forward Declarations
-  // -----------------------------
-
-  template< int mydim, int cdim, class Grid >
-  class SPGeometry;
 
 
 
@@ -36,9 +32,9 @@ namespace Dune
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
 
-    typedef typename Traits::Codim< 0 >::Geometry Geometry;
+    typedef typename Traits::template Codim< 0 >::Geometry Geometry;
 
-    typedef SPEntityInfo< ctype, dimension, codimension > EntityInfo;
+    typedef SPEntityInfo< typename Traits::ctype, dimension, codimension > EntityInfo;
     typedef typename EntityInfo::GridLevel GridLevel;
 
   private:
@@ -108,7 +104,7 @@ namespace Dune
   public:
     typedef typename Base::EntityInfo EntityInfo;
 
-    explicit Entity ( const EntityInfo &entityInfo )
+    explicit SPEntity ( const EntityInfo &entityInfo )
     : Base( entityInfo )
     {}
   };
@@ -119,24 +115,49 @@ namespace Dune
   // ----------------------------
 
   template< int dim, class Grid >
-  class SPEntity
+  class SPEntity< 0, dim, Grid >
   : public SPBasicEntity< 0, Grid >
   {
     typedef SPEntity< 0, dim, Grid > This;
     typedef SPBasicEntity< 0, Grid > Base;
 
   protected:
-    using Base::Traits;
-    using Base::entityInfo;
-    using Base::gridLevel;
+    typedef typename Base::Traits Traits;
 
   public:
     typedef typename Base::EntityInfo EntityInfo;
 
-    explicit Entity ( const EntityInfo &entityInfo )
+    static const int dimension = Base::dimension;
+
+    typedef typename Traits::template Codim< 0 >::Geometry Geometry;
+    typedef typename Traits::template Codim< 0 >::LocalGeometry LocalGeometry;
+
+    typedef typename Traits::LevelIntersectionIterator LevelIntersectionIterator;
+    typedef typename Traits::LeafIntersectionIterator LeafIntersectionIterator;
+
+    typedef typename Traits::HierarchicIterator HierarchicIterator;
+
+    template< int codim >
+    struct Codim
+    {
+      typedef typename Traits::template Codim< codim >::EntityPointer EntityPointer;
+    };
+
+    typedef typename Codim< 0 >::EntityPointer EntityPointer;
+
+  protected:
+    typedef typename EntityInfo::MultiIndex MultiIndex;
+
+  public:
+    explicit SPEntity ( const EntityInfo &entityInfo )
     : Base( entityInfo )
     {}
 
+  protected:
+    using Base::entityInfo;
+    using Base::gridLevel;
+
+  public:
     using Base::isLeaf;
 
     template< int codim >

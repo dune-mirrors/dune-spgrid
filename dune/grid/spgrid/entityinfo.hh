@@ -48,9 +48,7 @@ namespace Dune
 
     bool equals ( const This &other ) const
     {
-      bool equals = (gridLevel_ == other.gridLevel_);
-      for( int i = 0; i < dimension; ++i )
-        equals &= (id_[ i ] == other.id_[ i ]);
+      return (gridLevel_ == other.gridLevel_) && (id_ == other.id_);
     }
 
     GlobalVector origin () const

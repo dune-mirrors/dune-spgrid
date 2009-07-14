@@ -28,25 +28,7 @@ namespace Dune
 
     static const int numCorners = (1 << dimension);
 
-    SPCube ()
-    {
-      for( int codim = 0; codim <= dimension; ++codim )
-      {
-        const unsigned int size = numSubEntities( dimension, codim );
-        subId_[ codim ].resize( size );
-        for( unsigned int i = 0; i < size; ++i )
-          subId( dimension, codim, i, subId_[ codim ][ i ] );
-      }
-
-      for( int i = 0; i < numCorners; ++i )
-      {
-        for( int j = 0; j < dimension; ++j )
-        {
-          const MultiIndex &sid = subId( dimension, i );
-          corner_[ i ][ j ] = ctype( sid[ j ] );
-        }
-      }
-    }
+    SPCube ();
 
     const MultiIndex &subId ( const int codim, const int i ) const
     {
@@ -96,6 +78,29 @@ namespace Dune
     std::vector< MultiIndex > subId_[ dimension+1 ];
     GlobalVector corner_[ numCorners ];
   };
+
+
+
+  template< class ct, int dim >
+  SPCube< ct, dim >::SPCube ()
+  {
+    for( int codim = 0; codim <= dimension; ++codim )
+    {
+      const unsigned int size = numSubEntities( dimension, codim );
+      subId_[ codim ].resize( size );
+      for( unsigned int i = 0; i < size; ++i )
+        subId( dimension, codim, i, subId_[ codim ][ i ] );
+    }
+
+    for( int i = 0; i < numCorners; ++i )
+    {
+      for( int j = 0; j < dimension; ++j )
+      {
+        const MultiIndex &sid = subId( dimension, i );
+        corner_[ i ][ j ] = ctype( sid[ j ] );
+      }
+    }
+  }
 
 }
 

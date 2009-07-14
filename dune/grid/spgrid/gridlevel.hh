@@ -7,8 +7,8 @@
 #include <dune/grid/genericgeometry/misc.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
 
+#include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/misc.hh>
-#include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/domain.hh>
 
 namespace Dune
@@ -20,14 +20,15 @@ namespace Dune
     typedef SPGridLevel< ct, dim > This;
 
   public:
+    typedef SPCube< ct, dim > Cube;
     typedef SPDomain< ct, dim > Domain;
     typedef SPGridLevel< ct, dim > GridLevel;
 
-    typedef typename Domain::ctype ctype;
-    static const int dimension = Domain::dimension;
+    typedef typename Cube::ctype ctype;
+    static const int dimension = Cube::dimension;
 
-    typedef typename Domain::GlobalVector GlobalVector;
-    typedef SPMultiIndex< dimension > MultiIndex;
+    typedef typename Cube::GlobalVector GlobalVector;
+    typedef typename Cube::MultiIndex MultiIndex;
 
   public:
     template< int codim >
@@ -40,6 +41,7 @@ namespace Dune
     SPGridLevel ( const Domain &domain, const MultiIndex &n )
     : father_( 0 ),
       domain_( &domain ),
+      cube_( new Cube ),
       level_( 0 )
     {
       const GlobalVector &width  = domain.width();
@@ -54,6 +56,7 @@ namespace Dune
     SPGridLevel ( const GridLevel &father )
     : father_( &father ),
       domain_( father.domain_ ),
+      cube_( father.cube_ ),
       level_( father.level_+1 )
     {
       for( int i = 0; i < dimension; ++i )
@@ -69,6 +72,7 @@ namespace Dune
     {
       if( father_ == 0 )
       {
+        delete cube_;
         for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
           delete geometryCache_[ dir ];
       }
@@ -109,6 +113,7 @@ namespace Dune
 
   private:
     const GridLevel *father_;
+    const Cube *cube_;
     const Domain *domain_;
     unsigned int level_;
     MultiIndex cells_;
