@@ -35,8 +35,24 @@ namespace Dune
       for( int i = 0; i < numCorners; ++i )
       {
         for( int j = 0; j < dimension; ++j )
-          corner_[ i ][ j ] = ctype( subId_[ dimension ][ i ][ j ] );
+        {
+          const MultiIndex &sid = subId( dimension, i );
+          corner_[ i ][ j ] = ctype( sid[ j ] );
+        }
       }
+    }
+
+    const MultiIndex &subId ( const int codim, const int i ) const
+    {
+      assert( (codim >= 0) && (codim <= dimension) );
+      assert( (i >= 0) && (i < sudId_[ codim ].size()) );
+      return subId_[ codim ][ i ];
+    }
+
+    const GlobalVector &corner ( const int i ) const
+    {
+      assert( (codim >= 0) && (corner < numCorners) );
+      return corner_[ i ];
     }
 
   private:
