@@ -251,11 +251,11 @@ namespace Dune
       return leafView().indexSet();
     }
 
-    void globalRefine ( int refCount )
+    void globalRefine ( int refCount, unsigned int refDir = numDirections-1 )
     {
       const int maxLevel = maxLevel();
       for( int i = 0; i < refCount; ++i )
-        levelViews_.push_back( LevelGridView( levelViews_[ maxLevel+i ], numDirections-1 ) );
+        levelViews_.push_back( LevelGridView( levelViews_[ maxLevel+i ], refDir ) );
     }
 
     template< class DataHandle, class Data >
