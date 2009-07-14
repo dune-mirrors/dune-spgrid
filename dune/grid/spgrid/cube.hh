@@ -27,6 +27,7 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
 
     static const int numCorners = (1 << dimension);
+    static const int numFaces = 2*dimension;
 
     SPCube ();
 
@@ -44,8 +45,14 @@ namespace Dune
 
     const GlobalVector &corner ( const int i ) const
     {
-      assert( (codim >= 0) && (corner < numCorners) );
+      assert( (i >= 0) && (i < numCorners) );
       return corner_[ i ];
+    }
+
+    const GlobalVector &normal ( const int i ) const
+    {
+      assert( (i >= 0) && (i < numFaces) );
+      return normal_[ i ];
     }
 
   private:
@@ -82,12 +89,13 @@ namespace Dune
 
     std::vector< MultiIndex > subId_[ dimension+1 ];
     GlobalVector corner_[ numCorners ];
+    GlobalVector normal_[ numFaces ];
   };
 
 
 
   template< class ct, int dim >
-  SPCube< ct, dim >::SPCube ()
+  inline SPCube< ct, dim >::SPCube ()
   {
     for( int codim = 0; codim <= dimension; ++codim )
     {
@@ -102,7 +110,16 @@ namespace Dune
       for( int j = 0; j < dimension; ++j )
       {
         const MultiIndex &sid = subId( dimension, i );
-        corner_[ i ][ j ] = ctype( sid[ j ] );
+        corner_[ i ][ j ] = ctype( (sid[ j ]+1)/2 );
+      }
+    }
+
+    for( int i = 0; i < numFaces; ++i )
+    {
+      for( int j = 0; j < dimension; ++j )
+      {
+        const MultiIndex &sid = subId( 1, i );
+        normal_[ i ][ j ] = ctype( sid[ j ] );
       }
     }
   }

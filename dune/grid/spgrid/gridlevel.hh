@@ -4,8 +4,9 @@
 #include <cassert>
 #include <vector>
 
+#include <dune/common/smartpointer.hh>
+
 #include <dune/grid/genericgeometry/misc.hh>
-#include <dune/grid/genericgeometry/codimtable.hh>
 
 #include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/misc.hh>
@@ -30,52 +31,22 @@ namespace Dune
     typedef typename Cube::GlobalVector GlobalVector;
     typedef typename Cube::MultiIndex MultiIndex;
 
-  public:
+    static const int numCorners = Cube::numCorners;
+    static const int numFaces = Cube::numFaces;
+
+    static const unsigned int numDirections = numCorners;
+
     template< int codim >
     struct GeometryCache;
     
-  private:
-    typedef GenericGeometry::CodimTable< GeometryCache, dimension > GeometryCacheTable;
+    SPGridLevel ( const Domain &domain, const MultiIndex &n );
 
-  public:
-    SPGridLevel ( const Domain &domain, const MultiIndex &n )
-    : father_( 0 ),
-      domain_( &domain ),
-      cube_( new Cube ),
-      level_( 0 )
-    {
-      const GlobalVector &width  = domain.width();
-      for( int i = 0; i < dimension; ++i )
-      {
-        cells_[ i ] = n[ i ];
-        h_[ i ] = width[ i ] / (ctype)n[ i ];
-      }
-      GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
-    }
-
-    SPGridLevel ( const GridLevel &father )
-    : father_( &father ),
-      domain_( father.domain_ ),
-      cube_( father.cube_ ),
-      level_( father.level_+1 )
-    {
-      for( int i = 0; i < dimension; ++i )
-      {
-        cells_[ i ] = 2*father.cells_[ i ];
-        h_[ i ] = 0.5*father.h_[ i ];
-      }
-      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-        geometryCache_[ dir ] = father.geometryCache_[ dir ];
-    }
+    explicit SPGridLevel ( const GridLevel &father, const unsigned int refDir = 0 );
 
     ~SPGridLevel ()
     {
-      if( father_ == 0 )
-      {
-        delete cube_;
-        for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-          delete geometryCache_[ dir ];
-      }
+      for( unsigned int dir = 0; dir < numDirections; ++dir )
+        delete geometryCache_[ dir ];
     }
 
     const Domain &domain () const
@@ -117,16 +88,72 @@ namespace Dune
     }
 
   private:
+    void buildGeometry ();
+
     const GridLevel *father_;
-    const Cube *cube_;
+    SmartPointer< const Cube > cube_;
     const Domain *domain_;
     unsigned int level_;
     MultiIndex cells_;
     GlobalVector h_;
-    void *geometryCache_[ 1 << dimension ];
+    void *geometryCache_[ numDirections ];
+    GlobalVector normal_[ numFaces ];
   };
 
 
+  template< class ct, int dim >
+  inline SPGridLevel< ct, dim >
+    ::SPGridLevel ( const Domain &domain, const MultiIndex &n )
+  : father_( 0 ),
+    domain_( &domain ),
+    level_( 0 )
+  {
+    const GlobalVector &width  = domain.width();
+    for( int i = 0; i < dimension; ++i )
+    {
+      cells_[ i ] = n[ i ];
+      h_[ i ] = width[ i ] / (ctype)n[ i ];
+    }
+    buildGeometry();
+  }
+
+
+  template< class ct, int dim >
+  inline SPGridLevel< ct, dim >
+    ::SPGridLevel ( const GridLevel &father, const unsigned int refDir )
+  : father_( refDir != 0 ? &father : father.father_ ),
+    domain_( father.domain_ ),
+    cube_( father.cube_ ),
+    level_( father.level_ + (refDir != 0 ? 1 : 0) )
+  {
+    for( int i = 0; i < dimension; ++i )
+    {
+      unsigned int factor = 2*((refDir >> i) & 1);
+      cells_[ i ] = factor * father.cells_[ i ];
+      h_[ i ] = father.h_[ i ] / ctype( factor );
+    }
+    buildGeometry();
+  }
+
+
+  template< class ct, int dim >
+  inline void SPGridLevel< ct, dim >::buildGeometry ()
+  {
+    GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
+
+    const ctype volume = geometryCache( numDirections-1 ).volume();
+    for( int face = 0; face < numFaces; ++face )
+    {
+      normal_[ face ] = cube().normal( face );
+      const ctype hn = std::abs( normal_[ face ] * h_ );
+      normal_[ face ] *= volume / hn;
+    }
+  }
+
+
+
+  // SPGridLevel::GeometryCache
+  // --------------------------
 
   template< class ct, int dim >
   template< int codim >

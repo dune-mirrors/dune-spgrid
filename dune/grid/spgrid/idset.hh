@@ -69,7 +69,8 @@ namespace Dune
 
   template< class Grid >
   typename SPLocalIdSet< Grid >::IdType
-  SPLocalIdSet< Grid >::id ( const GridLevel &gridLevel, const MultiIndex &id ) const
+  inline SPLocalIdSet< Grid >
+    ::id ( const GridLevel &gridLevel, const MultiIndex &id ) const
   {
     const MultiIndex &cells = gridLevel.cells();
     const unsigned int level = gridLevel.level();

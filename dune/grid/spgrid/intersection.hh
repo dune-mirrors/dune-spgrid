@@ -21,7 +21,12 @@ namespace Dune
     static const int dimension = Traits::dimension;
     static const int dimensionworld = Traits::dimensionworld;
 
-    typedef FieldVector< ctype, dimensionworld > GlobalVector;
+    typedef typename Traits::template Codim< 0 >::Entity Entity;
+    typedef typename Traits::template Codim< 0 >::EntityPointer EntityPointer;
+
+    typedef SPEntityInfo< ctype, dimension, 0 > EntityInfo;
+
+    typedef typename EntityInfo::GlobalVector GlobalVector;
     typedef FieldVector< ctype, dimension-1 > Localvector;
 
     bool boundary () constt
@@ -86,7 +91,7 @@ namespace Dune
 
     GlobalVector outerNormal ( const LocalVector &local ) const
     {
-      return unitOuterNormal( local );
+      return integrationOuterNormal( local );
     }
 
     GlobalVector integrationOuterNormal ( const LocalVector &local ) const
@@ -96,12 +101,17 @@ namespace Dune
 
     GlobalVector unitOuterNormal ( const LocalVector &local ) const
     {
-      // ...
+      return gridLevel().cube().normal( face_ );
     }
 
     bool equals ( const This &other ) const
     {
       return (*inside_ == *other.inside_) && (face_ == other.face_);
+    }
+
+    const GridLevel &gridLevel () const
+    {
+      return inside_->gridLevel();
     }
 
   private:

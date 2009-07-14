@@ -112,7 +112,7 @@ namespace Dune
 
 
   template< class Grid >
-  SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
+  inline SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
   : gridLevel_( &gridLevel )
   {
     const MultiIndex &cells = gridLevel().cells();
@@ -139,7 +139,7 @@ namespace Dune
 
 
   template< class Grid >
-  typename SPIndexSet< Grid >::IndexType
+  inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >::index ( const MultiIndex &id ) const
   {
     const MultiIndex &cells = gridLevel().cells();
