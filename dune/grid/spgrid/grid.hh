@@ -86,9 +86,10 @@ namespace Dune
       template< PartitionIteratorType pitype >
       struct Partition
       {
-        typedef Dune::GridView< SPGridViewTraits< const Grid, pitype > >
+        typedef Dune::GridView< SPLevelGridViewTraits< const Grid, pitype > >
           LevelGridView;
-        typedef LevelGridView LeafGridView;
+        typedef Dune::GridView< SPLeafGridViewTraits< const Grid, pitype > >
+          LeafGridView;
       };
     };
   };

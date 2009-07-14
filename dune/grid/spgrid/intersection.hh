@@ -35,6 +35,12 @@ namespace Dune
     typedef SPGeometry< dimension-1, dimension, Grid > GeometryImpl;
 
   public:
+    SPIntersection ( const Entity &entity, const unsigned int face )
+    : inside_( &entity )
+    {
+      setFace( face );
+    }
+
     bool boundary () const
     {
       // ...

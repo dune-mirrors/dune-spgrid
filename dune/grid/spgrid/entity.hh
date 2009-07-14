@@ -16,6 +16,14 @@ namespace Dune
 
 
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< int codim, int dim, class Grid >
+  class SPIntersectionIterator;
+
+
+
   // SPBasicEntity
   // -------------
 
@@ -126,6 +134,7 @@ namespace Dune
 
   public:
     typedef typename Base::EntityInfo EntityInfo;
+    typedef typename Base::GridLevel GridLevel;
 
     static const int dimension = Base::dimension;
 
@@ -147,6 +156,10 @@ namespace Dune
 
   protected:
     typedef typename EntityInfo::MultiIndex MultiIndex;
+
+    static const int numFaces = GridLevel::Cube::numFaces;
+
+    typedef SPIntersectionIterator< Grid > IntersectionIteratorImpl;
 
   public:
     explicit SPEntity ( const EntityInfo &entityInfo )
@@ -186,12 +199,12 @@ namespace Dune
 
     LevelIntersectionIterator ilevelbegin () const
     {
-      // :..
+      return IntersectionIteratorImpl( *this, 0 );
     }
 
     LevelIntersectionIterator ilevelend () const
     {
-      // ...
+      return IntersectionIteratorImpl( *this, numFaces );
     }
 
     bool hasBoundaryIntersections () const

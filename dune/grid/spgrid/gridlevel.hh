@@ -31,10 +31,7 @@ namespace Dune
     typedef typename Cube::GlobalVector GlobalVector;
     typedef typename Cube::MultiIndex MultiIndex;
 
-    static const int numCorners = Cube::numCorners;
-    static const int numFaces = Cube::numFaces;
-
-    static const unsigned int numDirections = numCorners;
+    static const unsigned int numDirections = Cube::numCorners;
 
     template< int codim >
     struct GeometryCache;
@@ -89,7 +86,7 @@ namespace Dune
 
     const GlobalVector &volumeNormal ( const int i ) const
     {
-      assert( (i >= 0) && (i < numFaces) );
+      assert( (i >= 0) && (i < Cube::numFaces) );
       return normal_[ i ];
     }
 
@@ -103,7 +100,7 @@ namespace Dune
     MultiIndex cells_;
     GlobalVector h_;
     void *geometryCache_[ numDirections ];
-    GlobalVector normal_[ numFaces ];
+    GlobalVector normal_[ Cube::numFaces ];
   };
 
 
@@ -148,7 +145,7 @@ namespace Dune
     GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
 
     const ctype volume = geometryCache( numDirections-1 ).volume();
-    for( int face = 0; face < numFaces; ++face )
+    for( int face = 0; face < Cube::numFaces; ++face )
     {
       normal_[ face ] = cube().normal( face );
       const ctype hn = std::abs( normal_[ face ] * h_ );
