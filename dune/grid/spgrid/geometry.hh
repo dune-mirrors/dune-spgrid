@@ -49,8 +49,16 @@ namespace Dune
     typedef typename EntityInfo::Jacobian Jacobian;
     typedef typename EntityInfo::JacobianTransposed JacobianTransposed;
 
+  private:
+    typedef typename EntityInfo::MultiIndex MultiIndex;
+
+  public:
     explicit SPGeometry ( const EntityInfo &entityInfo )
     : entityInfo_( entityInfo )
+    {}
+
+    SPGeometry ( const GridLevel &gridLevel, const MultiIndex &id )
+    : entityInfo_( gridLevel, id )
     {}
 
     GeometryType type () const

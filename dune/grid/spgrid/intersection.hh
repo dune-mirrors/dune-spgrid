@@ -24,12 +24,18 @@ namespace Dune
     typedef typename Traits::template Codim< 0 >::Entity Entity;
     typedef typename Traits::template Codim< 0 >::EntityPointer EntityPointer;
 
+    typedef typename Traits::template Codim< 1 >::Geometry Geometry;
+
     typedef SPEntityInfo< ctype, dimension, 0 > EntityInfo;
 
     typedef typename EntityInfo::GlobalVector GlobalVector;
     typedef FieldVector< ctype, dimension-1 > Localvector;
 
-    bool boundary () constt
+  private:
+    typedef SPGeometry< dimension-1, dimension, Grid > GeometryImpl;
+
+  public:
+    bool boundary () const
     {
       // ...
     }
@@ -71,7 +77,7 @@ namespace Dune
 
     const Geometry &geometry () const
     {
-      // ...
+      return geometry_;
     }
 
     GeometryType type () const
@@ -114,9 +120,21 @@ namespace Dune
       return inside_->gridLevel();
     }
 
+    void setFace ( const unsigned int face )
+    {
+      face_ = face;
+      if( face < GridLevel::numFaces )
+      {
+        MultiIndex id = inside_->entityInfo().id();
+        id += gridLevel().cube().subId( codim, i );
+        geometry_ = Geometry( GeometryImpl( gridLevel(), id ) );
+      }
+    }
+
   private:
     const Entity *inside_;
     unsigned int face_;
+    Geometry geometry_;
   };
 
 }
