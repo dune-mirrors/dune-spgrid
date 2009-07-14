@@ -19,7 +19,7 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< int codim, int dim, class Grid >
+  template< class Grid >
   class SPIntersectionIterator;
 
 
