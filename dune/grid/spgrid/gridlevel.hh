@@ -66,6 +66,17 @@ namespace Dune
       return *father_;
     }
 
+    const GridLevel &child () const
+    {
+      assert( !isLeaf() );
+      return *child_;
+    }
+
+    bool isLeaf () const
+    {
+      return (child_ == 0);
+    }
+
     const GlobalVector &h () const
     {
       return h_;

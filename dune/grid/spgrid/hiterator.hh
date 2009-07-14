@@ -20,11 +20,27 @@ namespace Dune
     : Base( entity ),
       maxLevel_( maxLevel )
     {
+      increment();
     }
+
+    using Base::level;
+    using Base::dereference();
 
     void increment ()
     {
+      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
+      MultiIndex = entityInfo.id();
+      if( level() < maxLevel_ )
+      {
+        if( entity_.isLeaf() )
+          maxLevel_ = level();
+
+      }
+
     }
+
+  protected:
+    using Base::entity_;
 
   private:
     int maxLevel_;

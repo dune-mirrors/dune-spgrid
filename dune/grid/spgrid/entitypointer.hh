@@ -61,7 +61,6 @@ namespace Dune
 
     const Entity &dereference () const
     {
-      assert( !!entity_ );
       return entity_;
     }
 
@@ -75,7 +74,7 @@ namespace Dune
       return entity_.level();
     }
 
-  private:
+  protected:
     Entity entity_;
   };
 
