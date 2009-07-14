@@ -1,6 +1,12 @@
 #ifndef DUNE_SPGRID_CUBE_HH
 #define DUNE_SPGRID_CUBE_HH
 
+#include <vector>
+
+#include <dune/common/fvector.hh>
+
+#include <dune/grid/spgrid/multiindex.hh>
+
 namespace Dune
 {
 
@@ -56,34 +62,34 @@ namespace Dune
     }
 
   private:
-    unsigned int numSubEntities ( const unsigned int dim, const unsigned int codim )
+    unsigned int numSubEntities ( const unsigned int dimension, const unsigned int codim )
     {
-      assert( codim <= dim );
+      assert( codim <= dimension );
       if( codim > 0 )
       {
-        const unsigned int n0 = (codim < dim ? numSubEntities( dim-1, codim ) : 0);
-        const unsigned int n1 = numSubEntities( dim-1, codim-1 );
+        const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
+        const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
         return n0 + 2*n1;
       }
       else
         return 1;
     }
 
-    void subId ( const unsigned int dim, const unsigned int codim,
+    void subId ( const unsigned int dimension, const unsigned int codim,
                  const unsigned int i, MultiIndex &subId ) const
     {
-      assert( i < numSubEntities( dim, codim ) );
-      const unsigned int n0 = (codim < dim ? numSubEntities( dim-1, codim ) : 0);
+      assert( i < numSubEntities( dimension, codim ) );
+      const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
       if( i < n0 )
       {
-        subId( dim-1, codim, i );
-        subId[ dim-1 ] = 1;
+        subId( dimension-1, codim, i );
+        subId[ dimension-1 ] = 1;
       }
       else
       {
-        const unsigned int n1 = numSubEntities( dim-1, codim-1 );
-        subId( dim-1, codim-1, (i-n0)%n1 );
-        subId[ dim-1 ] = 2*((i-n0)/n1)
+        const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
+        subId( dimension-1, codim-1, (i-n0)%n1 );
+        subId[ dimension-1 ] = 2*((i-n0)/n1);
       }
     }
 

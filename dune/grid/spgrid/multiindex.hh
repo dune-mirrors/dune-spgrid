@@ -63,7 +63,7 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
       {
         index_[ i ] += k;
-        if( index_[ i ] < bound_[ i ] )
+        if( index_[ i ] < bound[ i ] )
           return;
         index_[ i ] = 0;
       }
@@ -82,6 +82,7 @@ namespace Dune
       unsigned int dir = 0;
       for( int i = 0; i < dimension; ++i )
         dir |= (index_[ i ] & 1) << i;
+      return dir;
     }
 
   private:
