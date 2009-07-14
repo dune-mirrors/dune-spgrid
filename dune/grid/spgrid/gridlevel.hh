@@ -8,6 +8,7 @@
 #include <dune/grid/genericgeometry/codimtable.hh>
 
 #include <dune/grid/spgrid/misc.hh>
+#include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/domain.hh>
 
 namespace Dune
@@ -26,7 +27,7 @@ namespace Dune
     static const int dimension = Domain::dimension;
 
     typedef typename Domain::GlobalVector GlobalVector;
-    typedef unsigned int MultiIndex[ dimension ];
+    typedef SPMultiIndex< dimension > MultiIndex;
 
   public:
     template< int codim >

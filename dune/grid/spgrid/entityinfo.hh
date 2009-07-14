@@ -33,14 +33,8 @@ namespace Dune
     SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
     : gridLevel_( &gridLevel ),
       id_( id ),
-      direction_( 0 )
-    {
-      if( (codim != 0) && (codim != dimension) )
-      {
-        for( int j = 0; j < dimension; ++j )
-          direction_ |= ((id[ j ] & 1) << j);
-      }
-    }
+      direction_( id.direction() )
+    {}
 
     unsigned int direction () const
     {
