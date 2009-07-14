@@ -57,7 +57,9 @@ namespace Dune
 
     EntityPointer outside () const
     {
-      // ...
+      MultiIndex id = inside_->entityInfo().id();
+      id.axpy( 2, gridLevel().cube().subId( 1, face ) );
+      return EntityPointer( gridLevel(), id );
     }
 
     bool conforming () const
@@ -126,7 +128,7 @@ namespace Dune
       if( face < GridLevel::numFaces )
       {
         MultiIndex id = inside_->entityInfo().id();
-        id += gridLevel().cube().subId( codim, i );
+        id += gridLevel().cube().subId( 1, face );
         geometry_ = Geometry( GeometryImpl( gridLevel(), id ) );
       }
     }

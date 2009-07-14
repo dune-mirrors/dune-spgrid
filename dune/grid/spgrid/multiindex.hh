@@ -58,6 +58,12 @@ namespace Dune
       return equals;
     }
 
+    void axpy( const int a, const This &other )
+    {
+      for( int i = 0; i < dimension; ++i )
+        index_[ i ] += a*other.index_[ i ];
+    }
+
     void clear ()
     {
       for( int i = 0; i < dimension; ++i )
