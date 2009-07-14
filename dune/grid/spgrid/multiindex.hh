@@ -58,11 +58,12 @@ namespace Dune
         index_[ i ] = 0;
     }
 
-    void increment ( const This &bound )
+    void increment ( const This &bound, const int k = 1 )
     {
       for( int i = 0; i < dimension; ++i )
       {
-        if( ++index_[ i ] < bound_[ i ] )
+        index_[ i ] += k;
+        if( index_[ i ] < bound_[ i ] )
           return;
         index_[ i ] = 0;
       }
