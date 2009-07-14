@@ -161,7 +161,7 @@ namespace Dune
     typename Traits::template Partition< pitype >::LeafGridView
     leafView ( const int level ) const
     {
-      return levelView< pitype >( maxLevel() );
+      return leafView_;
     }
 
     LevelGridView levelView ( const int level ) const
@@ -172,7 +172,7 @@ namespace Dune
 
     LeafGridView leafView () const
     {
-      return levelView( maxLevel() );
+      return leafView_;
     }
 
     template< int codim, PartitionIteratorType pitype >
@@ -251,11 +251,32 @@ namespace Dune
       return leafView().indexSet();
     }
 
-    void globalRefine ( int refCount, unsigned int refDir = numDirections-1 )
+    void globalRefine ( const int refCount,
+                        const unsigned int refDir = numDirections-1 )
     {
       const int maxLevel = maxLevel();
       for( int i = 0; i < refCount; ++i )
         levelViews_.push_back( LevelGridView( levelViews_[ maxLevel+i ], refDir ) );
+    }
+
+    int overlapSize ( const int level, const int codim ) const
+    {
+      return levelView( level ).overlapSize( codim );
+    }
+
+    int overlapSize ( const int codim ) const
+    {
+      return leafView().overlapSize( codim );
+    }
+
+    int ghostSize ( const int level, const int codim ) const
+    {
+      return levelView( level ).ghostSize( codim );
+    }
+
+    int ghostSize ( const int codim ) const
+    {
+      return leafView().ghostSize( codim );
     }
 
     template< class DataHandle, class Data >
@@ -281,6 +302,7 @@ namespace Dune
   private:
     std::string name_;
     std::vector< LevelGridView > levelViews_;
+    LeafGridView leafView_;
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;

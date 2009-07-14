@@ -3,6 +3,8 @@
 
 #include <dune/grid/spgrid/intersection.hh>
 
+#include <dune/grid/common/intersectioniterator.hh>
+
 namespace Dune
 {
 

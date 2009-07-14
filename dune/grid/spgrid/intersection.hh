@@ -1,9 +1,9 @@
 #ifndef DUNE_SPGRID_INTERSECTION_HH
 #define DUNE_SPGRID_INTERSECTION_HH
 
-#include <dune/common/fvector.hh>
-#include <dune/common/geometrytype.hh>
 #include <dune/common/typetraits.hh>
+
+#include <dune/grid/common/intersection.hh>
 
 namespace Dune
 {
