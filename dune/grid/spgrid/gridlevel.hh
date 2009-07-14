@@ -38,8 +38,12 @@ namespace Dune
     
     SPGridLevel ( const Domain &domain, const MultiIndex &n );
 
-    explicit SPGridLevel ( const GridLevel &father, const unsigned int refDir = 0 );
+    SPGridLevel ( GridLevel &father, const unsigned int refDir );
 
+  private:
+    SPGridLevel ( const This &other );
+
+  public:
     ~SPGridLevel ()
     {
       for( unsigned int dir = 0; dir < numDirections; ++dir )
@@ -98,7 +102,8 @@ namespace Dune
   private:
     void buildGeometry ();
 
-    const GridLevel *father_;
+    GridLevel *father_;
+    GridLevel *child_;
     SmartPointer< const Cube > cube_;
     const Domain *domain_;
     unsigned int level_;
@@ -114,6 +119,7 @@ namespace Dune
   inline SPGridLevel< ct, dim >
     ::SPGridLevel ( const Domain &domain, const MultiIndex &n )
   : father_( 0 ),
+    child_( 0 ),
     domain_( &domain ),
     level_( 0 ),
     refDir_( 0 )
@@ -130,13 +136,16 @@ namespace Dune
 
   template< class ct, int dim >
   inline SPGridLevel< ct, dim >
-    ::SPGridLevel ( const GridLevel &father, const unsigned int refDir )
-  : father_( refDir != 0 ? &father : father.father_ ),
+    ::SPGridLevel ( GridLevel &father, const unsigned int refDir )
+  : father_( &father ),
+    child_( 0 ),
     domain_( father.domain_ ),
     cube_( father.cube_ ),
-    level_( father.level_ + (refDir != 0 ? 1 : 0) ),
-    refDir_( refDir != 0 ? refDir : father.refDir_ )
+    level_( father.level_ + 1 ),
+    refDir_( refDir )
   {
+    assert( father.child_ == 0 );
+    father.child_ = *this;
     for( int i = 0; i < dimension; ++i )
     {
       unsigned int factor = 2*((refDir >> i) & 1);
