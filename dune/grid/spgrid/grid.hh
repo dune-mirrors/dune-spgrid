@@ -3,6 +3,7 @@
 
 #include <dune/grid/common/grid.hh>
 
+#include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/intersectioniterator.hh>
 #include <dune/grid/spgrid/iterator.hh>
 #include <dune/grid/spgrid/idset.hh>
