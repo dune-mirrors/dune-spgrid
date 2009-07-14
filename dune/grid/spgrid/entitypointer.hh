@@ -30,12 +30,20 @@ namespace Dune
 
     typedef typename Traits::template Codim< codimension >::Entity Entity;
 
-  private:
+    typedef typename Entity::EntityInfo EntityInfo;
+    typedef typename Entity::GridLevel GridLevel;
+
+  protected:
     typedef SPEntity< codimension, dimension, Grid > EntityImpl;
+    typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
     SPEntityPointer ( const EntityInfo &entityInfo )
     : entity_( EntityImpl( entityInfo ) )
+    {}
+
+    SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id )
+    : entity_( EntityImpl( EntityInfo( gridLevel, id ) ) )
     {}
 
     SPEntityPointer ( const Entity &entity )

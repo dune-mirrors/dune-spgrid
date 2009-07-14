@@ -32,7 +32,6 @@ namespace Dune
     SPIndexSet ( const GridLevel &gridLevel );
 
   public:
-    template< int codim >
     IndexType index ( const MultiIndex &id ) const;
 
     template< class Entity >
@@ -47,7 +46,7 @@ namespace Dune
       assert( contains( entity ) );
       const typename Entity::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
-      return index< codim >( entityInfo.id() );
+      return index( entityInfo.id() );
     }
 
     template< int codim >
@@ -60,7 +59,12 @@ namespace Dune
     IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
                          const int i, const unsigned int codim ) const
     {
-      // ...
+      assert( contains( entity ) );
+      const typename Entity::EntityInfo &entityInfo
+        = Grid::getRealImplementation( entity ).entityInfo();
+      MultiIndex sid = entityInfo.id();
+      sid += gridLevel().cube().subId( codim, i );
+      return index( sid );
     }
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const
@@ -135,7 +139,6 @@ namespace Dune
 
 
   template< class Grid >
-  template< int codim >
   typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >::index ( const MultiIndex &id ) const
   {

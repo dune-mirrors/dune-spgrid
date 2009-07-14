@@ -83,6 +83,11 @@ namespace Dune
       return *domain_;
     }
 
+    const Cube &cube () const
+    {
+      return *cube_;
+    }
+
     const GridLevel &father () const
     {
       assert( father_ != 0 );

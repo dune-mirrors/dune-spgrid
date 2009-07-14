@@ -57,7 +57,12 @@ namespace Dune
 
     IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const
     {
-      // ...
+      const typename Entity::EntityInfo &entityInfo
+        = Grid::getRealImplementation( entity ).entityInfo();
+      const GridLevel &gridLevel = entityInfo.gridLevel();
+      MultiIndex sid = entityInfo.id();
+      sid +=  gridLevel.cube().subId( codim, i );
+      return id( gridLevel, sid );
     }
   };
 

@@ -32,9 +32,14 @@ namespace Dune
 
     const MultiIndex &subId ( const int codim, const int i ) const
     {
-      assert( (codim >= 0) && (codim <= dimension) );
-      assert( (i >= 0) && (i < sudId_[ codim ].size()) );
+      assert( (i >= 0) && (i < count( codim )) );
       return subId_[ codim ][ i ];
+    }
+
+    int count ( const int codim ) const
+    {
+      assert( (codim >= 0) && (codim <= dimension) );
+      return subId_[ codim ].size();
     }
 
     const GlobalVector &corner ( const int i ) const
@@ -65,13 +70,13 @@ namespace Dune
       if( i < n0 )
       {
         subId( dimension-1, codim, i );
-        subId[ dimension-1 ] = 1;
+        subId[ dimension-1 ] = 0;
       }
       else
       {
         const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
         subId( dimension-1, codim-1, (i-n0)%n1 );
-        subId[ dimension-1 ] = 2*((i-n0)/n1);
+        subId[ dimension-1 ] = 2*((i-n0)/n1) - 1;
       }
     }
 

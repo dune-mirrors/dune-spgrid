@@ -163,13 +163,15 @@ namespace Dune
     template< int codim >
     int count () const
     {
-      // ...
+      return gridLevel().cube().count( codim );
     }
 
     template< int codim >
     typename Codim< codim >::EntityPointer subEntity ( const int i ) const
     {
-      // ...
+      MultiIndex id = entityInfo().id();
+      id += gridLevel().cube().subId( codim, i );
+      return Codim< codim >::EntityPointer( gridLevel(), id );
     }
 
     LeafIntersectionIterator ileafbegin () const
