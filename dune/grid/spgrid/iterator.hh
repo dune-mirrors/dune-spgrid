@@ -16,6 +16,22 @@ namespace Dune
     typedef SPIterator< codim, pitype, Grid > This;
     typedef SPEntityPointer< Grid > Base;
 
+  public:
+    struct Begin {};
+    struct End {};
+
+    SPIterator ( const GridLevel &gridLevel, const Begin &begin )
+    : Base( gridLevel )
+    {
+      // ...
+    }
+
+    SPIterator ( const GridLevel &gridLevel, const End &end )
+    : Base( gridLevel )
+    {
+      // ...
+    }
+
     void increment ()
     {
       // ...

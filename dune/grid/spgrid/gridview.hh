@@ -92,9 +92,11 @@ namespace Dune
       struct Partition
       {
         typedef Dune::LeafIterator< codim, pit, Grid, SPIterator > Iterator;
+        typedef SPIterator< codim, pit, Grid > IteratorImpl;
       };
 
       typedef typename Partition< pitype >::Iterator Iterator;
+      typedef typename Partition< pitype >::IteratorImpl IteratorImpl;
     };
   };
 
@@ -104,8 +106,15 @@ namespace Dune
   // ----------
 
   template< class ViewTraits >
-  class SPLevelGridView
+  class SPGridView
   {
+    typedef SPGridView< ViewTraits > This;
+
+    template< int codim >
+    struct Codim
+    : public ViewTraits::template Codim< codim >
+    {};
+
   public:
     const Grid &grid () const
     {
@@ -130,35 +139,43 @@ namespace Dune
     template< int codim >
     typename Codim< codim >::Iterator begin () const
     {
-      // ...
+      typedef typename Codim< codim >::IteratorImpl IteratorImpl;
+      const typename IteratorImpl::Begin begin;
+      return IteratorImpl( gridLevel(), begin );
     }
 
     template< int codim >
     typename Codim< codim >::Iterator end () const
     {
-      // ...
+      typedef typename Codim< codim >::IteratorImpl IteratorImpl;
+      const typename IteratorImpl::End end;
+      return IteratorImpl( gridLevel(), end );
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Codim< codim >::template Partition< pitype >::Iterator begin () const
     {
-      // ...
+      typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
+      const typename IteratorImpl::Begin begin;
+      return IteratorImpl( gridLevel(), begin );
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Codim< codim >::template Partition< pitype >::Iterator end () const
     {
-      // ...
+      typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
+      const typename IteratorImpl::End end;
+      return IteratorImpl( gridLevel(), end );
     }
 
     IntersectionIterator ibegin ( const typename Codim< 0 >::Entity &entity ) const
     {
-      return IntersectionIteratorImpl( *this, 0 );
+      return IntersectionIteratorImpl( entity, 0 );
     }
 
     IntersectionIterator ibegin ( const typename Codim< 0 >::Entity &entity ) const
     {
-      return IntersectionIteratorImpl( *this, GridLevel::Cube::numFaces );
+      return IntersectionIteratorImpl( entity, GridLevel::Cube::numFaces );
     }
 
     const CollectiveCommunication &comm () const
@@ -180,6 +197,11 @@ namespace Dune
     void communicate ( CommDataHandleIF< DataHandle, Data > &data,
                        InterfaceType interface, CommunicationDirection dir ) const
     {}
+
+    const GridLevel &gridLevel () const
+    {
+      return indexSet().gridLevel();
+    }
 
   private:
     const Grid *grid_;

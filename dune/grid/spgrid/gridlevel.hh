@@ -97,6 +97,16 @@ namespace Dune
       return cells_;
     }
 
+    const MultiIndex begin ( const unsigned int dir ) const
+    {
+      // ...
+    }
+
+    const MultiIndex end ( const unsigned int dir ) const
+    {
+      // ...
+    }
+
     template< int codim >
     const GeometryCache< codim > &geometryCache ( const unsigned int dir ) const
     {
