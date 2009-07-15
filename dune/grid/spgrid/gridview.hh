@@ -8,6 +8,7 @@
 #include <dune/grid/spgrid/indexset.hh>
 #include <dune/grid/spgrid/intersection.hh>
 #include <dune/grid/spgrid/intersectioniterator.hh>
+#include <dune/grid/spgrid/iterator.hh>
 
 namespace Dune
 {
