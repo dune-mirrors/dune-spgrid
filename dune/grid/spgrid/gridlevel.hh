@@ -60,13 +60,13 @@ namespace Dune
       return *cube_;
     }
 
-    const GridLevel &father () const
+    const GridLevel &fatherLevel () const
     {
       assert( father_ != 0 );
       return *father_;
     }
 
-    const GridLevel &child () const
+    const GridLevel &childLevel () const
     {
       assert( !isLeaf() );
       return *child_;

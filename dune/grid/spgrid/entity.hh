@@ -225,7 +225,7 @@ namespace Dune
       MultiIndex fatherId;
       for( int i = 0; i < dimension; ++i )
         fatherId[ i ] = ((refDir >> i) & 1 ? (id[ i ] >> 1) | 1 : id[ i ]);
-      return EntityPointer( EntityInfo( gridLevel().father(), fatherId ) );
+      return EntityPointer( EntityInfo( gridLevel().fatherLevel(), fatherId ) );
     }
 
     const LocalGeometry &geometryInFather () const

@@ -29,14 +29,13 @@ namespace Dune
     void increment ()
     {
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      MultiIndex = entityInfo.id();
-      if( level() < maxLevel_ )
+      if( entity_.isLeaf() || (level() >= maxLevel_) )
       {
-        if( entity_.isLeaf() )
-          maxLevel_ = level();
-
+        while( (level() > 0) && !entityInfo.nextChild() )
+          entityInfo.up();
       }
-
+      else
+        entityInfo.down();
     }
 
   protected:
