@@ -88,6 +88,11 @@ namespace Dune
       return Grid::getRealImplementation( geometry_ ).entityInfo_;
     }
 
+    EntityInfo &entityInfo ()
+    {
+      return Grid::getRealImplementation( geometry_ ).entityInfo_;
+    }
+
     const GridLevel &gridLevel () const
     {
       return entityInfo().gridLevel();

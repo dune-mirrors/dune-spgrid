@@ -47,6 +47,12 @@ namespace Dune
       return *gridLevel_;
     }
 
+    void setId ( const MultiIndex &id )
+    {
+      id_ = id;
+      direction_ = id.direction();
+    }
+
   private:
     const GridLevel *gridLevel_;
     MultiIndex id_;
@@ -93,6 +99,11 @@ namespace Dune
     const GridLevel &gridLevel () const
     {
       return *gridLevel_;
+    }
+
+    void setId ( const MultiIndex &id )
+    {
+      id_ = id;
     }
 
     void down ()
@@ -172,6 +183,11 @@ namespace Dune
     const GridLevel &gridLevel () const
     {
       return *gridLevel_;
+    }
+
+    void setId ( const MultiIndex &id )
+    {
+      id_ = id;
     }
 
   private:

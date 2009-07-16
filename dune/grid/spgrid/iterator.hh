@@ -23,7 +23,15 @@ namespace Dune
     SPIterator ( const GridLevel &gridLevel, const Begin &begin )
     : Base( gridLevel )
     {
-      // ...
+      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
+      unsigned int dir = 0;
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
+      assert( dir < numDirections );
+
+      MulitIndex id;
+      for( int i = 0; i < dimension; ++i )
+        id[ i ] = (dir >> i) & 1;
+      entityInfo.setId( id );
     }
 
     SPIterator ( const GridLevel &gridLevel, const End &end )
@@ -34,6 +42,13 @@ namespace Dune
 
     void increment ()
     {
+      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
+
+      // ...
+
+      unsigned int dir = entityInfo.direction();
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
+
       // ...
     }
   };
