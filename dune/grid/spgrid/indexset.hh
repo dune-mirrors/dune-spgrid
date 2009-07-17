@@ -1,7 +1,10 @@
 #ifndef DUNE_SPGRID_INDEXSET_HH
 #define DUNE_SPGRID_INDEXSET_HH
 
-#include <dune/grid/common/indexset.hh>
+#include <dune/grid/common/indexidset.hh>
+
+#include <dune/grid/spgrid/entityinfo.hh>
+#include <dune/grid/spgrid/gridlevel.hh>
 
 namespace Dune
 {
@@ -23,17 +26,20 @@ namespace Dune
     template< int codim >
     struct Codim
     {
+      typedef SPEntityInfo< typename Traits::ctype, dimension, codim > EntityInfo;
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
-    typedef SPGridLevel< ct, dim > GridLevel;
+    typedef SPGridLevel< typename Traits::ctype, dimension > GridLevel;
 
   private:
+    typedef typename GridLevel::MultiIndex MultiIndex;
+
     SPIndexSet ( const GridLevel &gridLevel );
 
-  public:
     IndexType index ( const MultiIndex &id ) const;
 
+  public:
     template< class Entity >
     IndexType index ( const Entity &entity ) const
     {
@@ -44,7 +50,7 @@ namespace Dune
     IndexType index ( const typename Codim< codim >::Entity &entity ) const
     {
       assert( contains( entity ) );
-      const typename Entity::EntityInfo &entityInfo
+      const typename Codim< codim >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
       return index( entityInfo.id() );
     }
@@ -60,7 +66,7 @@ namespace Dune
                          const int i, const unsigned int codim ) const
     {
       assert( contains( entity ) );
-      const typename Entity::EntityInfo &entityInfo
+      const typename Codim< 0 >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
       MultiIndex sid = entityInfo.id();
       sid += gridLevel().cube().subId( codim, i );

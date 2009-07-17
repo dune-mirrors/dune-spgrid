@@ -3,7 +3,6 @@
 
 #include <dune/grid/common/indexidset.hh>
 
-#include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/entityinfo.hh>
 #include <dune/grid/spgrid/gridlevel.hh>
 
@@ -37,7 +36,7 @@ namespace Dune
     typedef SPGridLevel< typename Traits::ctype, dimension > GridLevel;
 
   private:
-    typedef SPMultiIndex< dimension > MultiIndex;
+    typedef typename GridLevel::MultiIndex MultiIndex;
 
     IdType id ( const GridLevel &gridLevel, const MultiIndex &id ) const;
 
