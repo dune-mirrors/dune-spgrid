@@ -38,7 +38,13 @@ namespace Dune
 
     template< int codim >
     struct GeometryCache;
-    
+
+    typedef typename Traits::template Codim< 0 >::LocalGeometry LocalGeometry;
+
+  private:
+    typedef SPLocalGeometry< dimension, dimension, Grid > LocalGeometryImpl;
+
+  public:
     SPGridLevel ( const Grid &grid, const MultiIndex &n );
 
     SPGridLevel ( GridLevel &father, const unsigned int refDir );
@@ -49,6 +55,8 @@ namespace Dune
   public:
     ~SPGridLevel ()
     {
+      for( int i = 0; i < Cube::numCorners; ++i )
+        delete geometryInFather_[ i ];
       for( unsigned int dir = 0; dir < numDirections; ++dir )
         delete geometryCache_[ dir ];
     }
@@ -128,7 +136,9 @@ namespace Dune
     unsigned int refDir_;
     MultiIndex cells_;
     GlobalVector h_;
+
     void *geometryCache_[ numDirections ];
+    LocalGeometry *geometryInFather_[ Cube::numCorners ];
     GlobalVector normal_[ Cube::numFaces ];
   };
 
@@ -148,6 +158,8 @@ namespace Dune
       cells_[ i ] = n[ i ];
       h_[ i ] = width[ i ] / (ctype)n[ i ];
     }
+    for( int i = 0; i < Cube::numCorners; ++i )
+      geometryInFather_[ i ] = 0;
     buildGeometry();
   }
 
@@ -169,6 +181,8 @@ namespace Dune
       cells_[ i ] = factor * father.cells_[ i ];
       h_[ i ] = father.h_[ i ] / ctype( factor );
     }
+    for( int i = 0; i < Cube::numCorners; ++i )
+      geometryInFather_[ i ] = 0;
     buildGeometry();
   }
 
