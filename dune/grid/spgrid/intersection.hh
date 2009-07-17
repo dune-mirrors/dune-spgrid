@@ -49,17 +49,23 @@ namespace Dune
 
     bool boundary () const
     {
-      // ...
+      return !neighbor();
     }
 
     int boundaryId () const
     {
-      // ...
+      return 1;
     }
 
     bool neighbor () const
     {
-      // ...
+      // this should be done much more efficiently
+      MultiIndex &id = inside_->entityInfo().id();
+      id.axpy( 2, gridLevel().cube().subId( 1, face_ ) );
+      bool neighbor = true;
+      for( int i = 0; i < dimension; ++i )
+        neighbor &= ((id[ i ] > 0) && (id[ i ] < 2*gridLevel().cells()[ i ]));
+      return neighbor;
     }
 
     EntityPointer inside () const
