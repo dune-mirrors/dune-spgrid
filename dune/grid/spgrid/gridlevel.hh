@@ -21,11 +21,12 @@ namespace Dune
     typedef SPGridLevel< Grid > This;
 
   public:
+    typedef SPGridLevel< Grid > GridLevel;
+
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-    typedef SPCube< typename Traits::ctype, Traits::dimension > Cube;
-    typedef SPDomain< typename Traits::ctype, Traits::dimension > Domain;
-    typedef SPGridLevel< Grid > GridLevel;
+    typedef typename Traits::Cube Cube;
+    typedef typename Traits::Domain Domain;
 
     typedef typename Cube::ctype ctype;
     static const int dimension = Cube::dimension;
@@ -57,14 +58,14 @@ namespace Dune
       return *grid_;
     }
 
+    const Cube &cube () const
+    {
+      return grid().cube();
+    }
+
     const Domain &domain () const
     {
       return grid().domain();
-    }
-
-    const Cube &cube () const
-    {
-      return *cube_;
     }
 
     const GridLevel &fatherLevel () const
@@ -123,7 +124,6 @@ namespace Dune
     const Grid *grid_;
     GridLevel *father_, *child_;
 
-    SmartPointer< const Cube > cube_;
     unsigned int level_;
     unsigned int refDir_;
     MultiIndex cells_;
@@ -158,7 +158,6 @@ namespace Dune
   : grid_( father.grid_ ),
     father_( &father ),
     child_( 0 ),
-    cube_( father.cube_ ),
     level_( father.level_ + 1 ),
     refDir_( refDir )
   {

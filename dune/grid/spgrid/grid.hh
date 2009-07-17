@@ -30,10 +30,8 @@ namespace Dune
     {
       typedef SPGrid< ct, dim > Grid;
 
-      typedef ct ctype;
-
-      static const int dimension = dim;
-      static const int dimensionworld = dimworld;
+      typedef SPCube< ct, dim > Cube;
+      typedef SPDomain< ct, dim > Domain;
 
       typedef Dune::CollectiveCommunication< Grid > CollectiveCommunication;
 
@@ -108,10 +106,13 @@ namespace Dune
   public:
     typedef typename GridFamiily::Traits Traits;
 
-    typedef typename Traits::ctype ctype;
+    typedef typename Traits::Cube Cube;
+    typedef typename Traits::Domain Domain;
 
-    static const int dimension = Traits::dimension;
-    static const int dimensionworld = Traits::dimensionworld;
+    typedef typename Cube::ctype ctype;
+
+    static const int dimension = Cube::dimension;
+    static const int dimensionworld = Cube::dimension;
 
     typedef typename Traits::GlobalIdSet GlobalIdSet;
     typedef typename Traits::LocalIdSet LocalIdSet;
@@ -119,7 +120,10 @@ namespace Dune
     typedef typename Traits::template Partition< pitype >::LevelGridView LevelGridView;
     typedef typename Traits::template Partition< pitype >::LeafGridView LeafGridView;
 
-    typedef SPDomain< ctype, dimension > Domain;
+    const Cube &cube () const
+    {
+      return cube_;
+    }
 
     const Domain &domain () const
     {
@@ -308,6 +312,7 @@ namespace Dune
 
   private:
     std::string name_;
+    Cube cube_;
     Domain domain_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;

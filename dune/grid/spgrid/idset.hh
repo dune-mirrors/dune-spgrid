@@ -29,11 +29,11 @@ namespace Dune
     template< int codim >
     struct Codim
     {
-      typedef SPEntityInfo< typename Traits::ctype, dimension, codim > EntityInfo;
+      typedef SPEntityInfo< Grid, codim > EntityInfo;
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
-    typedef SPGridLevel< typename Traits::ctype, dimension > GridLevel;
+    typedef SPGridLevel< Grid > GridLevel;
 
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
