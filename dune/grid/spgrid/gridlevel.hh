@@ -15,15 +15,17 @@
 namespace Dune
 {
 
-  template< class ct, int dim >
+  template< class Grid >
   class SPGridLevel
   {
-    typedef SPGridLevel< ct, dim > This;
+    typedef SPGridLevel< Grid > This;
 
   public:
-    typedef SPCube< ct, dim > Cube;
-    typedef SPDomain< ct, dim > Domain;
-    typedef SPGridLevel< ct, dim > GridLevel;
+    typedef typename remove_const< Grid >::type::Traits Traits;
+
+    typedef SPCube< typename Traits::ctype, Traits::dimension > Cube;
+    typedef SPDomain< typename Traits::ctype, Traits::dimension > Domain;
+    typedef SPGridLevel< Grid > GridLevel;
 
     typedef typename Cube::ctype ctype;
     static const int dimension = Cube::dimension;
@@ -97,16 +99,6 @@ namespace Dune
       return cells_;
     }
 
-    const MultiIndex begin ( const unsigned int dir ) const
-    {
-      // ...
-    }
-
-    const MultiIndex end ( const unsigned int dir ) const
-    {
-      // ...
-    }
-
     template< int codim >
     const GeometryCache< codim > &geometryCache ( const unsigned int dir ) const
     {
@@ -136,8 +128,8 @@ namespace Dune
   };
 
 
-  template< class ct, int dim >
-  inline SPGridLevel< ct, dim >
+  template< class Grid >
+  inline SPGridLevel< Grid >
     ::SPGridLevel ( const Domain &domain, const MultiIndex &n )
   : father_( 0 ),
     child_( 0 ),
@@ -155,8 +147,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim >
-  inline SPGridLevel< ct, dim >
+  template< class Grid >
+  inline SPGridLevel< Grid >
     ::SPGridLevel ( GridLevel &father, const unsigned int refDir )
   : father_( &father ),
     child_( 0 ),
@@ -177,8 +169,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim >
-  inline void SPGridLevel< ct, dim >::buildGeometry ()
+  template< class Grid >
+  inline void SPGridLevel< Grid >::buildGeometry ()
   {
     GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
 
@@ -196,13 +188,13 @@ namespace Dune
   // SPGridLevel::GeometryCache
   // --------------------------
 
-  template< class ct, int dim >
+  template< class Grid >
   template< int codim >
-  class SPGridLevel< ct, dim >::GeometryCache
+  class SPGridLevel< Grid >::GeometryCache
   {
     typedef GeometryCache< codim > This;
 
-    friend class SPGridLevel< ct, dim >;
+    friend class SPGridLevel< Grid >;
 
   public:
     static const int codimension = codim;

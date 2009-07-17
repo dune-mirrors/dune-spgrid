@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ENTITYINFO_HH
 #define DUNE_SPGRID_ENTITYINFO_HH
 
+#include <dune/common/typetraits.hh>
+
 #include <dune/grid/spgrid/gridlevel.hh>
 
 namespace Dune
@@ -9,13 +11,13 @@ namespace Dune
   // SPBasicEntityInfo
   // -----------------
 
-  template< class ct, int dim, int codim >
+  template< class Grid, int dim, int codim >
   class SPBasicEntityInfo
   {
-    typedef SPBasicEntityInfo< ct, dim, codim > This;
+    typedef SPBasicEntityInfo< Grid, dim, codim > This;
 
   public:
-    typedef SPGridLevel< ct, dim > GridLevel;
+    typedef SPGridLevel< Grid > GridLevel;
 
     static const int dimension = GridLevel::dimension;
 
@@ -68,13 +70,13 @@ namespace Dune
   // SPBasicEntityInfo (for codim =  0)
   // ----------------------------------
 
-  template< class ct, int dim >
-  class SPBasicEntityInfo< ct, dim, 0 >
+  template< class Grid, int dim >
+  class SPBasicEntityInfo< Grid, dim, 0 >
   {
-    typedef SPBasicEntityInfo< ct, dim, 0 > This;
+    typedef SPBasicEntityInfo< Grid, dim, 0 > This;
 
   public:
-    typedef SPGridLevel< ct, dim > GridLevel;
+    typedef SPGridLevel< Grid > GridLevel;
 
     static const int dimension = GridLevel::dimension;
 
@@ -152,18 +154,16 @@ namespace Dune
 
 
 
-  // SPBasicEntityInfo (for codim =  dim)
-  // ------------------------------------
+  // SPBasicEntityInfo (for codim = dim)
+  // -----------------------------------
 
-  template< class ct, int dim >
-  class SPBasicEntityInfo< ct, dim, dim >
+  template< class Grid, int dim >
+  class SPBasicEntityInfo< Grid, dim, dim >
   {
-    typedef SPBasicEntityInfo< ct, dim, dim > This;
+    typedef SPBasicEntityInfo< Grid, dim, dim > This;
 
   public:
-    typedef SPGridLevel< ct, dim > GridLevel;
-
-    static const int dimension = GridLevel::dimension;
+    typedef SPGridLevel< Grid > GridLevel;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
@@ -210,20 +210,23 @@ namespace Dune
   // SPEntityInfo
   // ------------
 
-  template< class ct, int dim, int codim >
+  template< class Grid, int codim >
   class SPEntityInfo
-  : public SPBasicEntityInfo< ct, dim, codim >
+  : public SPBasicEntityInfo< Grid, SPGridLevel< Grid >::dimension, codim >
   {
-    typedef SPEntityInfo< ct, dim, codim > This;
-    typedef SPBasicEntityInfo< ct, dim, codim > Base;
+    typedef SPEntityInfo< Grid, codim > This;
+    typedef SPBasicEntityInfo< Grid, SPGridLevel< Grid >::dimension, codim > Base;
 
   public:
     typedef typename Base::GridLevel GridLevel;
 
+    typedef typename GridLevel::Traits Traits;
     typedef typename GridLevel::ctype ctype;
-    
-    static const int dimension = GridLevel::dimension;
 
+    static const int dimension = GridLevel::dimension;
+    static const int codimension = codim;
+    static const int mydimension = dimension - codimension;
+    
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
 

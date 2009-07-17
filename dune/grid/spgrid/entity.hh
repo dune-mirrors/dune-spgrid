@@ -32,20 +32,19 @@ namespace Dune
   {
     typedef SPBasicEntity< codim, Grid > This;
 
-  protected:
-    typedef typename remove_const< Grid >::type::Traits Traits;
-
   public:
-    static const int dimension = Traits::dimension;
-    static const int codimension = codim;
-    static const int mydimension = dimension - codimension;
-
-    typedef typename Traits::template Codim< 0 >::Geometry Geometry;
-
-    typedef SPEntityInfo< typename Traits::ctype, dimension, codimension > EntityInfo;
+    typedef SPEntityInfo< Grid, codim > EntityInfo;
     typedef typename EntityInfo::GridLevel GridLevel;
+    typedef typename EntityInfo::Traits Traits;
 
-  private:
+    static const int dimension = EntityInfo::dimension;
+    static const int codimension = EntityInfo::codimension;
+    static const int mydimension = EntityInfo::mydimension;
+
+    typedef typename Traits::template Codim< codim >::Geometry Geometry;
+    typedef typename Traits::template Codim< codim >::LocalGeometry LocalGeometry;
+
+  protected:
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
 
   public:
@@ -134,17 +133,15 @@ namespace Dune
     typedef SPEntity< 0, dim, Grid > This;
     typedef SPBasicEntity< 0, Grid > Base;
 
-  protected:
-    typedef typename Base::Traits Traits;
-
   public:
     typedef typename Base::EntityInfo EntityInfo;
     typedef typename Base::GridLevel GridLevel;
+    typedef typename Base::Traits Traits;
 
     static const int dimension = Base::dimension;
 
-    typedef typename Traits::template Codim< 0 >::Geometry Geometry;
-    typedef typename Traits::template Codim< 0 >::LocalGeometry LocalGeometry;
+    typedef typename Base::Geometry Geometry;
+    typedef typename Base::LocalGeometry LocalGeometry;
 
     typedef typename Traits::LevelIntersectionIterator LevelIntersectionIterator;
     typedef typename Traits::LeafIntersectionIterator LeafIntersectionIterator;
