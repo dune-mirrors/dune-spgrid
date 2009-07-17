@@ -177,6 +177,7 @@ namespace Dune
 
   public:
     using Base::isLeaf;
+    using Base::level;
 
     template< int codim >
     int count () const

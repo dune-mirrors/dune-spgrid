@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_ITERATOR_HH
 #define DUNE_SPGRID_ITERATOR_HH
 
+#include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
 
 namespace Dune
@@ -14,16 +15,25 @@ namespace Dune
   : public SPEntityPointer< codim, Grid >
   {
     typedef SPIterator< codim, pitype, Grid > This;
-    typedef SPEntityPointer< Grid > Base;
+    typedef SPEntityPointer< codim, Grid > Base;
 
   public:
+    typedef typename Base::EntityInfo EntityInfo;
     typedef typename Base::GridLevel GridLevel;
+
+    static const int dimension = Base::dimension;
+    static const int codimension = Base::codimension;
+    static const int mydimension = Base::mydimension;
 
     static const unsigned int numDirections = GridLevel::numDirections;
 
     struct Begin {};
     struct End {};
 
+  protected:
+    typedef typename EntityInfo::MultiIndex MultiIndex;
+
+  public:
     using Base::gridLevel;
 
     SPIterator ( const GridLevel &gridLevel, const Begin &begin,
@@ -32,11 +42,12 @@ namespace Dune
       sweepDirection_( sweepDir )
     {
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
+
       unsigned int dir = 0;
       for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
       assert( dir < numDirections );
 
-      MulitIndex &id = entityInfo.id();
+      MultiIndex &id = entityInfo.id();
       for( int i = 0; i < dimension-1; ++i )
         id[ i ] = begin( i, dir );
       entityInfo.update();
@@ -47,11 +58,13 @@ namespace Dune
     : Base( gridLevel ),
       sweepDirection_( sweepDir )
     {
+      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
+
       unsigned int dir = numDirections-1;
       for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); --dir );
       assert( dir < numDirections );
 
-      MulitIndex &id = entityInfo.id();
+      MultiIndex &id = entityInfo.id();
       for( int i = 0; i < dimension-1; ++i )
         id[ i ] = begin( i, dir );
       id[ dimension-1 ] = end( dimension-1, dir );
@@ -100,6 +113,10 @@ namespace Dune
       return (d-2) + (1-sweep)*2*(cells[ i ]-d);
     }
 
+  protected:
+    using Base::entity_;
+
+  private:
     const unsigned int sweepDirection_;
   };
 

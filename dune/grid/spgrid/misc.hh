@@ -4,12 +4,12 @@
 namespace Dune
 {
 
-  inline unsigned int bitcount ( unsigned int i )
+  inline unsigned int bitCount ( unsigned int i )
   {
-    unsigned int bitcount = 0;
+    unsigned int bitCount = 0;
     for( ; i != 0; i /= 2 )
-      bitcount += (i & 1);
-    return bitcount;
+      bitCount += (i & 1);
+    return bitCount;
   }
 
 }

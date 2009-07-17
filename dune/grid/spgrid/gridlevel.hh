@@ -110,7 +110,7 @@ namespace Dune
     template< int codim >
     const GeometryCache< codim > &geometryCache ( const unsigned int dir ) const
     {
-      assert( bitcount( dir ) == dimension - codim );
+      assert( bitCount( dir ) == dimension - codim );
       return (const GeometryCache< codim > &)( *geometryCache_[ dir ] );
     }
 
@@ -218,7 +218,7 @@ namespace Dune
     {
       for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
       {
-        const int mydim = bitcount( dir );
+        const int mydim = bitCount( dir );
         if( mydim == dimension - codim )
           geometryCache[ dir ] = new This( h, dir );
       }

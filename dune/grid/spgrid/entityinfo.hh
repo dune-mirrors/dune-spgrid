@@ -182,12 +182,12 @@ namespace Dune
       return 0;
     }
 
-    MultiIndex &id () const
+    const MultiIndex &id () const
     {
-      retur id_;
+      return id_;
     }
 
-    const MultiIndex &id () const
+    MultiIndex &id ()
     {
       return id_;
     }
