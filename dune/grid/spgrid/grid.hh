@@ -119,6 +119,13 @@ namespace Dune
     typedef typename Traits::template Partition< pitype >::LevelGridView LevelGridView;
     typedef typename Traits::template Partition< pitype >::LeafGridView LeafGridView;
 
+    typedef SPDomain< ctype, dimension > Domain;
+
+    const Domain &domain () const
+    {
+      return domain_;
+    }
+
     const std::string &name () const
     {
       return name_;
@@ -301,6 +308,7 @@ namespace Dune
 
   private:
     std::string name_;
+    Domain domain_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;
     GlobalIdSet globalIdSet_;
