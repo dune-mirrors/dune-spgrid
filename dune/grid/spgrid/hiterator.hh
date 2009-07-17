@@ -10,12 +10,15 @@ namespace Dune
 
   template< class Grid >
   class SPHierarchicIterator
-  : public SPEntityPointer< Grid, SPHierarchicIterator< Grid > >
+  : public SPEntityPointer< 0, Grid >
   {
     typedef SPHierarchicIterator< Grid > This;
-    typedef SPEntityPointer< Grid > Base;
+    typedef SPEntityPointer< 0, Grid > Base;
 
   public:
+    typedef typename Base::Entity Entity;
+    typedef typename Base::EntityInfo EntityInfo;
+
     SPHierarchicIterator ( const Entity &entity, int maxLevel )
     : Base( entity ),
       minLevel_( entity.level() ),
@@ -25,7 +28,7 @@ namespace Dune
     }
 
     using Base::level;
-    using Base::dereference();
+    using Base::dereference;
 
     void increment ()
     {
