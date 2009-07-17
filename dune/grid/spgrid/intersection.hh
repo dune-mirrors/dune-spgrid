@@ -5,6 +5,8 @@
 
 #include <dune/grid/common/intersection.hh>
 
+#include <dune/grid/spgrid/geometry.hh>
+
 namespace Dune
 {
 
@@ -25,14 +27,18 @@ namespace Dune
     typedef typename Traits::template Codim< 0 >::EntityPointer EntityPointer;
 
     typedef typename Traits::template Codim< 1 >::Geometry Geometry;
+    typedef typename Traits::template Codim< 1 >::LocalGeometry LocalGeometry;
 
-    typedef SPEntityInfo< ctype, dimension, 0 > EntityInfo;
+    typedef typename Entity::EntityInfo EntityInfo;
+    typedef typename Entity::GridLevel GridLevel;
 
     typedef typename EntityInfo::GlobalVector GlobalVector;
-    typedef FieldVector< ctype, dimension-1 > Localvector;
+    typedef FieldVector< ctype, dimension-1 > LocalVector;
 
   private:
     typedef SPGeometry< dimension-1, dimension, Grid > GeometryImpl;
+
+    typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
     SPIntersection ( const Entity &entity, const unsigned int face )
@@ -64,7 +70,7 @@ namespace Dune
     EntityPointer outside () const
     {
       MultiIndex id = inside_->entityInfo().id();
-      id.axpy( 2, gridLevel().cube().subId( 1, face ) );
+      id.axpy( 2, gridLevel().cube().subId( 1, face_ ) );
       return EntityPointer( gridLevel(), id );
     }
 
