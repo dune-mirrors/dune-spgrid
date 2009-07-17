@@ -38,7 +38,7 @@ namespace Dune
     template< int codim >
     struct GeometryCache;
     
-    SPGridLevel ( const Domain &domain, const MultiIndex &n );
+    SPGridLevel ( const Grid &grid, const MultiIndex &n );
 
     SPGridLevel ( GridLevel &father, const unsigned int refDir );
 
@@ -52,9 +52,14 @@ namespace Dune
         delete geometryCache_[ dir ];
     }
 
+    const Grid &grid () const
+    {
+      return *grid_;
+    }
+
     const Domain &domain () const
     {
-      return *domain_;
+      return grid().domain();
     }
 
     const Cube &cube () const
@@ -115,10 +120,10 @@ namespace Dune
   private:
     void buildGeometry ();
 
-    GridLevel *father_;
-    GridLevel *child_;
+    const Grid *grid_;
+    GridLevel *father_, *child_;
+
     SmartPointer< const Cube > cube_;
-    const Domain *domain_;
     unsigned int level_;
     unsigned int refDir_;
     MultiIndex cells_;
@@ -130,14 +135,14 @@ namespace Dune
 
   template< class Grid >
   inline SPGridLevel< Grid >
-    ::SPGridLevel ( const Domain &domain, const MultiIndex &n )
-  : father_( 0 ),
+    ::SPGridLevel ( const Grid &grid, const MultiIndex &n )
+  : grid_( grid ),
+    father_( 0 ),
     child_( 0 ),
-    domain_( &domain ),
     level_( 0 ),
     refDir_( 0 )
   {
-    const GlobalVector &width  = domain.width();
+    const GlobalVector &width  = domain().width();
     for( int i = 0; i < dimension; ++i )
     {
       cells_[ i ] = n[ i ];
@@ -150,9 +155,9 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >
     ::SPGridLevel ( GridLevel &father, const unsigned int refDir )
-  : father_( &father ),
+  : grid_( father.grid_ ),
+    father_( &father ),
     child_( 0 ),
-    domain_( father.domain_ ),
     cube_( father.cube_ ),
     level_( father.level_ + 1 ),
     refDir_( refDir )

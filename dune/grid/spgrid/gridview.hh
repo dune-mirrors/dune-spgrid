@@ -119,7 +119,7 @@ namespace Dune
   public:
     const Grid &grid () const
     {
-      return *grid_;
+      return gridLevel().grid();
     }
 
     const IndexSet &indexSet () const
@@ -205,7 +205,6 @@ namespace Dune
     }
 
   private:
-    const Grid *grid_;
     const IndexSet *indexSet_;
   };
 
