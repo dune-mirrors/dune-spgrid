@@ -3,7 +3,9 @@
 
 #include <dune/grid/common/indexidset.hh>
 
+#include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/entityinfo.hh>
+#include <dune/grid/spgrid/gridlevel.hh>
 
 namespace Dune
 {
@@ -30,10 +32,16 @@ namespace Dune
     {
       typedef SPEntityInfo< typename Traits::ctype, dimension, codim > EntityInfo;
       typedef typename Traits::template Codim< codim >::Entity Entity;
-    }
+    };
+
+    typedef SPGridLevel< typename Traits::ctype, dimension > GridLevel;
+
+  private:
+    typedef SPMultiIndex< dimension > MultiIndex;
 
     IdType id ( const GridLevel &gridLevel, const MultiIndex &id ) const;
 
+  public:
     template< class Entity >
     IdType id ( const Entity &entity ) const
     {
@@ -57,7 +65,7 @@ namespace Dune
 
     IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const
     {
-      const typename Entity::EntityInfo &entityInfo
+      const typename Codim< 0 >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
       MultiIndex sid = entityInfo.id();
@@ -75,11 +83,10 @@ namespace Dune
     const MultiIndex &cells = gridLevel.cells();
     const unsigned int level = gridLevel.level();
     
-    IndexType index = 0;
-    IndexType factor = 1;
+    IdType index = 0;
+    IdType factor = 1;
     for( int j = 0; j < dimension; ++j )
     {
-      const int k = midx[ j ];
       index += id[ j ] * factor;
       factor *= 2*cells[ j ]+1;
     }
