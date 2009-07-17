@@ -42,15 +42,19 @@ namespace Dune
       return id_;
     }
 
+    MultiIndex &id ()
+    {
+      return id_;
+    }
+
     const GridLevel &gridLevel () const
     {
       return *gridLevel_;
     }
 
-    void setId ( const MultiIndex &id )
+    void update ()
     {
-      id_ = id;
-      direction_ = id.direction();
+      direction_ = id_.direction();
     }
 
   private:
@@ -96,15 +100,18 @@ namespace Dune
       return id_;
     }
 
+    MultiIndex &id ()
+    {
+      return id_;
+    }
+
     const GridLevel &gridLevel () const
     {
       return *gridLevel_;
     }
 
-    void setId ( const MultiIndex &id )
-    {
-      id_ = id;
-    }
+    void update ()
+    {}
 
     void down ()
     {
@@ -175,6 +182,11 @@ namespace Dune
       return 0;
     }
 
+    MultiIndex &id () const
+    {
+      retur id_;
+    }
+
     const MultiIndex &id () const
     {
       return id_;
@@ -185,10 +197,8 @@ namespace Dune
       return *gridLevel_;
     }
 
-    void setId ( const MultiIndex &id )
-    {
-      id_ = id;
-    }
+    void update ()
+    {}
 
   private:
     const GridLevel *gridLevel_;

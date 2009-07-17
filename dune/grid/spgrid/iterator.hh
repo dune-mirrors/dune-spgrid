@@ -17,8 +17,14 @@ namespace Dune
     typedef SPEntityPointer< Grid > Base;
 
   public:
+    typedef typename Base::GridLevel GridLevel;
+
+    static const unsigned int numDirections = GridLevel::numDirections;
+
     struct Begin {};
     struct End {};
+
+    using Base::gridLevel;
 
     SPIterator ( const GridLevel &gridLevel, const Begin &begin,
                  const unsigned int sweepDir = 0 )
@@ -30,14 +36,10 @@ namespace Dune
       for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
       assert( dir < numDirections );
 
-      MulitIndex id;
-      for( int i = 0; i < dimension; ++i )
-      {
-        const unsigned int sweep = (sweepDirection_ >> i) & 1;
-        const unsigned int d = (dir >> i) & 1;
-        id[ i ] = sweep*(2*(cells[ i ]-d)+1) + d;
-      }
-      entityInfo.setId( id );
+      MulitIndex &id = entityInfo.id();
+      for( int i = 0; i < dimension-1; ++i )
+        id[ i ] = begin( i, dir );
+      entityInfo.update();
     }
 
     SPIterator ( const GridLevel &gridLevel, const End &end,
@@ -45,7 +47,15 @@ namespace Dune
     : Base( gridLevel ),
       sweepDirection_( sweepDir )
     {
-      // ...
+      unsigned int dir = numDirections-1;
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); --dir );
+      assert( dir < numDirections );
+
+      MulitIndex &id = entityInfo.id();
+      for( int i = 0; i < dimension-1; ++i )
+        id[ i ] = begin( i, dir );
+      id[ dimension-1 ] = end( dimension-1, dir );
+      entityInfo.update();
     }
 
     void increment ()
@@ -53,32 +63,43 @@ namespace Dune
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
       MultiIndex &id = entityInfo.id();
-      unsigned int dir = entityInfo.direction();
-
       for( int i = 0; i < dimension; ++i )
       {
         const unsigned int sweep = (sweepDirection_ >> i) & 1;
         id[ i ] += (2 - 4*sweep);
-        if( (id[ i ] >= 0) && (id[ i ] <= 2*cells[ i ]) )
-          return;
-
-        const unsigned int d = (dir >> i) & 1;
-        id[ i ] = sweep*(2*(cells[ i ]-d)+1) + d;
+        if( id[ i ] != end( i, entityInfo.direction() ) )
+          return entityInfo.update();
+        id[ i ] = begin( i, entityInfo.direction() );
       }
 
+      unsigned int dir = entityInfo.direction();
       for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
-
-      MulitIndex id;
-      for( int i = 0; i < dimension; ++i )
+      if( dir < numDirections )
       {
-        const unsigned int sweep = (sweepDirection_ >> i) & 1;
-        const unsigned int d = (dir >> i) & 1;
-        id[ i ] = sweep*(2*(cells[ i ]-d)+1) + d;
+        for( int i = 0; i < dimension; ++i )
+          id[ i ] = begin( i, dir );
       }
-      entityInfo.setId( id );
+
+      entityInfo.update();
     }
 
   private:
+    const int begin ( const int i, const unsigned int dir ) const
+    {
+      const MultiIndex &cells = gridLevel().cells();
+      const unsigned int sweep = (sweepDirection_ >> i) & 1;
+      const unsigned int d = (dir >> i) & 1;
+      return d + sweep*2*(cells[ i ]-d);
+    }
+
+    const int end ( const int i, const unsigned int dir ) const
+    {
+      const MultiIndex &cells = gridLevel().cells();
+      const unsigned int sweep = (sweepDirection_ >> i) & 1;
+      const unsigned int d = (dir >> i) & 1;
+      return (d-2) + (1-sweep)*2*(cells[ i ]-d);
+    }
+
     const unsigned int sweepDirection_;
   };
 

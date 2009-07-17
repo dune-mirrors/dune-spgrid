@@ -74,6 +74,11 @@ namespace Dune
       return entity_.level();
     }
 
+    const GridLevel &gridLevel () const
+    {
+      return Grid::getRealImplementation( entity_ ).gridLevel();
+    }
+
   protected:
     Entity entity_;
   };
