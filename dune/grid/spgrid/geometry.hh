@@ -228,28 +228,35 @@ namespace Dune
 
     const Cube &cube () const
     {
-      // ...
+      return *cube_;
     }
 
     GlobalVector origin () const
     {
-      // ...
+      return origin_;
     }
 
     ctype volume () const
     {
-      // ...
+      return volume_;
     }
 
     const JacobianTransposed &jacobianTransposed () const
     {
-      // ...
+      return jacobianTransposed_;
     }
 
     const Jacobian &jacobianInverseTransposed () const
     {
-      // ...
+      return jacobianInverseTransposed_;
     }
+
+  private:
+    const Cube *cube_;
+    GlobalVector origin_;
+    ctype volume_;
+    JacobianTransposed jacobianTransposed_;
+    Jacobian jacobianInverseTransposed_;
   };
 
 }
