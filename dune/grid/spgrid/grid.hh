@@ -67,7 +67,7 @@ namespace Dune
           < dimension - codim, dimensionworld, const Grid, SPGeometry >
           Geometry;
         typedef Dune::Geometry
-          < dimension - codim, dimension, const Grid, SPGeometry >
+          < dimension - codim, dimension, const Grid, SPLocalGeometry >
           LocalGeometry;
 
         template< PartitionIteratorType pitype >
