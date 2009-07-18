@@ -39,6 +39,8 @@ namespace Dune
     static const int dimension = Traits::dimension;
     static const int codimension = dimension - mydimension;
 
+    typedef SPGeometryCache< ctype, dimension, codimension > GeometryCache;
+
     static const int numCorners = (1 << mydimension);
 
     typedef FieldVector< ctype, coorddimension > GlobalVector;
@@ -140,6 +142,8 @@ namespace Dune
 
     typedef typename GridLevel::Cube Cube;
 
+    typedef typename Base::GeometryCache GeometryCache;
+
     typedef typename Base::GlobalVector GlobalVector;
     typedef typename Base::LocalVector LocalVector;
     typedef typename Base::Jacobian Jacobian;
@@ -217,6 +221,8 @@ namespace Dune
 
     typedef SPCube< ctype, dimension > Cube;
 
+    typedef typename Base::GeometryCache GeometryCache;
+
     typedef typename Base::GlobalVector GlobalVector;
     typedef typename Base::LocalVector LocalVector;
     typedef typename Base::Jacobian Jacobian;
@@ -227,7 +233,7 @@ namespace Dune
                       const GlobalVector &origin )
     : cube_( &cube ),
       geometryCache_( geometryCache ),
-      origin_( origin ),
+      origin_( origin )
     {}
 
     using Base::jacobianTransposed;

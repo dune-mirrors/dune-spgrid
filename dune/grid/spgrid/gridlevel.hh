@@ -16,6 +16,17 @@
 namespace Dune
 {
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< int mydim, int cdim, class Grid >
+  class SPLocalGeometry;
+
+
+
+  // SPGridLevel
+  // -----------
+
   template< class Grid >
   class SPGridLevel
   {
@@ -230,7 +241,7 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
-    GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
+    GenericGeometry::ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
     const ctype volume = geometryCache( numDirections-1 ).volume();
     for( int face = 0; face < Cube::numFaces; ++face )

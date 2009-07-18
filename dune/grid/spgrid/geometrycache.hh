@@ -11,11 +11,13 @@ namespace Dune
   // ---------------
 
   template< class ct, int dim, int codim >
-  class SPGeometryCache< ct, dim, codim >
+  class SPGeometryCache
   {
     typedef SPGeometryCache< ct, dim, codim > This;
 
   public:
+    typedef ct ctype;
+
     static const int dimension = dim;
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
