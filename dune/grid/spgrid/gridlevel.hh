@@ -113,6 +113,22 @@ namespace Dune
       return cells_;
     }
 
+    MultiIndex fatherId ( const MultiIndex &id ) const
+    {
+      MultiIndex fatherId;
+      for( int i = 0; i < dimension; ++i )
+        fatherId[ i ] = ((refDir_ >> i) & 1 ? (id[ i ] >> 1) | 1 : id[ i ]);
+      return fatherId;
+    }
+
+    const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
+    {
+      const unsigned int childIndex = 0;
+      for( int i = 0; i < dimension; ++i )
+        childIndex |= ((refDir_ >> i) & (id[ i ] >> 1) & 1) << i;
+      return geometryInFather_[ childIndex ];
+    }
+
     template< int codim >
     const GeometryCache< codim > &geometryCache ( const unsigned int dir ) const
     {
