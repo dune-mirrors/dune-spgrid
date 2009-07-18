@@ -55,10 +55,11 @@ namespace Dune
   public:
     ~SPGridLevel ()
     {
-      for( int i = 0; i < Cube::numCorners; ++i )
-        delete geometryInFather_[ i ];
       for( unsigned int dir = 0; dir < numDirections; ++dir )
+      {
+        delete geometryInFather_[ dir ];
         delete geometryCache_[ dir ];
+      }
     }
 
     const Grid &grid () const
@@ -154,7 +155,7 @@ namespace Dune
     GlobalVector h_;
 
     void *geometryCache_[ numDirections ];
-    LocalGeometry *geometryInFather_[ Cube::numCorners ];
+    LocalGeometry *geometryInFather_[ numDirections ];
     GlobalVector normal_[ Cube::numFaces ];
   };
 
@@ -174,8 +175,8 @@ namespace Dune
       cells_[ i ] = n[ i ];
       h_[ i ] = width[ i ] / (ctype)n[ i ];
     }
-    for( int i = 0; i < Cube::numCorners; ++i )
-      geometryInFather_[ i ] = 0;
+    for( unsigned int dir = 0; dir < numDirections; ++dir )
+      geometryInFather_[ dir ] = 0;
     buildGeometry();
   }
 
@@ -191,14 +192,27 @@ namespace Dune
   {
     assert( father.child_ == 0 );
     father.child_ = *this;
+    GlobalVector hInFather;
     for( int i = 0; i < dimension; ++i )
     {
-      unsigned int factor = 2*((refDir >> i) & 1);
+      const unsigned int factor = 2*((refDir >> i) & 1);
       cells_[ i ] = factor * father.cells_[ i ];
-      h_[ i ] = father.h_[ i ] / ctype( factor );
+      hInFather[ i ] = ctype( 1 ) / ctype( factor );
+      h_[ i ] = father.h_[ i ] * hInFather[ i ];
     }
-    for( int i = 0; i < Cube::numCorners; ++i )
-      geometryInFather_[ i ] = 0;
+
+    for( unsigned int dir = 0; dir < numDirections; ++dir )
+    {
+      geometryInFather_[ dir ] = 0;
+      if( (dir & refDir) != dir )
+        continue;
+
+      GlobalVector origin;
+      for( int i = 0; i < dimension; ++i )
+        origin[ i ] = ctype( (refDir >> i) & 1 ) / ctype( 2 );
+      geometryInFather_[ dir ] = new LocalGeometry( LocalGeometryImpl( origin, hInFather ) );
+    }
+
     buildGeometry();
   }
 
