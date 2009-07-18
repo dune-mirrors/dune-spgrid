@@ -223,6 +223,13 @@ namespace Dune
     typedef typename Base::JacobianTransposed JacobianTransposed;
 
   public:
+    SPLocalGeometry ( const Cube &cube, const GeometryCache &geometryCache,
+                      const GlobalVector &origin )
+    : cube_( &cube ),
+      geometryCache_( geometryCache ),
+      origin_( origin ),
+    {}
+
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
@@ -238,25 +245,23 @@ namespace Dune
 
     ctype volume () const
     {
-      return volume_;
+      return geometryCache_.volume();
     }
 
     const JacobianTransposed &jacobianTransposed () const
     {
-      return jacobianTransposed_;
+      return geometryCache_.jacobianTransposed();
     }
 
     const Jacobian &jacobianInverseTransposed () const
     {
-      return jacobianInverseTransposed_;
+      return geometryCache_.jacobianInverseTransposed();
     }
 
   private:
     const Cube *cube_;
+    GeometryCache geometryCache_;
     GlobalVector origin_;
-    ctype volume_;
-    JacobianTransposed jacobianTransposed_;
-    Jacobian jacobianInverseTransposed_;
   };
 
 }

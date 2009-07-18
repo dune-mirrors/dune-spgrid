@@ -230,7 +230,7 @@ namespace Dune
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
 
-    typedef typename GridLevel::template GeometryCache< codim > GeometryCache;
+    typedef typename GridLevel::template Codim< codim >::GeometryCache GeometryCache;
     typedef typename GeometryCache::LocalVector LocalVector;
     typedef typename GeometryCache::Jacobian Jacobian;
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;

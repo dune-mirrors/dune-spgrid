@@ -11,6 +11,7 @@
 #include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/domain.hh>
+#include <dune/grid/spgrid/geometrycache.hh>
 
 namespace Dune
 {
@@ -37,12 +38,18 @@ namespace Dune
     static const unsigned int numDirections = Cube::numCorners;
 
     template< int codim >
-    struct GeometryCache;
+    struct Codim
+    {
+      typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
+    };
 
     typedef typename Traits::template Codim< 0 >::LocalGeometry LocalGeometry;
 
   private:
     typedef SPLocalGeometry< dimension, dimension, Grid > LocalGeometryImpl;
+
+    template< int codim >
+    struct BuildGeometryCache;
 
   public:
     SPGridLevel ( const Grid &grid, const MultiIndex &n );
@@ -131,10 +138,12 @@ namespace Dune
     }
 
     template< int codim >
-    const GeometryCache< codim > &geometryCache ( const unsigned int dir ) const
+    const typename Codim< codim >::GeometryCache &
+    geometryCache ( const unsigned int dir ) const
     {
+      typedef typename Codim< codim >::GeometryCache GeometryCache;
       assert( bitCount( dir ) == dimension - codim );
-      return (const GeometryCache< codim > &)( *geometryCache_[ dir ] );
+      return (const GeometryCache &)( *geometryCache_[ dir ] );
     }
 
     const GlobalVector &volumeNormal ( const int i ) const
@@ -201,6 +210,7 @@ namespace Dune
       h_[ i ] = father.h_[ i ] * hInFather[ i ];
     }
 
+    const typename Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
     for( unsigned int dir = 0; dir < numDirections; ++dir )
     {
       geometryInFather_[ dir ] = 0;
@@ -210,7 +220,7 @@ namespace Dune
       GlobalVector origin;
       for( int i = 0; i < dimension; ++i )
         origin[ i ] = ctype( (refDir >> i) & 1 ) / ctype( 2 );
-      geometryInFather_[ dir ] = new LocalGeometry( LocalGeometryImpl( origin, hInFather ) );
+      geometryInFather_[ dir ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
     }
 
     buildGeometry();
@@ -221,7 +231,7 @@ namespace Dune
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
     GenericGeometry::ForLoop< GeometryCache, 0, dimension >::apply( h_, geometryCache_ );
-
+    
     const ctype volume = geometryCache( numDirections-1 ).volume();
     for( int face = 0; face < Cube::numFaces; ++face )
     {
@@ -233,74 +243,24 @@ namespace Dune
 
 
 
-  // SPGridLevel::GeometryCache
-  // --------------------------
+  // SPGridLevel::BuildGeometryCache
+  // -------------------------------
 
   template< class Grid >
   template< int codim >
-  class SPGridLevel< Grid >::GeometryCache
+  struct SPGridLevel< Grid >::BuildGeometryCache
   {
-    typedef GeometryCache< codim > This;
-
-    friend class SPGridLevel< Grid >;
-
-  public:
-    static const int codimension = codim;
-    static const int mydimension = dimension - codimension;
-
-    typedef FieldVector< ctype, mydimension > LocalVector;
-    typedef FieldMatrix< ctype, dimension, mydimension > Jacobian;
-    typedef FieldMatrix< ctype, mydimension, dimension > JacobianTransposed;
-
-  private:
     static void
     apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
     {
+      typedef typename Codim< codim >::GeometryCache GeometryCache;
       for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
       {
         const int mydim = bitCount( dir );
         if( mydim == dimension - codim )
-          geometryCache[ dir ] = new This( h, dir );
+          geometryCache[ dir ] = new GeometryCache( h, dir );
       }
     }
-
-    GeometryCache ( const GlobalVector &h, const unsigned int dir )
-    : volume_( 1 ),
-      jacobianTransposed_( 0 ),
-      jacobianInverseTransposed_( 0 )
-    {
-      int k = 0;
-      for( int j = 0; j < dimension; ++j )
-      {
-        if( ((dir >> j) & 1) == 0 )
-          continue;
-        volume_ *= h[ j ];
-        jacobianTransposed_[ j ][ k ] = h[ j ];
-        jacobianInverseTransposed_[ k ][ j ] = ctype( 1 ) / h[ j ];
-        ++k;
-      }
-    }
-
-  public:
-    const ctype &volume () const
-    {
-      return volume_;
-    }
-
-    const JacobianTransposed &jacobianTransposed () const
-    {
-      return jacobianTransposed_;
-    }
-
-    const Jacobian &jacobianInverseTransposed () const
-    {
-      return jacobianInverseTransposed_;
-    }
-
-  private:
-    ctype volume_;
-    JacobianTransposed jacobianTransposed_;
-    Jacobian jacobianInverseTransposed_;
   };
 
 }
