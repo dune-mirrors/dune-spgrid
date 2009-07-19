@@ -35,7 +35,13 @@ namespace Dune
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
 
-    SPIndexSet ( const GridLevel &gridLevel );
+    explicit SPIndexSet ( const GridLevel &gridLevel )
+    {
+      for( unsigned int codim = 0; codim <= dimension; ++codim )
+        geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+    }
+
+    void update ( const GridLevel &gridLevel );
 
     IndexType index ( const MultiIndex &id ) const;
 
@@ -117,16 +123,16 @@ namespace Dune
   };
 
 
+
+
   template< class Grid >
-  inline SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
-  : gridLevel_( &gridLevel )
+  void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
   {
-    const MultiIndex &cells = gridLevel().cells();
+    gridLevel_ = &gridLevel;
+
+    const MultiIndex &cells = gridLevel.cells();
     for( unsigned int codim = 0; codim <= dimension; ++codim )
-    {
       size_[ codim ] = 0;
-      geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
-    }
 
     for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
     {

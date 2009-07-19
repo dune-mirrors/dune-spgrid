@@ -230,7 +230,7 @@ namespace Dune
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
-    lbafbegin () const
+    leafbegin () const
     {
       return leafView< pitype >().template begin< codim >();
     }
@@ -282,6 +282,7 @@ namespace Dune
       const int maxL = maxLevel();
       for( int i = 0; i < refCount; ++i )
         levelViews_.push_back( LevelGridView( levelViews_[ maxL+i ], refDir ) );
+      leafView_.update( levelViews_.gridLevel() );
     }
 
     int overlapSize ( const int level, const int codim ) const

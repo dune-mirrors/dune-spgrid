@@ -212,6 +212,11 @@ namespace Dune
       return indexSet().gridLevel();
     }
 
+    void update ( const GridLevel &gridLevel )
+    {
+      indexSet_->update( gridLevel );
+    }
+
   private:
     const IndexSet *indexSet_;
   };
