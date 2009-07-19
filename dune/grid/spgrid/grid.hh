@@ -1,11 +1,13 @@
 #ifndef DUNE_SPGRID_GRID_HH
 #define DUNE_SPGRID_GRID_HH
 
+#include <dune/common/collectivecommunication.hh>
+
 #include <dune/grid/common/grid.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
-#include <dune/grid/spgrid/intersectioniterator.hh>
-#include <dune/grid/spgrid/iterator.hh>
+#include <dune/grid/spgrid/gridview.hh>
+#include <dune/grid/spgrid/hiterator.hh>
 #include <dune/grid/spgrid/idset.hh>
 #include <dune/grid/spgrid/indexset.hh>
 
@@ -58,14 +60,12 @@ namespace Dune
       template< int codim >
       struct Codim
       {
-        typedef Dune::Entity< codim, dimension, const Grid, SPEntity > Entity;
-        typedef Dune::EntityPointer< const Grid, SPEntityPointer > EntityPointer;
+        typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
+        typedef Dune::EntityPointer< const Grid, SPEntityPointer< codim, const Grid > >
+          EntityPointer;
 
-        typedef Dune::Geometry
-          < dimension - codim, dimensionworld, const Grid, SPGeometry >
-          Geometry;
-        typedef Dune::Geometry
-          < dimension - codim, dimension, const Grid, SPLocalGeometry >
+        typedef Dune::Geometry< dim - codim, dim, const Grid, SPGeometry > Geometry;
+        typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry >
           LocalGeometry;
 
         template< PartitionIteratorType pitype >
@@ -104,7 +104,7 @@ namespace Dune
     typedef SPGridFamily< ct, dim > GridFamily;
 
   public:
-    typedef typename GridFamiily::Traits Traits;
+    typedef typename GridFamily::Traits Traits;
 
     typedef typename Traits::Cube Cube;
     typedef typename Traits::Domain Domain;
@@ -117,8 +117,22 @@ namespace Dune
     typedef typename Traits::GlobalIdSet GlobalIdSet;
     typedef typename Traits::LocalIdSet LocalIdSet;
 
-    typedef typename Traits::template Partition< pitype >::LevelGridView LevelGridView;
-    typedef typename Traits::template Partition< pitype >::LeafGridView LeafGridView;
+    typedef typename Traits::CollectiveCommunication CollectiveCommunication;
+
+    template< PartitionIteratorType pitype >
+    struct Partition
+    : Traits::template Partition< pitype >
+    {};
+    
+    typedef typename Partition< All_Partition >::LevelGridView LevelGridView;
+    typedef typename Partition< All_Partition >::LeafGridView LeafGridView;
+
+    typedef typename LevelGridView::IndexSet LevelIndexSet;
+    typedef typename LeafGridView::IndexSet LeafIndexSet;
+
+    typedef SPGridLevel< const This > GridLevel;
+
+    static const int numDirections = GridLevel::numDirections;
 
     const Cube &cube () const
     {
@@ -265,9 +279,9 @@ namespace Dune
     void globalRefine ( const int refCount,
                         const unsigned int refDir = numDirections-1 )
     {
-      const int maxLevel = maxLevel();
+      const int maxL = maxLevel();
       for( int i = 0; i < refCount; ++i )
-        levelViews_.push_back( LevelGridView( levelViews_[ maxLevel+i ], refDir ) );
+        levelViews_.push_back( LevelGridView( levelViews_[ maxL+i ], refDir ) );
     }
 
     int overlapSize ( const int level, const int codim ) const

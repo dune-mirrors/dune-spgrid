@@ -5,6 +5,7 @@
 
 #include <dune/grid/common/gridview.hh>
 
+#include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/indexset.hh>
 #include <dune/grid/spgrid/intersection.hh>
 #include <dune/grid/spgrid/intersectioniterator.hh>
@@ -38,7 +39,7 @@ namespace Dune
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
-    static const bool conforming = Capabilibies::isLevelwiseConforming< Grid >::v;
+    static const bool conforming = Capabilities::isLevelwiseConforming< Grid >::v;
 
     template< int codim >
     struct Codim
@@ -78,7 +79,7 @@ namespace Dune
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
-    static const bool conforming = Capabilibies::isLeafwiseConforming< Grid >::v;
+    static const bool conforming = Capabilities::isLeafwiseConforming< Grid >::v;
 
     template< int codim >
     struct Codim
@@ -111,12 +112,19 @@ namespace Dune
   {
     typedef SPGridView< ViewTraits > This;
 
+  public:
+    typedef typename ViewTraits::Grid Grid;
+    typedef typename ViewTraits::IndexSet IndexSet;
+    typedef typename ViewTraits::IntersectionIterator IntersectionIterator;
+    typedef typename ViewTraits::CollectiveCommunication CollectiveCommunication;
+
+    typedef SPGridLevel< Grid > GridLevel;
+
     template< int codim >
     struct Codim
     : public ViewTraits::template Codim< codim >
     {};
 
-  public:
     const Grid &grid () const
     {
       return gridLevel().grid();
@@ -174,7 +182,7 @@ namespace Dune
       return IntersectionIteratorImpl( entity, 0 );
     }
 
-    IntersectionIterator ibegin ( const typename Codim< 0 >::Entity &entity ) const
+    IntersectionIterator iend ( const typename Codim< 0 >::Entity &entity ) const
     {
       return IntersectionIteratorImpl( entity, GridLevel::Cube::numFaces );
     }
