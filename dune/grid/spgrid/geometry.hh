@@ -77,7 +77,7 @@ namespace Dune
     {
       GlobalVector y = asImpl().origin();
       // this can be optimized
-      asImpl().jacobianTransposed().umtv( local, y );
+      asImpl().geometryCache().jacobianTransposed().umtv( local, y );
       return y;
     }
 
@@ -86,25 +86,25 @@ namespace Dune
       GlobalVector y = global - asImpl().origin();
       LocalVector x;
       // this can be optimized
-      asImpl().jacobianInverseTransposed().mtv( y, x );
+      asImpl().geometryCache().jacobianInverseTransposed().mtv( y, x );
       return x;
     }
 
     ctype integrationElement ( const LocalVector &local ) const
     {
-      return asImpl().volume();
+      return asImpl().geometryCache().volume();
     }
 
     const JacobianTransposed &
     jacobianTransposed ( const LocalVector &local ) const
     {
-      return asImpl().jacobianTransposed();
+      return asImpl().geometryCache().jacobianTransposed();
     }
 
     const Jacobian &
     jacobianInverseTransposed ( const LocalVector &local ) const
     {
-      return asImpl().jacobianInverseTransposed();
+      return asImpl().geometryCache().jacobianInverseTransposed();
     }
 
   protected:
@@ -174,19 +174,9 @@ namespace Dune
       return entityInfo_.origin();
     }
 
-    ctype volume () const
+    const GeometryCache &geometryCache () const
     {
-      return entityInfo_.volume();
-    }
-
-    const JacobianTransposed &jacobianTransposed () const
-    {
-      return entityInfo_.jacobianTransposed();
-    }
-
-    const Jacobian &jacobianInverseTransposed () const
-    {
-      return entityInfo_.jacobianInverseTransposed();
+      return entityInfo_.geometryCache();
     }
 
     const GridLevel &gridLevel () const
@@ -249,19 +239,9 @@ namespace Dune
       return origin_;
     }
 
-    ctype volume () const
+    const GeometryCache &geometryCache () const
     {
-      return geometryCache_.volume();
-    }
-
-    const JacobianTransposed &jacobianTransposed () const
-    {
-      return geometryCache_.jacobianTransposed();
-    }
-
-    const Jacobian &jacobianInverseTransposed () const
-    {
-      return geometryCache_.jacobianInverseTransposed();
+      return geometryCache_;
     }
 
   private:

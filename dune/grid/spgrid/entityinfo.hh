@@ -261,21 +261,6 @@ namespace Dune
       return origin;
     }
 
-    const ctype &volume () const
-    {
-      return geometryCache().volume( direction() );
-    }
-
-    const JacobianTransposed &jacobianTransposed () const
-    {
-      return geometryCache().jacobianTransposed( direction() );
-    }
-
-    const Jacobian &jacobianInverseTransposed () const
-    {
-      return geometryCache().jacobianInverseTransposed( direction() );
-    }
-
     const GeometryCache &geometryCache () const
     {
       return gridLevel().template geometryCache< codim >( direction() );
