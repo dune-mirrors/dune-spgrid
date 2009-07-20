@@ -87,12 +87,12 @@ namespace Dune
 
     const LocalGeometry &geometryInInside () const
     {
-      // ...
+      return gridLevel().grid().localFaceGeometry ( indexInInside() );
     }
 
     const LocalGeometry &geometryInOutside () const
     {
-      // ...
+      return gridLevel().grid().localFaceGeometry ( indexInOutside() );
     }
 
     const Geometry &geometry () const

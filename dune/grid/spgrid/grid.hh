@@ -103,6 +103,8 @@ namespace Dune
 
     typedef SPGridFamily< ct, dim > GridFamily;
 
+    friend class SPIntersection< const This >;
+
   public:
     typedef typename GridFamily::Traits Traits;
 
@@ -119,9 +121,14 @@ namespace Dune
 
     typedef typename Traits::CollectiveCommunication CollectiveCommunication;
 
+    template< int codim >
+    struct Codim
+    : Base::template Codim< codim >
+    {};
+
     template< PartitionIteratorType pitype >
     struct Partition
-    : Traits::template Partition< pitype >
+    : Base::template Partition< pitype >
     {};
     
     typedef typename Partition< All_Partition >::LevelGridView LevelGridView;
@@ -326,6 +333,11 @@ namespace Dune
     }
 
   private:
+    const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
+    {
+      // ...
+    }
+
     std::string name_;
     Cube cube_;
     Domain domain_;
