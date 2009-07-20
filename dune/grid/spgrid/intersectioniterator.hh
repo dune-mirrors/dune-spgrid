@@ -24,6 +24,9 @@ namespace Dune
     typedef SPIntersection< Grid > IntersectionImpl;
 
   public:
+    typedef typename IntersectionImpl::GridLevel GridLevel;
+
+  public:
     SPIntersectionIterator ( const Entity &entity, const unsigned int face )
     : intersection_( IntersectionImpl( entity, face ) )
     {}
@@ -41,7 +44,7 @@ namespace Dune
     void increment ()
     {
       const int face = intersection_.indexInInside();
-      assert( face < numFaces );
+      assert( face < GridLevel::Cube::numFaces );
       Grid::getRealImplementation( intersection_ ).setFace( face+1 );
     }
 

@@ -56,7 +56,8 @@ namespace Dune
     }
 
   private:
-    unsigned int numSubEntities ( const unsigned int dimension, const unsigned int codim )
+    static unsigned int
+    numSubEntities ( const unsigned int dimension, const unsigned int codim )
     {
       assert( codim <= dimension );
       if( codim > 0 )
@@ -70,20 +71,20 @@ namespace Dune
     }
 
     void subId ( const unsigned int dimension, const unsigned int codim,
-                 const unsigned int i, MultiIndex &subId ) const
+                 const unsigned int i, MultiIndex &sId ) const
     {
       assert( i < numSubEntities( dimension, codim ) );
       const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
       if( i < n0 )
       {
-        subId( dimension-1, codim, i );
-        subId[ dimension-1 ] = 0;
+        subId( dimension-1, codim, i, sId );
+        sId[ dimension-1 ] = 0;
       }
       else
       {
         const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
-        subId( dimension-1, codim-1, (i-n0)%n1 );
-        subId[ dimension-1 ] = 2*((i-n0)/n1) - 1;
+        subId( dimension-1, codim-1, (i-n0)%n1, sId );
+        sId[ dimension-1 ] = 2*((i-n0)/n1) - 1;
       }
     }
 

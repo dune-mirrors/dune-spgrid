@@ -29,14 +29,15 @@ namespace Dune
   {
     typedef SPBasicGeometry< mydim, cdim, Grid, Impl > This;
 
+  protected:
     typedef typename remove_const< Grid >::type::Traits Traits;
 
   public:
-    typedef typename Traits::ctype ctype;
+    typedef typename Traits::Cube::ctype ctype;
 
     static const int mydimension = mydim;
     static const int coorddimension = cdim;
-    static const int dimension = Traits::dimension;
+    static const int dimension = Traits::Cube::dimension;
     static const int codimension = dimension - mydimension;
 
     typedef SPGeometryCache< ctype, dimension, codimension > GeometryCache;
@@ -126,9 +127,10 @@ namespace Dune
     typedef SPGeometry< mydim, cdim, Grid > This;
     typedef SPBasicGeometry< mydim, cdim, Grid, This > Base;
 
-    typedef typename Base::Traits Traits;
-
     friend class SPEntity< Base::codimension, Base::dimension, Grid >;
+
+  protected:
+    typedef typename Base::Traits Traits;
 
   public:
     typedef typename Base::ctype ctype;
@@ -200,6 +202,7 @@ namespace Dune
     typedef SPLocalGeometry< mydim, cdim, Grid > This;
     typedef SPBasicGeometry< mydim, cdim, Grid, This > Base;
 
+  protected:
     typedef typename Base::Traits Traits;
 
   public:

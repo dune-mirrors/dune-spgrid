@@ -154,7 +154,7 @@ namespace Dune
     {
       typedef typename Codim< codim >::GeometryCache GeometryCache;
       assert( bitCount( dir ) == dimension - codim );
-      return (const GeometryCache &)( *geometryCache_[ dir ] );
+      return *((const GeometryCache *)geometryCache_[ dir ]);
     }
 
     const GlobalVector &volumeNormal ( const int i ) const
@@ -183,7 +183,7 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >
     ::SPGridLevel ( const Grid &grid, const MultiIndex &n )
-  : grid_( grid ),
+  : grid_( &grid ),
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
@@ -243,7 +243,7 @@ namespace Dune
   {
     GenericGeometry::ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
-    const ctype volume = geometryCache( numDirections-1 ).volume();
+    const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
     for( int face = 0; face < Cube::numFaces; ++face )
     {
       normal_[ face ] = cube().normal( face );

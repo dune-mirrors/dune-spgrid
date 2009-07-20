@@ -11,12 +11,12 @@
 static const int dimGrid = DIMGRID;
 
 int main ( int argc, char **argv )
+try
 {
+  typedef Dune::SPGrid< double, dimGrid > Grid;
 
-  typedef SPGrid< double, dimGrid > Grid;
-
-  FieldVector< double, dimGrid > a( 0.0 );
-  FieldVector< double, dimGrid > b( 1.0 );
+  Dune::FieldVector< double, dimGrid > a( 0.0 );
+  Dune::FieldVector< double, dimGrid > b( 1.0 );
   int n[ dimGrid ];
   for( int i = 0; i < dimGrid; ++i )
     n[ i ] = 4;

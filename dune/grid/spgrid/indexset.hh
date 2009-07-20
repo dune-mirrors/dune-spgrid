@@ -18,12 +18,10 @@ namespace Dune
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-    template< class ViewTraits > friend class SPGridView;
-
   public:
     typedef typename Base::IndexType IndexType;
 
-    static const int dimension = Traits::dimension;
+    static const int dimension = Traits::Cube::dimension;
 
     template< int codim >
     struct Codim
@@ -37,24 +35,25 @@ namespace Dune
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
 
+  public:
     SPIndexSet ()
     : gridLevel_( 0 )
     {
-      for( unsigned int codim = 0; codim <= dimension; ++codim )
-        geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+      for( int codim = 0; codim <= dimension; ++codim )
+        geomTypes_[ codim ].push_back( GeometryType( GeometryType::cube, dimension-codim ) );
     }
 
     explicit SPIndexSet ( const GridLevel &gridLevel )
     : gridLevel_( 0 )
     {
-      for( unsigned int codim = 0; codim <= dimension; ++codim )
-        geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+      for( int codim = 0; codim <= dimension; ++codim )
+        geomTypes_[ codim ].push_back( GeometryType( GeometryType::cube, dimension-codim ) );
       update( gridLevel );
     }
 
-  private:
     void update ( const GridLevel &gridLevel );
 
+  private:
     IndexType index ( const MultiIndex &id ) const;
 
   public:
@@ -143,7 +142,7 @@ namespace Dune
     gridLevel_ = &gridLevel;
 
     const MultiIndex &cells = gridLevel.cells();
-    for( unsigned int codim = 0; codim <= dimension; ++codim )
+    for( int codim = 0; codim <= dimension; ++codim )
       size_[ codim ] = 0;
 
     for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
@@ -153,7 +152,7 @@ namespace Dune
       for( int j = 0; j < dimension; ++j )
       {
         const unsigned int d = (dir >> j) & 1;
-        factor *= cells + (1-d);
+        factor *= cells[ j ] + (1-d);
         codim -= d;
       }
       offsets_[ dir ] = size_[ codim ];

@@ -143,7 +143,7 @@ namespace Dune
     void setFace ( const unsigned int face )
     {
       face_ = face;
-      if( face < GridLevel::numFaces )
+      if( face < GridLevel::Cube::numFaces )
       {
         MultiIndex id = inside_->entityInfo().id();
         id += gridLevel().cube().subId( 1, face );

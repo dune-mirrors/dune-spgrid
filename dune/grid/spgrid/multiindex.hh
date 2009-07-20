@@ -15,6 +15,14 @@ namespace Dune
   public:
     static const int dimension = dim;
 
+    SPMultiIndex ()
+    {}
+
+    SPMultiIndex ( const int (&index)[ dimension ] )
+    {
+      *this = index;
+    }
+
     SPMultiIndex ( const This &other )
     {
       *this = other;
@@ -24,12 +32,21 @@ namespace Dune
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] = other.index_[ i ];
+      return *this;
+    }
+
+    This &operator= ( const int (&index)[ dimension ] )
+    {
+      for( int i = 0; i < dimension; ++i )
+        index_[ i ] = index[ i ];
+      return *this;
     }
 
     This &operator+= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] += other.index_[ i ];
+      return *this;
     }
 
     const int &operator[] ( const int i ) const

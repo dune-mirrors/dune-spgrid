@@ -54,8 +54,10 @@ namespace Dune
 
       typedef SPGlobalIdSet< const Grid > GlobalIdSet;
       typedef SPLocalIdSet< const Grid > LocalIdSet;
-      typedef typename GlobalIdSet::IdType GlobalIdType;
-      typedef typename LocalIdSet::IdType LocalIdType;
+      //typedef typename GlobalIdSet::IdType GlobalIdType;
+      //typedef typename LocalIdSet::IdType LocalIdType;
+      typedef unsigned int GlobalIdType;
+      typedef unsigned int LocalIdType;
 
       template< int codim >
       struct Codim
@@ -101,11 +103,11 @@ namespace Dune
     typedef SPGrid< ct, dim > This;
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > > Base;
 
-    typedef SPGridFamily< ct, dim > GridFamily;
-
     friend class SPIntersection< const This >;
 
   public:
+    typedef SPGridFamily< ct, dim > GridFamily;
+
     typedef typename GridFamily::Traits Traits;
 
     typedef typename Traits::Cube Cube;
@@ -159,7 +161,7 @@ namespace Dune
       localIdSet_(),
       comm_()
     {
-      levelViews_->push_back( LevelGridViewImpl( *leafLevel_ ) );
+      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
 
       typedef typename Codim< 1 >::LocalGeometry LocalGeo;
@@ -171,7 +173,7 @@ namespace Dune
         GlobalVector origin( ctype( 0 ) );
         origin[ face/2 ] = ctype( face & 1 );
         const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube, cache, origin ) );
+        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube(), cache, origin ) );
       }
     }
 

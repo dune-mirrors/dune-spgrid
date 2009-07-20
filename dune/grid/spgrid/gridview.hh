@@ -32,7 +32,7 @@ namespace Dune
 
     typedef typename remove_const< G >::type Grid;
 
-    typedef SPIndexSet< Grid > IndexSet;
+    typedef SPIndexSet< const Grid > IndexSet;
     typedef Dune::Intersection< Grid, SPIntersection > Intersection;
     typedef Dune::IntersectionIterator< Grid, SPIntersectionIterator, SPIntersection >
       IntersectionIterator;
@@ -72,7 +72,7 @@ namespace Dune
 
     typedef typename remove_const< G >::type Grid;
 
-    typedef SPIndexSet< Grid > IndexSet;
+    typedef SPIndexSet< const Grid > IndexSet;
     typedef Dune::Intersection< Grid, SPIntersection > Intersection;
     typedef Dune::IntersectionIterator< Grid, SPIntersectionIterator, SPIntersection >
       IntersectionIterator;
@@ -112,13 +112,15 @@ namespace Dune
   {
     typedef SPGridView< ViewTraits > This;
 
+    template< class, int > friend class SPGrid;
+
   public:
     typedef typename ViewTraits::Grid Grid;
     typedef typename ViewTraits::IndexSet IndexSet;
     typedef typename ViewTraits::IntersectionIterator IntersectionIterator;
     typedef typename ViewTraits::CollectiveCommunication CollectiveCommunication;
 
-    typedef SPGridLevel< Grid > GridLevel;
+    typedef SPGridLevel< const Grid > GridLevel;
 
     template< int codim >
     struct Codim
@@ -134,7 +136,7 @@ namespace Dune
       indexSet_->second = 1;
     }
 
-    SPGridView ( const GridLevel &gridLevel )
+    explicit SPGridView ( const GridLevel &gridLevel )
     : indexSet_( new IndexSetPair )
     {
       indexSet_->first.update( gridLevel );
@@ -145,7 +147,7 @@ namespace Dune
     SPGridView ( const This &other )
     : indexSet_( other.indexSet_ )
     {
-      ++indexSet_->refCount_;
+      ++indexSet_->second;
     }
 
     ~SPGridView ()
@@ -156,10 +158,11 @@ namespace Dune
 
     This &operator= ( const This &other )
     {
-      ++other.indexSet_->second_;
+      ++other.indexSet_->second;
       if( --indexSet_->second == 0 )
         delete indexSet_;
       indexSet_ = other.indexSet_;
+      return *this;
     }
 
     const Grid &grid () const
