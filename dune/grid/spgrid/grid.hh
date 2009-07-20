@@ -116,6 +116,8 @@ namespace Dune
     static const int dimension = Cube::dimension;
     static const int dimensionworld = Cube::dimension;
 
+    typedef typename Cube::GlobalVector GlobalVector;
+
     typedef typename Traits::GlobalIdSet GlobalIdSet;
     typedef typename Traits::LocalIdSet LocalIdSet;
 
@@ -140,6 +142,31 @@ namespace Dune
     typedef SPGridLevel< const This > GridLevel;
 
     static const int numDirections = GridLevel::numDirections;
+
+    SPGrid ( const GlobalVector &a, const GlobalVector &b,
+             const int (&cells)[ dimension ],
+             const std::string &name = "SPGrid" )
+    : domain_( a, b ),
+      name_( name ),
+      globalIdSet_(),
+      localIdSet_(),
+      comm_()
+    {
+      levelViews_.push_back( LevelGridView( *this, cells ) );
+      leafView_.update( levelViews_.gridLevel() );
+
+      typedef typename Codim< 1 >::LocalGeometry LocalGeo;
+      typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
+      const GlobalVector unitH( ctype( 1 ) );
+      for( int face = 0; face < Cube::numFaces; ++face )
+      {
+        const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
+        GlobalVector origin( ctype( 0 ) );
+        origin[ face/2 ] = ctype( face & 1 );
+        const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
+        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube, cache, origin ) );
+      }
+    }
 
     const Cube &cube () const
     {
@@ -339,9 +366,9 @@ namespace Dune
       return localFaceGeometry_[ face ];
     }
 
+    Domain domain_;
     std::string name_;
     Cube cube_;
-    Domain domain_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;
     GlobalIdSet globalIdSet_;
