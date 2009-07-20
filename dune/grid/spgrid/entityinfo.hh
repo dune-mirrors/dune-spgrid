@@ -3,6 +3,8 @@
 
 #include <dune/common/typetraits.hh>
 
+#include <dune/grid/common/gridenums.hh>
+
 #include <dune/grid/spgrid/gridlevel.hh>
 
 namespace Dune
@@ -121,7 +123,7 @@ namespace Dune
       gridLevel_ = &gridLevel().childLevel();
       const unsigned int refDir = gridLevel().refinementDirection();
       for( int i = 0; i < dimension; ++i )
-        id_[ i ] = ((refDir >> i) & 1 != 0 ? (id_[ i ] << 1) - 1 : id_[ i ]);
+        id_[ i ] = (((refDir >> i) & 1) != 0 ? (id_[ i ] << 1) - 1 : id_[ i ]);
     }
 
     void up ()
@@ -129,7 +131,7 @@ namespace Dune
       assert( gridLevel().level() > 0 );
       const unsigned int refDir = gridLevel().refinementDirection();
       for( int i = 0; i < dimension; ++i )
-        id_[ i ] = ((refDir >> i) & 1 != 0 ? (id_[ i ] >> 1) | 1 : id_[ i ]);
+        id_[ i ] = (((refDir >> i) & 1) != 0 ? (id_[ i ] >> 1) | 1 : id_[ i ]);
       gridLevel_ = &gridLevel().fatherLevel();
     }
 
@@ -138,10 +140,10 @@ namespace Dune
       const unsigned int refDir = gridLevel_->refinementDirection();
       for( int i = 0; i < dimension; ++i )
       {
-        if( (refDir >> i) & 1 == 0 )
+        if( ((refDir >> i) & 1) == 0 )
           continue;
         id_[ i ] ^= 2;
-        if( id_[ i ] & 2 != 0 )
+        if( (id_[ i ] & 2) != 0 )
           return true;
       }
       return false;
@@ -250,6 +252,11 @@ namespace Dune
     bool equals ( const This &other ) const
     {
       return (&gridLevel() == &other.gridLevel()) && (id() == other.id());
+    }
+
+    PartitionType partitionType () const
+    {
+      return InteriorEntity;
     }
 
     GlobalVector origin () const

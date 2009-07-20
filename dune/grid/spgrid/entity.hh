@@ -19,7 +19,13 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< class Grid >
+  template< int, class >
+  class SPEntityPointer;
+
+  template< class >
+  class SPHierarchicIterator;
+
+  template< class >
   class SPIntersectionIterator;
 
 
@@ -49,8 +55,19 @@ namespace Dune
 
   public:
     explicit SPBasicEntity ( const EntityInfo &entityInfo )
-    : geometry_( Geometry( GeometryImpl( entityInfo ) ) )
+    : geometry_( GeometryImpl( entityInfo ) )
     {}
+
+    SPBasicEntity ( const This &other )
+    : geometry_( GeometryImpl( Grid::getRealImplementation( other.geometry() ) ) )
+    {}
+
+    This &operator= ( const This &other )
+    {
+      Grid::getRealImplementation( geometry_ )
+        = Grid::getRealImplementation( other.geometry() );
+      return *this;
+    }
 
     int level () const
     {
@@ -84,12 +101,12 @@ namespace Dune
   
     const EntityInfo &entityInfo () const
     {
-      return Grid::getRealImplementation( geometry_ ).entityInfo_;
+      return Grid::getRealImplementation( geometry_ ).entityInfo();
     }
 
     EntityInfo &entityInfo ()
     {
-      return Grid::getRealImplementation( geometry_ ).entityInfo_;
+      return Grid::getRealImplementation( geometry_ ).entityInfo();
     }
 
     const GridLevel &gridLevel () const
@@ -161,6 +178,7 @@ namespace Dune
 
     static const int numFaces = GridLevel::Cube::numFaces;
 
+    typedef SPHierarchicIterator< Grid > HierarchicIteratorImpl;
     typedef SPIntersectionIterator< Grid > IntersectionIteratorImpl;
 
   public:
@@ -187,7 +205,7 @@ namespace Dune
     {
       MultiIndex id = entityInfo().id();
       id += gridLevel().cube().subId( codim, i );
-      return Codim< codim >::EntityPointer( gridLevel(), id );
+      return SPEntityPointer< codim, Grid >( gridLevel(), id );
     }
 
     LeafIntersectionIterator ileafbegin () const

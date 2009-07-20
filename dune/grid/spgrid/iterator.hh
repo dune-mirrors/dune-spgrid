@@ -36,7 +36,7 @@ namespace Dune
   public:
     using Base::gridLevel;
 
-    SPIterator ( const GridLevel &gridLevel, const Begin &begin,
+    SPIterator ( const GridLevel &gridLevel, const Begin &b,
                  const unsigned int sweepDir = 0 )
     : Base( gridLevel ),
       sweepDirection_( sweepDir )
@@ -44,7 +44,8 @@ namespace Dune
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
       unsigned int dir = 0;
-      for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
+      const unsigned int mydim = mydimension;
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
       assert( dir < numDirections );
 
       MultiIndex &id = entityInfo.id();
@@ -53,7 +54,7 @@ namespace Dune
       entityInfo.update();
     }
 
-    SPIterator ( const GridLevel &gridLevel, const End &end,
+    SPIterator ( const GridLevel &gridLevel, const End &e,
                  const unsigned int sweepDir = 0 )
     : Base( gridLevel ),
       sweepDirection_( sweepDir )
@@ -61,7 +62,8 @@ namespace Dune
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
       unsigned int dir = numDirections-1;
-      for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); --dir );
+      const unsigned int mydim = mydimension;
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydim); --dir );
       assert( dir < numDirections );
 
       MultiIndex &id = entityInfo.id();
@@ -86,7 +88,8 @@ namespace Dune
       }
 
       unsigned int dir = entityInfo.direction();
-      for( ; (dir < numDirections) && (bitCount( dir ) != mydimension); ++dir );
+      const unsigned int mydim = mydimension;
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
       if( dir < numDirections )
       {
         for( int i = 0; i < dimension; ++i )
@@ -117,7 +120,7 @@ namespace Dune
     using Base::entity_;
 
   private:
-    const unsigned int sweepDirection_;
+    unsigned int sweepDirection_;
   };
 
 }

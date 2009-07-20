@@ -24,7 +24,7 @@ namespace Dune
   public:
     typedef typename Base::IdType IdType;
 
-    static const int dimension = Traits::dimension;
+    static const int dimension = Traits::Cube::dimension;
 
     template< int codim >
     struct Codim

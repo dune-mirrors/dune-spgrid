@@ -26,17 +26,22 @@ namespace Dune
     typedef typename remove_const< Grid >::type::Traits Traits;
 
   public:
-    static const int dimension = Traits::dimension;
+    static const int dimension = Traits::Cube::dimension;
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
 
     typedef typename Traits::template Codim< codimension >::Entity Entity;
 
-    typedef typename Entity::EntityInfo EntityInfo;
-    typedef typename Entity::GridLevel GridLevel;
+    typedef This EntityPointerImp;
 
   protected:
     typedef SPEntity< codimension, dimension, Grid > EntityImpl;
+
+  public:
+    typedef typename EntityImpl::EntityInfo EntityInfo;
+    typedef typename EntityImpl::GridLevel GridLevel;
+
+  protected:
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
@@ -48,25 +53,32 @@ namespace Dune
     : entity_( EntityImpl( EntityInfo( gridLevel, id ) ) )
     {}
 
-    SPEntityPointer ( const Entity &entity )
-    : entity_( entity )
+    SPEntityPointer ( const EntityImpl &entityImpl )
+    : entity_( entityImpl )
     {}
 
     SPEntityPointer ( const This &other )
-    : entity_( other.dereference() )
+    : entity_( EntityImpl( Grid::getRealImplementation( other.dereference() ) ) )
     {}
+
+    This &operator= ( const This &other )
+    {
+      Grid::getRealImplementation( entity_ )
+        = Grid::getRealImplementation( other.dereference() );
+      return *this;
+    }
 
     void compactify ()
     {}
 
-    const Entity &dereference () const
+    Entity &dereference () const
     {
-      return entity_;
+      return const_cast< Entity & >( entity_ );
     }
 
     bool equals ( const This &other ) const
     {
-      return entity_.equals( other.entity_ );
+      return Grid::getRealImplementation( entity_ ).equals( Grid::getRealImplementation( other.entity_ ) );
     }
 
     int level () const

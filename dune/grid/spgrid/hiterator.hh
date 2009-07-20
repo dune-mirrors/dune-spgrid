@@ -15,13 +15,19 @@ namespace Dune
     typedef SPHierarchicIterator< Grid > This;
     typedef SPEntityPointer< 0, Grid > Base;
 
+    friend class SPEntity< 0, Base::dimension, Grid >;
+
   public:
     typedef typename Base::Entity Entity;
     typedef typename Base::EntityInfo EntityInfo;
 
-    SPHierarchicIterator ( const Entity &entity, int maxLevel )
-    : Base( entity ),
-      minLevel_( entity.level() ),
+  protected:
+    typedef typename Base::EntityImpl EntityImpl;
+
+  private:
+    SPHierarchicIterator ( const EntityImpl &entityImpl, int maxLevel )
+    : Base( entityImpl ),
+      minLevel_( entityImpl.level() ),
       maxLevel_( maxLevel )
     {
       increment();

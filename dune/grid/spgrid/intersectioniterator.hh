@@ -17,18 +17,23 @@ namespace Dune
 
   public:
     typedef Dune::Intersection< Grid, SPIntersection > Intersection;
-    
-    typedef typename Traits::Entity Entity;
 
+    typedef typename Intersection::Entity Entity;
+    
   private:
+    typedef SPEntity< 0, Traits::Cube::dimension, Grid > EntityImpl;
     typedef SPIntersection< Grid > IntersectionImpl;
 
   public:
     typedef typename IntersectionImpl::GridLevel GridLevel;
 
   public:
-    SPIntersectionIterator ( const Entity &entity, const unsigned int face )
-    : intersection_( IntersectionImpl( entity, face ) )
+    SPIntersectionIterator ( const Entity &entity, const int face )
+    : intersection_( IntersectionImpl( Grid::getRealImplementation( entity ), face ) )
+    {}
+
+    SPIntersectionIterator ( const EntityImpl &entityImpl, const int face )
+    : intersection_( IntersectionImpl( entityImpl, face ) )
     {}
 
     const Intersection &dereference () const
@@ -38,7 +43,7 @@ namespace Dune
 
     bool equals ( const This &other ) const
     {
-      return intersection_.equals( other.intersection_ );
+      return Grid::getRealImplementation( intersection_ ).equals( Grid::getRealImplementation( other.intersection_ ) );
     }
 
     void increment ()

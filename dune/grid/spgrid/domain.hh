@@ -27,6 +27,11 @@ namespace Dune
       }
     }
 
+    const GlobalVector &origin () const
+    {
+      return origin_;
+    }
+
     const GlobalVector &width () const
     {
       return width_;

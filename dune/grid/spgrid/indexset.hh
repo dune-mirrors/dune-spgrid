@@ -104,7 +104,7 @@ namespace Dune
     IndexType size ( const int codim ) const
     {
       assert( (codim >= 0) && (codim <= dimension) );
-      size_[ codim ];
+      return size_[ codim ];
     }
 
     template< class Entity >
@@ -114,11 +114,11 @@ namespace Dune
     }
 
     template< int codim >
-    bool contains ( const typename Codim< codim >::Entity &entity )
+    bool contains ( const typename Codim< codim >::Entity &entity ) const
     {
       const typename Codim< codim >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
-      return (&entity.gridLevel() == &gridLevel());
+      return (&entityInfo.gridLevel() == &gridLevel());
     }
 
     const GridLevel &gridLevel () const

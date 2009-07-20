@@ -12,15 +12,6 @@
 namespace Dune
 {
 
-  // External Forward Declarations
-  // -----------------------------
-
-  template< int codim, int dim, class Grid >
-  class SPEntity;
-
-
-
-
   // SPBasicGeometry
   // ---------------
 
@@ -127,8 +118,6 @@ namespace Dune
     typedef SPGeometry< mydim, cdim, Grid > This;
     typedef SPBasicGeometry< mydim, cdim, Grid, This > Base;
 
-    friend class SPEntity< Base::codimension, Base::dimension, Grid >;
-
   protected:
     typedef typename Base::Traits Traits;
 
@@ -155,6 +144,10 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
+    explicit SPGeometry ( const GridLevel &gridLevel )
+    : entityInfo_( gridLevel )
+    {}
+
     explicit SPGeometry ( const EntityInfo &entityInfo )
     : entityInfo_( entityInfo )
     {}
@@ -173,17 +166,27 @@ namespace Dune
 
     GlobalVector origin () const
     {
-      return entityInfo_.origin();
+      return entityInfo().origin();
     }
 
     const GeometryCache &geometryCache () const
     {
-      return entityInfo_.geometryCache();
+      return entityInfo().geometryCache();
     }
 
     const GridLevel &gridLevel () const
     {
-      return entityInfo_.gridLevel();
+      return entityInfo().gridLevel();
+    }
+
+    const EntityInfo &entityInfo () const
+    {
+      return entityInfo_;
+    }
+
+    EntityInfo &entityInfo ()
+    {
+      return entityInfo_;
     }
 
   private:

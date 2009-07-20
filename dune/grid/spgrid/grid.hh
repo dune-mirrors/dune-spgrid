@@ -63,8 +63,9 @@ namespace Dune
       struct Codim
       {
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
-        typedef Dune::EntityPointer< const Grid, SPEntityPointer< codim, const Grid > >
-          EntityPointer;
+
+        typedef SPEntityPointer< codim, const Grid > EntityPointerImpl;
+        typedef Dune::EntityPointer< const Grid, EntityPointerImpl > EntityPointer;
 
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPGeometry > Geometry;
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry >
@@ -224,15 +225,20 @@ namespace Dune
     typename Traits::template Partition< pitype >::LevelGridView
     levelView ( const int level ) const
     {
-      assert( (level >= 0) && (level <= maxLevel()) );
-      return levelViews_[ level ];
+      typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
+      typedef typename GridView::Traits::GridViewImp GridViewImpl;
+      const LevelGridViewImpl &viewImpl = getRealImplementation( levelViews_[ level ] );
+      return GridViewImpl( viewImpl );
     }
 
     template< PartitionIteratorType pitype >
     typename Traits::template Partition< pitype >::LeafGridView
-    leafView ( const int level ) const
+    leafView () const
     {
-      return leafView_;
+      typedef typename Traits::template Partition< pitype >::LeafGridView GridView;
+      typedef typename GridView::Traits::GridViewImp GridViewImpl;
+      const LeafGridViewImpl &viewImpl = getRealImplementation( leafView_ );
+      return GridViewImpl( viewImpl );
     }
 
     LevelGridView levelView ( const int level ) const
@@ -250,14 +256,14 @@ namespace Dune
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lbegin ( const int level ) const
     {
-      return levelView< pitype >( level ).template begin< codim >();
+      return levelView( level ).template begin< codim, pitype >();
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lend ( const int level ) const
     {
-      return levelView< pitype >( level ).template end< codim >();
+      return levelView( level ).template end< codim, pitype >();
     }
 
     template< int codim >
@@ -278,14 +284,14 @@ namespace Dune
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
     leafbegin () const
     {
-      return leafView< pitype >().template begin< codim >();
+      return leafView().template begin< codim, pitype >();
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
     leafend () const
     {
-      return leafView< pitype >().template end< codim >();
+      return leafView().template end< codim, pitype >();
     }
 
     template< int codim >
@@ -378,7 +384,7 @@ namespace Dune
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
     {
       assert( (face >= 0) && (face < Cube::numFaces) );
-      return localFaceGeometry_[ face ];
+      return *localFaceGeometry_[ face ];
     }
 
     Domain domain_;

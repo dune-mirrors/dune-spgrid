@@ -10,6 +10,20 @@
 namespace Dune
 {
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< int, int, class >
+  class SPEntity;
+
+  template< int, class >
+  class SPEntityPointer;
+
+
+
+  // SPIntersection
+  // --------------
+
   template< class Grid >
   class SPIntersection
   {
@@ -18,10 +32,10 @@ namespace Dune
     typedef typename remove_const< Grid >::type::Traits Traits;
 
   public:
-    typedef typename Traits::ctype ctype;
+    typedef typename Traits::Cube::ctype ctype;
 
-    static const int dimension = Traits::dimension;
-    static const int dimensionworld = Traits::dimensionworld;
+    static const int dimension = Traits::Cube::dimension;
+    static const int dimensionworld = Traits::Cube::dimensionworld;
 
     typedef typename Traits::template Codim< 0 >::Entity Entity;
     typedef typename Traits::template Codim< 0 >::EntityPointer EntityPointer;
@@ -29,22 +43,41 @@ namespace Dune
     typedef typename Traits::template Codim< 1 >::Geometry Geometry;
     typedef typename Traits::template Codim< 1 >::LocalGeometry LocalGeometry;
 
-    typedef typename Entity::EntityInfo EntityInfo;
-    typedef typename Entity::GridLevel GridLevel;
-
-    typedef typename EntityInfo::GlobalVector GlobalVector;
-    typedef FieldVector< ctype, dimension-1 > LocalVector;
-
   private:
+    typedef SPEntity< 0, dimension, Grid > EntityImpl;
+    typedef SPEntityPointer< 0, Grid > EntityPointerImpl;
     typedef SPGeometry< dimension-1, dimension, Grid > GeometryImpl;
 
+  public:
+    typedef typename EntityImpl::EntityInfo EntityInfo;
+    typedef typename EntityImpl::GridLevel GridLevel;
+
+    typedef typename EntityInfo::GlobalVector GlobalVector;
+    typedef typename GeometryImpl::LocalVector LocalVector;
+
+  private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
-    SPIntersection ( const Entity &entity, const unsigned int face )
-    : inside_( &entity )
+    SPIntersection ( const EntityImpl &entityImpl, const int face )
+    : inside_( &entityImpl ),
+      geometry_( GeometryImpl( entityImpl.gridLevel()) )
     {
       setFace( face );
+    }
+
+    SPIntersection ( const This &other )
+    : inside_( other.inside_ ),
+      face_( other.face_ ),
+      geometry_( GeometryImpl( Grid::getRealImplementation( other.geometry_ ) ) )
+    {}
+
+    This &operator= ( const This &other )
+    {
+      inside_ = other.inside_;
+      face_ = other.face_;
+      Grid::getRealImplementation( geometry_ ) = Grid::getRealImplementation( other.geometry_ );
+      return *this;
     }
 
     bool boundary () const
@@ -60,7 +93,7 @@ namespace Dune
     bool neighbor () const
     {
       // this should be done much more efficiently
-      MultiIndex &id = inside_->entityInfo().id();
+      MultiIndex id = inside_->entityInfo().id();
       id.axpy( 2, gridLevel().cube().subId( 1, face_ ) );
       bool neighbor = true;
       for( int i = 0; i < dimension; ++i )
@@ -77,7 +110,7 @@ namespace Dune
     {
       MultiIndex id = inside_->entityInfo().id();
       id.axpy( 2, gridLevel().cube().subId( 1, face_ ) );
-      return EntityPointer( gridLevel(), id );
+      return EntityPointerImpl( gridLevel(), id );
     }
 
     bool conforming () const
@@ -122,7 +155,7 @@ namespace Dune
 
     GlobalVector integrationOuterNormal ( const LocalVector &local ) const
     {
-      return gridLevel().volumeNormal();
+      return gridLevel().volumeNormal( face_ );
     }
 
     GlobalVector unitOuterNormal ( const LocalVector &local ) const
@@ -132,7 +165,7 @@ namespace Dune
 
     bool equals ( const This &other ) const
     {
-      return (*inside_ == *other.inside_) && (face_ == other.face_);
+      return (face_ == other.face_) && inside_->equals( *other.inside_ );
     }
 
     const GridLevel &gridLevel () const
@@ -140,20 +173,22 @@ namespace Dune
       return inside_->gridLevel();
     }
 
-    void setFace ( const unsigned int face )
+    void setFace ( const int face )
     {
+      assert( face >= 0 );
       face_ = face;
       if( face < GridLevel::Cube::numFaces )
       {
-        MultiIndex id = inside_->entityInfo().id();
+        MultiIndex &id = Grid::getRealImplementation( geometry_ ).entityInfo().id();
+        id = inside_->entityInfo().id();
         id += gridLevel().cube().subId( 1, face );
-        geometry_ = Geometry( GeometryImpl( gridLevel(), id ) );
+        Grid::getRealImplementation( geometry_ ).entityInfo().update();
       }
     }
 
   private:
-    const Entity *inside_;
-    unsigned int face_;
+    const EntityImpl *inside_;
+    int face_;
     Geometry geometry_;
   };
 

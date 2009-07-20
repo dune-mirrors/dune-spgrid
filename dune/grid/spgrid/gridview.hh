@@ -53,10 +53,12 @@ namespace Dune
       template< PartitionIteratorType pit >
       struct Partition
       {
-        typedef Dune::LevelIterator< codim, pit, Grid, SPIterator > Iterator;
+        typedef Dune::LevelIterator< codim, pit, const Grid, SPIterator > Iterator;
+        typedef SPIterator< codim, pit, const Grid > IteratorImpl;
       };
 
       typedef typename Partition< pitype >::Iterator Iterator;
+      typedef typename Partition< pitype >::IteratorImpl IteratorImpl;
     };
   };
 
@@ -93,8 +95,8 @@ namespace Dune
       template< PartitionIteratorType pit >
       struct Partition
       {
-        typedef Dune::LeafIterator< codim, pit, Grid, SPIterator > Iterator;
-        typedef SPIterator< codim, pit, Grid > IteratorImpl;
+        typedef Dune::LeafIterator< codim, pit, const Grid, SPIterator > Iterator;
+        typedef SPIterator< codim, pit, const Grid > IteratorImpl;
       };
 
       typedef typename Partition< pitype >::Iterator Iterator;
@@ -113,6 +115,7 @@ namespace Dune
     typedef SPGridView< ViewTraits > This;
 
     template< class, int > friend class SPGrid;
+    template< class > friend class SPGridView;
 
   public:
     typedef typename ViewTraits::Grid Grid;
@@ -130,6 +133,8 @@ namespace Dune
   private:
     typedef std::pair< IndexSet, unsigned int > IndexSetPair;
 
+    typedef SPIntersectionIterator< const Grid > IntersectionIteratorImpl;
+
     SPGridView ()
     : indexSet_( new IndexSetPair )
     {
@@ -144,6 +149,13 @@ namespace Dune
     }
 
   public:
+    template< class VT >
+    SPGridView ( const SPGridView< VT > &other )
+    : indexSet_( other.indexSet_ )
+    {
+      ++indexSet_->second;
+    }
+
     SPGridView ( const This &other )
     : indexSet_( other.indexSet_ )
     {
@@ -189,7 +201,7 @@ namespace Dune
     typename Codim< codim >::Iterator begin () const
     {
       typedef typename Codim< codim >::IteratorImpl IteratorImpl;
-      const typename IteratorImpl::Begin begin;
+      typename IteratorImpl::Begin begin;
       return IteratorImpl( gridLevel(), begin );
     }
 
@@ -197,7 +209,7 @@ namespace Dune
     typename Codim< codim >::Iterator end () const
     {
       typedef typename Codim< codim >::IteratorImpl IteratorImpl;
-      const typename IteratorImpl::End end;
+      typename IteratorImpl::End end;
       return IteratorImpl( gridLevel(), end );
     }
 
@@ -205,7 +217,7 @@ namespace Dune
     typename Codim< codim >::template Partition< pitype >::Iterator begin () const
     {
       typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
-      const typename IteratorImpl::Begin begin;
+      typename IteratorImpl::Begin begin;
       return IteratorImpl( gridLevel(), begin );
     }
 
@@ -213,7 +225,7 @@ namespace Dune
     typename Codim< codim >::template Partition< pitype >::Iterator end () const
     {
       typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
-      const typename IteratorImpl::End end;
+      typename IteratorImpl::End end;
       return IteratorImpl( gridLevel(), end );
     }
 
