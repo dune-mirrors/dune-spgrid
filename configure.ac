@@ -18,6 +18,7 @@ AC_CONFIG_FILES([
   dune/grid/spgrid/Makefile
   doc/Makefile
   m4/Makefile
+  test/Makefile
   dune-spgrid.pc
 ])
 
