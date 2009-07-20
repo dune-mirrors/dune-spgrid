@@ -18,6 +18,8 @@ namespace Dune
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
+    template< class ViewTraits > friend class SPGridView;
+
   public:
     typedef typename Base::IndexType IndexType;
 
@@ -35,12 +37,22 @@ namespace Dune
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
 
-    explicit SPIndexSet ( const GridLevel &gridLevel )
+    SPIndexSet ()
+    : gridLevel_( 0 )
     {
       for( unsigned int codim = 0; codim <= dimension; ++codim )
         geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
     }
 
+    explicit SPIndexSet ( const GridLevel &gridLevel )
+    : gridLevel_( 0 )
+    {
+      for( unsigned int codim = 0; codim <= dimension; ++codim )
+        geomTypes_.push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+      update( gridLevel );
+    }
+
+  private:
     void update ( const GridLevel &gridLevel );
 
     IndexType index ( const MultiIndex &id ) const;

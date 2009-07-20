@@ -143,17 +143,24 @@ namespace Dune
 
     static const int numDirections = GridLevel::numDirections;
 
+  private:
+    typedef typename LevelGridView::Traits::GridViewImp LevelGridViewImpl;
+    typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
+  
+  public:
     SPGrid ( const GlobalVector &a, const GlobalVector &b,
              const int (&cells)[ dimension ],
              const std::string &name = "SPGrid" )
     : domain_( a, b ),
       name_( name ),
+      leafLevel_( new GridLevel( *this, cells ) ),
+      leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
       comm_()
     {
-      levelViews_.push_back( LevelGridView( *this, cells ) );
-      leafView_.update( levelViews_.gridLevel() );
+      levelViews_->push_back( LevelGridViewImpl( *leafLevel_ ) );
+      getRealImplementation( leafView_ ).update( *leafLevel_ );
 
       typedef typename Codim< 1 >::LocalGeometry LocalGeo;
       typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
@@ -167,6 +174,8 @@ namespace Dune
         localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube, cache, origin ) );
       }
     }
+
+    using Base::getRealImplementation;
 
     const Cube &cube () const
     {
@@ -185,7 +194,8 @@ namespace Dune
 
     int maxLevel () const
     {
-      return levelViews_.size()-1;
+      assert( levelViews_.size() == leafLevel_->level()+1 );
+      return leafLevel_->level();
     }
 
     int size ( const int level, const int codim ) const
@@ -315,8 +325,11 @@ namespace Dune
     {
       const int maxL = maxLevel();
       for( int i = 0; i < refCount; ++i )
-        levelViews_.push_back( LevelGridView( levelViews_[ maxL+i ], refDir ) );
-      leafView_.update( levelViews_.gridLevel() );
+      {
+        leafLevel_ = new GridLevel( *leafLevel_, refDir );
+        levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
+      }
+      getRealImplementation( leafView_ ).update( *leafLevel_ );
     }
 
     int overlapSize ( const int level, const int codim ) const
@@ -369,6 +382,7 @@ namespace Dune
     Domain domain_;
     std::string name_;
     Cube cube_;
+    GridLevel *leafLevel_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;
     GlobalIdSet globalIdSet_;

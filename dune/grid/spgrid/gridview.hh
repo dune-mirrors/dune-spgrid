@@ -125,6 +125,43 @@ namespace Dune
     : public ViewTraits::template Codim< codim >
     {};
 
+  private:
+    typedef std::pair< IndexSet, unsigned int > IndexSetPair;
+
+    SPGridView ()
+    : indexSet_( new IndexSetPair )
+    {
+      indexSet_->second = 1;
+    }
+
+    SPGridView ( const GridLevel &gridLevel )
+    : indexSet_( new IndexSetPair )
+    {
+      indexSet_->first.update( gridLevel );
+      indexSet_->second = 1;
+    }
+
+  public:
+    SPGridView ( const This &other )
+    : indexSet_( other.indexSet_ )
+    {
+      ++indexSet_->refCount_;
+    }
+
+    ~SPGridView ()
+    {
+      if( --indexSet_->second == 0 )
+        delete indexSet_;
+    }
+
+    This &operator= ( const This &other )
+    {
+      ++other.indexSet_->second_;
+      if( --indexSet_->second == 0 )
+        delete indexSet_;
+      indexSet_ = other.indexSet_;
+    }
+
     const Grid &grid () const
     {
       return gridLevel().grid();
@@ -132,7 +169,7 @@ namespace Dune
 
     const IndexSet &indexSet () const
     {
-      return *indexSet_;
+      return indexSet_->first;
     }
 
     int size ( int codim ) const
@@ -214,11 +251,11 @@ namespace Dune
 
     void update ( const GridLevel &gridLevel )
     {
-      indexSet_->update( gridLevel );
+      indexSet_->first.update( gridLevel );
     }
 
   private:
-    const IndexSet *indexSet_;
+    IndexSetPair *indexSet_;
   };
 
 }
