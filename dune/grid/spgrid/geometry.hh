@@ -31,6 +31,7 @@ namespace Dune
     static const int dimension = Traits::Cube::dimension;
     static const int codimension = dimension - mydimension;
 
+    typedef SPCube< ctype, mydimension > Cube;
     typedef SPGeometryCache< ctype, dimension, codimension > GeometryCache;
 
     static const int numCorners = (1 << mydimension);
@@ -62,7 +63,8 @@ namespace Dune
 
     GlobalVector corner ( const int i ) const
     {
-      return global( asImpl().cube().corner( i ) );
+      const Cube &cube = asImpl().cube();
+      return global( cube.corner( i ) );
     }
 
     GlobalVector global ( const LocalVector &local ) const
@@ -131,8 +133,7 @@ namespace Dune
     typedef SPEntityInfo< Grid, codimension > EntityInfo;
     typedef typename EntityInfo::GridLevel GridLevel;
 
-    typedef typename GridLevel::Cube Cube;
-
+    typedef typename Base::Cube Cube;
     typedef typename Base::GeometryCache GeometryCache;
 
     typedef typename Base::GlobalVector GlobalVector;
@@ -161,7 +162,7 @@ namespace Dune
 
     const Cube &cube () const
     {
-      return gridLevel().cube();
+      return gridLevel().template cube< codimension >();
     }
 
     GlobalVector origin () const
@@ -215,8 +216,7 @@ namespace Dune
     static const int dimension = Base::dimension;
     static const int codimension = Base::codimension;
 
-    typedef SPCube< ctype, dimension > Cube;
-
+    typedef typename Base::Cube Cube;
     typedef typename Base::GeometryCache GeometryCache;
 
     typedef typename Base::GlobalVector GlobalVector;

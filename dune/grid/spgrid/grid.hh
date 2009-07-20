@@ -4,6 +4,7 @@
 #include <dune/common/collectivecommunication.hh>
 
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/genericgeometry/codimtable.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/gridview.hh>
@@ -62,6 +63,8 @@ namespace Dune
       template< int codim >
       struct Codim
       {
+        typedef SPCube< ct, dim-codim > Cube;
+
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
 
         typedef SPEntityPointer< codim, const Grid > EntityPointerImpl;
@@ -129,7 +132,9 @@ namespace Dune
     template< int codim >
     struct Codim
     : Base::template Codim< codim >
-    {};
+    {
+      typedef typename Traits::template Codim< codim >::Cube Cube;
+    };
 
     template< PartitionIteratorType pitype >
     struct Partition
@@ -149,7 +154,7 @@ namespace Dune
   private:
     typedef typename LevelGridView::Traits::GridViewImp LevelGridViewImpl;
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
-  
+
   public:
     SPGrid ( const GlobalVector &a, const GlobalVector &b,
              const int (&cells)[ dimension ],
@@ -174,7 +179,7 @@ namespace Dune
         GlobalVector origin( ctype( 0 ) );
         origin[ face/2 ] = ctype( face & 1 );
         const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube(), cache, origin ) );
+        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
       }
     }
 
@@ -182,7 +187,14 @@ namespace Dune
 
     const Cube &cube () const
     {
-      return cube_;
+      return cube< 0 >();
+    }
+
+    template< int codim >
+    const typename Codim< codim >::Cube &cube () const
+    {
+      Int2Type< codim > codimVariable;
+      return cubes_[ codimVariable ];
     }
 
     const Domain &domain () const
@@ -387,9 +399,14 @@ namespace Dune
       return *localFaceGeometry_[ face ];
     }
 
+    template< int codim >
+    struct TheCube
+    : public Codim< codim >::Cube
+    {};
+  
     Domain domain_;
     std::string name_;
-    Cube cube_;
+    GenericGeometry::CodimTable< TheCube, dimension > cubes_;
     GridLevel *leafLevel_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;

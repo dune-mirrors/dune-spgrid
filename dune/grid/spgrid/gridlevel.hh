@@ -51,6 +51,7 @@ namespace Dune
     template< int codim >
     struct Codim
     {
+      typedef SPCube< ctype, dimension-codim > Cube;
       typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
     };
 
@@ -88,6 +89,12 @@ namespace Dune
     const Cube &cube () const
     {
       return grid().cube();
+    }
+
+    template< int codim >
+    const typename Codim< codim >::Cube &cube () const
+    {
+      return grid().template cube< codim >();
     }
 
     const Domain &domain () const

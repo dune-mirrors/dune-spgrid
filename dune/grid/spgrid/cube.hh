@@ -10,6 +10,25 @@
 namespace Dune
 {
 
+  namespace SPCubeHelper
+  {
+    inline unsigned int
+    numSubEntities ( const unsigned int dimension, const unsigned int codim )
+    {
+      assert( codim <= dimension );
+      if( codim > 0 )
+      {
+        const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
+        const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
+        return n0 + 2*n1;
+      }
+      else
+        return 1;
+    }
+  }
+
+
+
   // SPCube
   // ------
 
@@ -56,25 +75,14 @@ namespace Dune
     }
 
   private:
-    static unsigned int
-    numSubEntities ( const unsigned int dimension, const unsigned int codim )
-    {
-      assert( codim <= dimension );
-      if( codim > 0 )
-      {
-        const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
-        const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
-        return n0 + 2*n1;
-      }
-      else
-        return 1;
-    }
-
     void subId ( const unsigned int dimension, const unsigned int codim,
                  const unsigned int i, MultiIndex &sId ) const
     {
-      assert( i < numSubEntities( dimension, codim ) );
-      const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
+      assert( i < SPCubeHelper::numSubEntities( dimension, codim ) );
+      if( dimension == 0 )
+        return;
+
+      const unsigned int n0 = (codim < dimension ? SPCubeHelper::numSubEntities( dimension-1, codim ) : 0);
       if( i < n0 )
       {
         subId( dimension-1, codim, i, sId );
@@ -82,7 +90,7 @@ namespace Dune
       }
       else
       {
-        const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
+        const unsigned int n1 = SPCubeHelper::numSubEntities( dimension-1, codim-1 );
         subId( dimension-1, codim-1, (i-n0)%n1, sId );
         sId[ dimension-1 ] = 2*((i-n0)/n1) - 1;
       }
@@ -100,7 +108,7 @@ namespace Dune
   {
     for( int codim = 0; codim <= dimension; ++codim )
     {
-      const unsigned int size = numSubEntities( dimension, codim );
+      const unsigned int size = SPCubeHelper::numSubEntities( dimension, codim );
       subId_[ codim ].resize( size );
       for( unsigned int i = 0; i < size; ++i )
         subId( dimension, codim, i, subId_[ codim ][ i ] );
@@ -125,6 +133,45 @@ namespace Dune
     }
   }
 
+
+
+  // SPCube (for dim = 0)
+  // --------------------
+
+  template< class ct >
+  class SPCube< ct, 0 >
+  {
+    typedef SPCube< ct, 0 > This;
+
+  public:
+    typedef ct ctype;
+
+    static const int dimension = 0;
+
+    typedef FieldVector< ctype, 0 > GlobalVector;
+
+    static const int numCorners = 1;
+
+    SPCube ()
+    : corner_( ctype( 0 ) )
+    {}
+
+    int count ( const int codim ) const
+    {
+      assert( (codim >= 0) && (codim <= dimension) );
+      return 1;
+    }
+
+    const GlobalVector &corner ( const int i ) const
+    {
+      assert( (i >= 0) && (i < numCorners) );
+      return corner_;
+    }
+
+  private:
+    GlobalVector corner_;
+  };
+
 }
 
-#endif
+#endif // #ifndef DUNE_SPGRID_CUBE_HH
