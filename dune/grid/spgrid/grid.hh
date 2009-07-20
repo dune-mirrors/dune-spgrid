@@ -335,7 +335,8 @@ namespace Dune
   private:
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
     {
-      // ...
+      assert( (face >= 0) && (face < Cube::numFaces) );
+      return localFaceGeometry_[ face ];
     }
 
     std::string name_;
@@ -346,6 +347,7 @@ namespace Dune
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
+    const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ Cube::numFaces ];
   };
 
 }
