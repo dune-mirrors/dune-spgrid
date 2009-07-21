@@ -84,9 +84,14 @@ namespace Dune
       return x;
     }
 
-    ctype integrationElement ( const LocalVector &local ) const
+    ctype volume () const
     {
       return asImpl().geometryCache().volume();
+    }
+
+    ctype integrationElement ( const LocalVector &local ) const
+    {
+      return volume();
     }
 
     const JacobianTransposed &
