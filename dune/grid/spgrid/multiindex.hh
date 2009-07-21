@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_MULTIINDEX_HH
 #define DUNE_SPGRID_MULTIINDEX_HH
 
+#include <iostream>
+
 namespace Dune
 {
 
@@ -117,6 +119,17 @@ namespace Dune
   private:
     int index_[ dimension ];
   };
+
+
+
+  template< int dim >
+  inline std::ostream &operator<< ( std::ostream &out, const SPMultiIndex< dim > &multiIndex )
+  {
+    out << "( " << multiIndex[ 0 ];
+    for( int i = 1; i < dim; ++i )
+      out << ", " << multiIndex[ i ];
+    return out << " )";
+  }
 
 }
 

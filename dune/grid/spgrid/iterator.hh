@@ -49,9 +49,10 @@ namespace Dune
       assert( dir < numDirections );
 
       MultiIndex &id = entityInfo.id();
-      for( int i = 0; i < dimension-1; ++i )
+      for( int i = 0; i < dimension; ++i )
         id[ i ] = begin( i, dir );
       entityInfo.update();
+      assert( entityInfo.direction() == dir );
     }
 
     SPIterator ( const GridLevel &gridLevel, const End &e,
@@ -78,6 +79,7 @@ namespace Dune
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
       MultiIndex &id = entityInfo.id();
+      assert( id[ dimension-1 ] != end( dimension-1, entityInfo.direction() ) );
       for( int i = 0; i < dimension; ++i )
       {
         const unsigned int sweep = (sweepDirection_ >> i) & 1;
@@ -87,7 +89,7 @@ namespace Dune
         id[ i ] = begin( i, entityInfo.direction() );
       }
 
-      unsigned int dir = entityInfo.direction();
+      unsigned int dir = entityInfo.direction()+1;
       const unsigned int mydim = mydimension;
       for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
       if( dir < numDirections )
@@ -95,6 +97,8 @@ namespace Dune
         for( int i = 0; i < dimension; ++i )
           id[ i ] = begin( i, dir );
       }
+      else
+        id[ dimension-1 ] = end( dimension-1, entityInfo.direction() );
 
       entityInfo.update();
     }
@@ -113,7 +117,7 @@ namespace Dune
       const MultiIndex &cells = gridLevel().cells();
       const unsigned int sweep = (sweepDirection_ >> i) & 1;
       const unsigned int d = (dir >> i) & 1;
-      return (d-2) + (1-sweep)*2*(cells[ i ]-d);
+      return (d-2) + (1-sweep)*2*(cells[ i ]+d);
     }
 
   protected:
