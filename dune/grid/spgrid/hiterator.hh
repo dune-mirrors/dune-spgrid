@@ -33,6 +33,7 @@ namespace Dune
       increment();
     }
 
+  public:
     using Base::level;
     using Base::dereference;
 

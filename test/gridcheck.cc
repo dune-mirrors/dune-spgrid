@@ -9,6 +9,7 @@
 #include <dune/grid/spgrid.hh>
 
 #include <dune/grid/test/gridcheck.cc>
+#include <dune/grid/test/checkgeometryinfather.cc>
 
 static const int dimGrid = DIMGRID;
 
@@ -33,6 +34,8 @@ try
     if( i > 0 )
       grid.globalRefine( 1 );
     gridcheck( grid );
+    if( i > 0 )
+      checkGeometryInFather( grid );
   }
 
   return 0;

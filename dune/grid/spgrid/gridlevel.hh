@@ -149,10 +149,10 @@ namespace Dune
 
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
     {
-      const unsigned int childIndex = 0;
+      unsigned int childIndex = 0;
       for( int i = 0; i < dimension; ++i )
         childIndex |= ((refDir_ >> i) & (id[ i ] >> 1) & 1) << i;
-      return geometryInFather_[ childIndex ];
+      return *(geometryInFather_[ childIndex ]);
     }
 
     template< int codim >

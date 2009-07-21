@@ -252,13 +252,13 @@ namespace Dune
 
     HierarchicIterator hbegin ( int maxlevel ) const
     {
-      assert( maxlevel > level() );
+      assert( maxlevel >= level() );
       return HierarchicIteratorImpl( *this, maxlevel );
     }
 
     HierarchicIterator hend ( int maxlevel ) const
     {
-      assert( maxlevel > level() );
+      assert( maxlevel >= level() );
       return HierarchicIteratorImpl( *this, level() );
     }
 
