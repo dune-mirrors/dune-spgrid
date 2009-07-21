@@ -38,8 +38,8 @@ namespace Dune
         if( ((dir >> j) & 1) == 0 )
           continue;
         volume_ *= h[ j ];
-        jacobianTransposed_[ j ][ k ] = h[ j ];
-        jacobianInverseTransposed_[ k ][ j ] = ctype( 1 ) / h[ j ];
+        jacobianTransposed_[ k ][ j ] = h[ j ];
+        jacobianInverseTransposed_[ j ][ k ] = ctype( 1 ) / h[ j ];
         ++k;
       }
     }
