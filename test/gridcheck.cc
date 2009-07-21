@@ -26,8 +26,14 @@ try
     n[ i ] = 4;
   Grid grid( a, b, n );
 
+  const int maxLevel = 2;
   std::cerr << "Checking grid..." << std::endl;
-  gridcheck( grid );
+  for( int i = 0; i <= maxLevel; ++i )
+  {
+    if( i > 0 )
+      grid.globalRefine( 1 );
+    gridcheck( grid );
+  }
 
   return 0;
 }

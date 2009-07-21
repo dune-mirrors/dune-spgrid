@@ -218,7 +218,7 @@ namespace Dune
     refDir_( refDir )
   {
     assert( father.child_ == 0 );
-    father.child_ = *this;
+    father.child_ = this;
     GlobalVector hInFather;
     for( int i = 0; i < dimension; ++i )
     {

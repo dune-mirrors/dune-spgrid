@@ -343,7 +343,6 @@ namespace Dune
     void globalRefine ( const int refCount,
                         const unsigned int refDir = numDirections-1 )
     {
-      const int maxL = maxLevel();
       for( int i = 0; i < refCount; ++i )
       {
         leafLevel_ = new GridLevel( *leafLevel_, refDir );
