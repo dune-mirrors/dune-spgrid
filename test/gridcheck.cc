@@ -7,6 +7,7 @@
 #include <dune/common/mpihelper.hh>
 
 #include <dune/grid/spgrid.hh>
+#include <dune/grid/spgrid/dgfparser.hh>
 
 #include <dune/grid/test/gridcheck.cc>
 #include <dune/grid/test/checkintersectionit.cc>
@@ -21,14 +22,27 @@ try
 
   typedef Dune::SPGrid< double, dimGrid > Grid;
 
+  if( argc < 3 )
+  {
+    std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;
+    return 1;
+  }
+
+  std::string dgfFile( argv[ 1 ] );
+  const int maxLevel = atoi( argv[ 2 ] );
+
+  Dune::GridPtr< Grid > gridPtr( dgfFile );
+  Grid &grid = *gridPtr;
+
+#if 0
   Dune::FieldVector< double, dimGrid > a( 0.0 );
   Dune::FieldVector< double, dimGrid > b( 1.0 );
   int n[ dimGrid ];
   for( int i = 0; i < dimGrid; ++i )
     n[ i ] = 4;
   Grid grid( a, b, n );
+#endif
 
-  const int maxLevel = 2;
   for( int i = 0; i <= maxLevel; ++i )
   {
     if( i > 0 )
