@@ -117,7 +117,7 @@ namespace Dune
       const MultiIndex &cells = gridLevel().cells();
       const unsigned int sweep = (sweepDirection_ >> i) & 1;
       const unsigned int d = (dir >> i) & 1;
-      return (d-2) + (1-sweep)*2*(cells[ i ]+d);
+      return (d-2) + (1-sweep)*2*(cells[ i ]-(d-2));
     }
 
   protected:
