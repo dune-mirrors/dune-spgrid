@@ -237,7 +237,7 @@ namespace Dune
 
       GlobalVector origin;
       for( int i = 0; i < dimension; ++i )
-        origin[ i ] = ctype( (refDir >> i) & 1 ) / ctype( 2 );
+        origin[ i ] = ctype( (dir >> i) & 1 ) / ctype( 2 );
       geometryInFather_[ dir ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
     }
 
