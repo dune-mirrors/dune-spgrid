@@ -33,8 +33,8 @@ namespace Dune
     typedef typename remove_const< G >::type Grid;
 
     typedef SPIndexSet< const Grid > IndexSet;
-    typedef Dune::Intersection< Grid, SPIntersection > Intersection;
-    typedef Dune::IntersectionIterator< Grid, SPIntersectionIterator, SPIntersection >
+    typedef Dune::Intersection< const Grid, SPIntersection > Intersection;
+    typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator, SPIntersection >
       IntersectionIterator;
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
@@ -75,8 +75,8 @@ namespace Dune
     typedef typename remove_const< G >::type Grid;
 
     typedef SPIndexSet< const Grid > IndexSet;
-    typedef Dune::Intersection< Grid, SPIntersection > Intersection;
-    typedef Dune::IntersectionIterator< Grid, SPIntersectionIterator, SPIntersection >
+    typedef Dune::Intersection< const Grid, SPIntersection > Intersection;
+    typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator, SPIntersection >
       IntersectionIterator;
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;

@@ -9,6 +9,7 @@
 #include <dune/grid/spgrid.hh>
 
 #include <dune/grid/test/gridcheck.cc>
+#include <dune/grid/test/checkintersectionit.cc>
 #include <dune/grid/test/checkgeometryinfather.cc>
 
 static const int dimGrid = DIMGRID;
@@ -28,14 +29,22 @@ try
   Grid grid( a, b, n );
 
   const int maxLevel = 2;
-  std::cerr << "Checking grid..." << std::endl;
   for( int i = 0; i <= maxLevel; ++i )
   {
     if( i > 0 )
+    {
+      std::cerr << ">>> Refining grid globally..." << std::endl;
       grid.globalRefine( 1 );
+    }
+    std::cerr << ">>> Checking grid..." << std::endl;
     gridcheck( grid );
+    std::cerr << ">>> Checking intersections..." << std::endl;
+    checkIntersectionIterator( grid );
     if( i > 0 )
+    {
+      std::cerr << ">>> Checking geometry in father..." << std::endl;
       checkGeometryInFather( grid );
+    }
   }
 
   return 0;
