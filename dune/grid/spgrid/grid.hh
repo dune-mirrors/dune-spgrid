@@ -268,56 +268,64 @@ namespace Dune
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      return levelView( level ).template begin< codim, pitype >( sweepDir );
+      const LevelGridView &view = levelView( level );
+      return getRealImplementation( view ).template begin< codim, pitype >( sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lend ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      return levelView( level ).template end< codim, pitype >( sweepDir );
+      const LevelGridView &view = levelView( level );
+      return getRealImplementation( view ).template end< codim, pitype >( sweepDir );
     }
 
     template< int codim >
     typename Traits::template Codim< codim >::LevelIterator
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      return levelView( level ).template begin< codim >( sweepDir );
+      const LevelGridView &view = levelView( level );
+      return getRealImplementation( view ).template begin< codim >( sweepDir );
     }
 
     template< int codim >
     typename Traits::template Codim< codim >::LevelIterator
     lend ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      return levelView( level ).template end< codim >( sweepDir );
+      const LevelGridView &view = levelView( level );
+      return getRealImplementation( view ).template end< codim >( sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
     leafbegin ( const unsigned int sweepDir = 0 ) const
     {
-      return leafView().template begin< codim, pitype >( sweepDir );
+      const LeafGridView &view = leafView();
+      return getRealImplementation( view ).template begin< codim, pitype >( sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
     leafend ( const unsigned int sweepDir = 0 ) const
     {
-      return leafView().template end< codim, pitype >( sweepDir );
+      const LeafGridView &view = leafView();
+      return getRealImplementation( view ).template end< codim, pitype >( sweepDir );
     }
 
     template< int codim >
     typename Traits::template Codim< codim >::LeafIterator
     leafbegin ( const unsigned int sweepDir = 0 ) const
     {
-      return leafView().template begin< codim >( sweepDir );
+      const LeafGridView &view = leafView();
+      return getRealImplementation( view ).template begin< codim >( sweepDir );
     }
 
     template< int codim >
     typename Traits::template Codim< codim >::LeafIterator
     leafend ( const unsigned int sweepDir = 0 ) const
     {
-      return leafView().template end< codim >( sweepDir );
+      const LeafGridView &view = leafView();
+      return getRealImplementation( view ).template end< codim >( sweepDir );
     }
 
     const GlobalIdSet &globalIdSet () const
