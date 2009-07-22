@@ -41,6 +41,7 @@ namespace Dune
     : Base( gridLevel ),
       sweepDirection_( sweepDir )
     {
+      assert( sweepDir < numDirections );
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
       unsigned int dir = 0;
@@ -60,6 +61,7 @@ namespace Dune
     : Base( gridLevel ),
       sweepDirection_( sweepDir )
     {
+      assert( sweepDir < numDirections );
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
       unsigned int dir = numDirections-1;

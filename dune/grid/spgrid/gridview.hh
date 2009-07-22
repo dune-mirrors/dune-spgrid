@@ -198,35 +198,39 @@ namespace Dune
     }
 
     template< int codim >
-    typename Codim< codim >::Iterator begin () const
+    typename Codim< codim >::Iterator
+    begin ( const unsigned int sweepDir = 0 ) const
     {
       typedef typename Codim< codim >::IteratorImpl IteratorImpl;
       typename IteratorImpl::Begin begin;
-      return IteratorImpl( gridLevel(), begin );
+      return IteratorImpl( gridLevel(), begin, sweepDir );
     }
 
     template< int codim >
-    typename Codim< codim >::Iterator end () const
+    typename Codim< codim >::Iterator
+    end ( const unsigned int sweepDir = 0 ) const
     {
       typedef typename Codim< codim >::IteratorImpl IteratorImpl;
       typename IteratorImpl::End end;
-      return IteratorImpl( gridLevel(), end );
+      return IteratorImpl( gridLevel(), end, sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
-    typename Codim< codim >::template Partition< pitype >::Iterator begin () const
+    typename Codim< codim >::template Partition< pitype >::Iterator
+    begin ( const unsigned int sweepDir = 0 ) const
     {
       typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
       typename IteratorImpl::Begin begin;
-      return IteratorImpl( gridLevel(), begin );
+      return IteratorImpl( gridLevel(), begin, sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
-    typename Codim< codim >::template Partition< pitype >::Iterator end () const
+    typename Codim< codim >::template Partition< pitype >::Iterator
+    end ( const unsigned int sweepDir = 0 ) const
     {
       typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
       typename IteratorImpl::End end;
-      return IteratorImpl( gridLevel(), end );
+      return IteratorImpl( gridLevel(), end, sweepDir );
     }
 
     IntersectionIterator ibegin ( const typename Codim< 0 >::Entity &entity ) const
