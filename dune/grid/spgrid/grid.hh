@@ -1,10 +1,13 @@
 #ifndef DUNE_SPGRID_GRID_HH
 #define DUNE_SPGRID_GRID_HH
 
+#include <fstream>
+
 #include <dune/common/collectivecommunication.hh>
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
+#include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/gridview.hh>
@@ -156,6 +159,26 @@ namespace Dune
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
   public:
+    SPGrid ()
+    : domain_(),
+      name_( "SPGrid" ),
+      leafLevel_( 0 ),
+      leafView_( LeafGridViewImpl() ),
+      globalIdSet_(),
+      localIdSet_(),
+      comm_()
+    {
+      int cells[ dimension ];
+      for( int i = 0; i < dimension; ++i )
+        cells[ i ] = 1;
+      leafLevel_ = new GridLevel( *this, cells );
+
+      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
+      getRealImplementation( leafView_ ).update( *leafLevel_ );
+
+      createLocalGeometries();
+    }
+
     SPGrid ( const GlobalVector &a, const GlobalVector &b,
              const int (&cells)[ dimension ],
              const std::string &name = "SPGrid" )
@@ -170,17 +193,7 @@ namespace Dune
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
 
-      typedef typename Codim< 1 >::LocalGeometry LocalGeo;
-      typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
-      const GlobalVector unitH( ctype( 1 ) );
-      for( int face = 0; face < Cube::numFaces; ++face )
-      {
-        const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
-        GlobalVector origin( ctype( 0 ) );
-        origin[ face/2 ] = ctype( face & 1 );
-        const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
-      }
+      createLocalGeometries();
     }
 
     using Base::getRealImplementation;
@@ -399,11 +412,63 @@ namespace Dune
       return comm_;
     }
 
+    template< GrapeIOFileFormatType format >
+    bool writeGrid ( const std::string &filename, const ctype &time ) const
+    {
+      if( format == xdr )
+      {
+        return false;
+      }
+      else if( format == ascii )
+      {
+        std::ofstream fileOut( filename );
+        fileOut << "SPGrid< " << dimension << " >" << std::endl;
+        fileOut << "name: " << name() << std::endl;
+        fileOut << "time: " << time << std::endl;
+        fileOut << "origin: " << domain().origin() << std::endl;
+        fileOut << "width: " << domain().width() << std::endl;
+        fileOut << "cells: " << getRealImplemmentation( levelView( 0 ) ).gridLevel().cells() << std::endl;
+        fileOut << "maxLevel: " << leafLevel_.level() << std::endl;
+      }
+      else
+        DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
+    }
+
+    template< GrapeIOFileFormatType format >
+    bool readGrid ( const std::string &filename, ctype &time )
+    {
+      if( format == xdr )
+      {
+        return false;
+      }
+      else if( format == ascii )
+      {
+        return false;
+      }
+      else
+        DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
+    }
+
   private:
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
     {
       assert( (face >= 0) && (face < Cube::numFaces) );
       return *localFaceGeometry_[ face ];
+    }
+
+    void createLocalGeometries ()
+    {
+      typedef typename Codim< 1 >::LocalGeometry LocalGeo;
+      typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
+      const GlobalVector unitH( ctype( 1 ) );
+      for( int face = 0; face < Cube::numFaces; ++face )
+      {
+        const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
+        GlobalVector origin( ctype( 0 ) );
+        origin[ face/2 ] = ctype( face & 1 );
+        const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
+        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
+      }
     }
 
     template< int codim >

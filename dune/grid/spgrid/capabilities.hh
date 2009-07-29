@@ -47,7 +47,7 @@ namespace Dune
     template< class ct, int dim >
     struct hasBackupRestoreFacilities< SPGrid< ct, dim > >
     {
-      static const bool v = false;
+      static const bool v = true;
     };
 
     template< class ct, int dim >
