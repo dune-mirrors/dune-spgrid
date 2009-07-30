@@ -66,7 +66,7 @@ namespace Dune
     struct DestroyGeometryCache;
 
   public:
-    SPGridLevel ( const Grid &grid, const MultiIndex &n );
+    SPGridLevel ( const Grid &grid );
 
     SPGridLevel ( GridLevel &father, const unsigned int refDir );
 
@@ -200,19 +200,18 @@ namespace Dune
 
 
   template< class Grid >
-  inline SPGridLevel< Grid >
-    ::SPGridLevel ( const Grid &grid, const MultiIndex &n )
+  inline SPGridLevel< Grid >::SPGridLevel ( const Grid &grid )
   : grid_( &grid ),
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
-    refDir_( 0 )
+    refDir_( 0 ),
+    cells_( domain().cells() )
   {
     const GlobalVector &width  = domain().width();
     for( int i = 0; i < dimension; ++i )
     {
-      cells_[ i ] = n[ i ];
-      h_[ i ] = width[ i ] / (ctype)n[ i ];
+      h_[ i ] = width[ i ] / (ctype)cells_[ i ];
     }
     for( unsigned int dir = 0; dir < numDirections; ++dir )
       geometryInFather_[ dir ] = 0;

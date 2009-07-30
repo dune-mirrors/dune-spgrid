@@ -17,6 +17,7 @@ namespace Dune
     static const int dimension = dim;
 
     typedef FieldVector< ctype, dimension > GlobalVector;
+    typedef SPMultiIndex< dimension > MultiIndex;
 
     SPDomain ()
     {
@@ -24,10 +25,12 @@ namespace Dune
       {
         origin_[ i ] = ctype( 0 );
         width_[ i ] = ctype( 1 );
+        cells_[ i ] = 1;
       }
     }
 
-    SPDomain ( const GlobalVector &a, const GlobalVector &b )
+    SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells )
+    : cells_( cells )
     {
       for( int i = 0; i < dimension; ++i )
       {
@@ -46,8 +49,14 @@ namespace Dune
       return width_;
     }
 
+    const MultiIndex &cells () const
+    {
+      return cells_;
+    }
+
   private:
     GlobalVector origin_, width_;
+    MultiIndex cells_;
   };
 
 }

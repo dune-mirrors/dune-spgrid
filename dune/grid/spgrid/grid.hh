@@ -161,17 +161,12 @@ namespace Dune
     SPGrid ()
     : domain_(),
       name_( "SPGrid" ),
-      leafLevel_( 0 ),
+      leafLevel_( new GridLevel( *this ) ),
       leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
       comm_()
     {
-      int cells[ dimension ];
-      for( int i = 0; i < dimension; ++i )
-        cells[ i ] = 1;
-      leafLevel_ = new GridLevel( *this, cells );
-
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
 
@@ -181,9 +176,9 @@ namespace Dune
     SPGrid ( const GlobalVector &a, const GlobalVector &b,
              const int (&cells)[ dimension ],
              const std::string &name = "SPGrid" )
-    : domain_( a, b ),
+    : domain_( a, b, cells ),
       name_( name ),
-      leafLevel_( new GridLevel( *this, cells ) ),
+      leafLevel_( new GridLevel( *this ) ),
       leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
@@ -426,7 +421,7 @@ namespace Dune
       ioData.time = time;
       ioData.origin = domain().origin();
       ioData.width = domain().width();
-      ioData.cells = gridLevel( 0 ).cells();
+      ioData.cells = domain().cells();
       ioData.maxLevel = maxLevel();
       ioData.refDirections.resize( maxLevel() );
       for( int level = 0; level < maxLevel(); ++level )
@@ -457,8 +452,8 @@ namespace Dune
       clear();
       name_ = ioData.name;
       time = ioData.time;
-      domain_ = Domain( ioData.origin, ioData.origin + ioData.width );
-      leafLevel_ = new GridLevel( *this, ioData.cells );
+      domain_ = Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells );
+      leafLevel_ = new GridLevel( *this );
 
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
