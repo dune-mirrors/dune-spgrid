@@ -206,13 +206,9 @@ namespace Dune
     child_( 0 ),
     level_( 0 ),
     refDir_( 0 ),
-    cells_( domain().cells() )
+    cells_( domain().cells() ),
+    h_( domain().h() )
   {
-    const GlobalVector &width  = domain().width();
-    for( int i = 0; i < dimension; ++i )
-    {
-      h_[ i ] = width[ i ] / (ctype)cells_[ i ];
-    }
     for( unsigned int dir = 0; dir < numDirections; ++dir )
       geometryInFather_[ dir ] = 0;
     buildGeometry();

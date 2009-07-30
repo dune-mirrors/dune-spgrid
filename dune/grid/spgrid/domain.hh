@@ -23,41 +23,95 @@ namespace Dune
     {
       for( int i = 0; i < dimension; ++i )
       {
-        origin_[ i ] = ctype( 0 );
-        width_[ i ] = ctype( 1 );
-        cells_[ i ] = 1;
+        globalOrigin_[ i ] = ctype( 0 );
+        globalWidth_[ i ] = ctype( 1 );
+        globalCells_[ i ] = 1;
       }
+      undecompose();
     }
 
     SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells )
-    : cells_( cells )
+    : globalCells_( cells )
     {
       for( int i = 0; i < dimension; ++i )
       {
-        origin_[ i ] = std::min( a[ i ], b[ i ] );
-        width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
+        globalOrigin_[ i ] = std::min( a[ i ], b[ i ] );
+        globalWidth_[ i ] = std::max( a[ i ], b[ i ] ) - globalOrigin_[ i ];
       }
+      undecompose();
     }
+
+    void undecompose ()
+    {
+      localOrigin_ = globalOrigin_;
+      localWidth_ = globalWidth_;
+      localCells_ = globalCells_;
+    }
+
+    void decompose ( int rank, int size );
 
     const GlobalVector &origin () const
     {
-      return origin_;
+      return localOrigin_;
     }
 
     const GlobalVector &width () const
     {
-      return width_;
+      return localWidth_;
     }
 
     const MultiIndex &cells () const
     {
-      return cells_;
+      return localCells_;
+    }
+
+    GlobalVector h () const
+    {
+      GlobalVector h;
+      for( int i = 0; i < dimension; ++i )
+        h[ i ] = globalWidth_[ i ] / ctype( globalCells_[ i ] );
+      return h;
     }
 
   private:
-    GlobalVector origin_, width_;
-    MultiIndex cells_;
+    GlobalVector globalOrigin_, globalWidth_;
+    GlobalVector localOrigin_, localWidth_;
+    MultiIndex globalCells_, localCells_;
   };
+
+
+  
+  template< class ct, int dim >
+  void SPDomain< ct, dim >::decompose ( int rank, int size )
+  {
+    undecompose();
+
+    assert( (rank >= 0) && (rank < size) );
+    if( size > 1 )
+    {
+      int dir = 0;
+      for( int i = 1; i < dimension; ++i )
+        dir = (localCells_[ i ] > localCells_[ dir ] ? i : dir);
+
+      const int cells = localCells_[ dir ];
+      const int lcells = cells / 2;
+      const ctype lwidth = ctype( lcells )*localWidth_[ dir ] / ctype( cells );
+      const int srank = size / 2;
+      if( rank < srank )
+      {
+        localCells_[ dir ] = lcells;
+        localWidth_[ dir ] = lwidth;
+        decompose( rank, srank );
+      }
+      else
+      {
+        localCells_[ dir ] -= lcells;
+        localWidth_[ dir ] -= lwidth;
+        localOrigin_[ dir ] += lwidth;
+        decompose( rank - srank, size - srank ); 
+      }
+    }
+  }
 
 }
 

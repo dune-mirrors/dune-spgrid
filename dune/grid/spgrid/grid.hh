@@ -165,12 +165,14 @@ namespace Dune
     SPGrid ( const CollectiveCommunication &comm = defaultCommunication() )
     : domain_(),
       name_( "SPGrid" ),
-      leafLevel_( new GridLevel( *this ) ),
+      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
       comm_( comm )
     {
+      domain_.decompose( comm_.rank(), comm_.size() );
+      leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
 
@@ -183,12 +185,14 @@ namespace Dune
              const CollectiveCommunication &comm = defaultCommunication() )
     : domain_( a, b, cells ),
       name_( name ),
-      leafLevel_( new GridLevel( *this ) ),
+      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
       comm_( comm )
     {
+      domain_.decompose( comm_.rank(), comm_.size() );
+      leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
 
@@ -420,6 +424,9 @@ namespace Dune
     template< GrapeIOFileFormatType format >
     bool writeGrid ( const std::string &filename, const ctype &time ) const
     {
+      if( comm().rank() != 0 )
+        return true;
+
       SPGridIOData< ctype, dimension > ioData;
 
       ioData.name = name();
@@ -458,6 +465,7 @@ namespace Dune
       name_ = ioData.name;
       time = ioData.time;
       domain_ = Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells );
+      domain_.decompose( comm().rank(), comm().size() );
       leafLevel_ = new GridLevel( *this );
 
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
