@@ -1,7 +1,7 @@
 #ifndef DUNE_SPGRID_GRID_HH
 #define DUNE_SPGRID_GRID_HH
 
-#include <dune/common/collectivecommunication.hh>
+#include <dune/common/mpicollectivecommunication.hh>
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
@@ -38,7 +38,11 @@ namespace Dune
       typedef SPCube< ct, dim > Cube;
       typedef SPDomain< ct, dim > Domain;
 
+#if HAVE_MPI
+      typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+#else
       typedef Dune::CollectiveCommunication< Grid > CollectiveCommunication;
+#endif
 
       typedef Dune::Intersection< const Grid, SPIntersection >
         LevelIntersection;
@@ -158,14 +162,14 @@ namespace Dune
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
   public:
-    SPGrid ()
+    SPGrid ( const CollectiveCommunication &comm = defaultCommunication() )
     : domain_(),
       name_( "SPGrid" ),
       leafLevel_( new GridLevel( *this ) ),
       leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
-      comm_()
+      comm_( comm )
     {
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
@@ -175,14 +179,15 @@ namespace Dune
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b,
              const int (&cells)[ dimension ],
-             const std::string &name = "SPGrid" )
+             const std::string &name = "SPGrid",
+             const CollectiveCommunication &comm = defaultCommunication() )
     : domain_( a, b, cells ),
       name_( name ),
       leafLevel_( new GridLevel( *this ) ),
       leafView_( LeafGridViewImpl() ),
       globalIdSet_(),
       localIdSet_(),
-      comm_()
+      comm_( comm )
     {
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
@@ -507,6 +512,15 @@ namespace Dune
         macroLevel = &(macroLevel->fatherLevel());
       delete macroLevel;
       leafLevel_ = 0;
+    }
+
+    static CollectiveCommunication defaultCommunication ()
+    {
+#if HAVE_MPI
+      return CollectiveCommunication( MPI_COMM_WORLD );
+#else
+      return CollectiveCommunication();
+#endif
     }
 
     template< int codim >
