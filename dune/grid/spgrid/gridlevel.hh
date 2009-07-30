@@ -62,6 +62,8 @@ namespace Dune
 
     template< int codim >
     struct BuildGeometryCache;
+    template< int codim >
+    struct DestroyGeometryCache;
 
   public:
     SPGridLevel ( const Grid &grid, const MultiIndex &n );
@@ -74,11 +76,16 @@ namespace Dune
   public:
     ~SPGridLevel ()
     {
+      if( child_ != 0 )
+        delete child_;
+      assert( child_ == 0 );
+      if( father_ != 0 )
+        father_->child_ = 0;
+
       for( unsigned int dir = 0; dir < numDirections; ++dir )
-      {
         delete geometryInFather_[ dir ];
-        delete geometryCache_[ dir ];
-      }
+
+      GenericGeometry::ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
     }
 
     const Grid &grid () const
@@ -104,7 +111,7 @@ namespace Dune
 
     const GridLevel &fatherLevel () const
     {
-      assert( father_ != 0 );
+      assert( !isMacro() );
       return *father_;
     }
 
@@ -112,6 +119,11 @@ namespace Dune
     {
       assert( !isLeaf() );
       return *child_;
+    }
+
+    bool isMacro () const
+    {
+      return (father_ == 0 );
     }
 
     bool isLeaf () const
@@ -277,6 +289,26 @@ namespace Dune
         const int mydim = bitCount( dir );
         if( mydim == dimension - codim )
           geometryCache[ dir ] = new GeometryCache( h, dir );
+      }
+    }
+  };
+
+  template< class Grid >
+  template< int codim >
+  struct SPGridLevel< Grid >::DestroyGeometryCache
+  {
+    static void
+    apply ( void *(&geometryCache)[ 1 << dimension ] )
+    {
+      typedef typename Codim< codim >::GeometryCache GeometryCache;
+      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+      {
+        const int mydim = bitCount( dir );
+        if( mydim == dimension - codim )
+        {
+          delete (GeometryCache *)geometryCache[ dir ];
+          geometryCache[ dir ] = 0;
+        }
       }
     }
   };

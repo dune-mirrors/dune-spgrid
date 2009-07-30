@@ -1,8 +1,6 @@
 #ifndef DUNE_SPGRID_GRID_HH
 #define DUNE_SPGRID_GRID_HH
 
-#include <fstream>
-
 #include <dune/common/collectivecommunication.hh>
 
 #include <dune/grid/common/grid.hh>
@@ -14,6 +12,7 @@
 #include <dune/grid/spgrid/hiterator.hh>
 #include <dune/grid/spgrid/idset.hh>
 #include <dune/grid/spgrid/indexset.hh>
+#include <dune/grid/spgrid/fileio.hh>
 
 namespace Dune
 {
@@ -196,6 +195,11 @@ namespace Dune
       createLocalGeometries();
     }
 
+    ~SPGrid ()
+    {
+      clear();
+    }
+
     using Base::getRealImplementation;
 
     const Cube &cube () const
@@ -252,6 +256,7 @@ namespace Dune
     {
       typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
       typedef typename GridView::Traits::GridViewImp GridViewImpl;
+      assert( (level >= 0) && (level <= maxLevel()) );
       const LevelGridViewImpl &viewImpl = getRealImplementation( levelViews_[ level ] );
       return GridViewImpl( viewImpl );
     }
@@ -415,38 +420,64 @@ namespace Dune
     template< GrapeIOFileFormatType format >
     bool writeGrid ( const std::string &filename, const ctype &time ) const
     {
+      SPGridIOData< ctype, dimension > ioData;
+
+      ioData.name = name();
+      ioData.time = time;
+      ioData.origin = domain().origin();
+      ioData.width = domain().width();
+      ioData.cells = gridLevel( 0 ).cells();
+      ioData.maxLevel = maxLevel();
+      ioData.refDirections.resize( maxLevel );
+      for( int level = 0; level < maxLevel(); ++level )
+        ioData.refDirections[ level ] = gridLevel( level+1 ).refinementDirection();
+
       if( format == xdr )
-      {
         return false;
-      }
       else if( format == ascii )
-      {
-        std::ofstream fileOut( filename );
-        fileOut << "SPGrid< " << dimension << " >" << std::endl;
-        fileOut << "name: " << name() << std::endl;
-        fileOut << "time: " << time << std::endl;
-        fileOut << "origin: " << domain().origin() << std::endl;
-        fileOut << "width: " << domain().width() << std::endl;
-        fileOut << "cells: " << getRealImplemmentation( levelView( 0 ) ).gridLevel().cells() << std::endl;
-        fileOut << "maxLevel: " << leafLevel_.level() << std::endl;
-      }
+        ioData.writeAscii( filename );
       else
         DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
+
+      return true;
     }
 
     template< GrapeIOFileFormatType format >
     bool readGrid ( const std::string &filename, ctype &time )
     {
+      SPGridIOData< ctype, dimension > ioData;
+
       if( format == xdr )
-      {
         return false;
-      }
       else if( format == ascii )
-      {
-        return false;
-      }
+        ioData.readAscii( filename );
       else
         DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
+
+      clear();
+      name = ioData.name;
+      time = ioData.time;
+      domain_ = Domain( ioData.origin, ioData.origin + ioData.width );
+      leafLevel_ = new GridLevel( *this, ioData.cells );
+
+      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
+      getRealImplementation( leafView_ ).update( *leafLevel_ );
+
+      for( int level = 0; level <= ioData.maxLevel; ++level )
+      {
+        if( level < ioData.refDirections.size() )
+          globalRefine( 1, ioData.refDirections[ level ] );
+        else
+          globalRefine( 1 );
+      }
+
+      return true;
+    }
+
+    const GridLevel &gridLevel ( const int level ) const
+    {
+      assert( (level >= 0) && (level <= maxLevel()) );
+      return getRealImplementation( levelViews_[ level ] ).gridLevel();
     }
 
   private:
@@ -469,6 +500,18 @@ namespace Dune
         const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
         localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
       }
+    }
+
+    void clear ()
+    {
+      levelViews_.clear();
+      leafView_ = LeafGridView( LeafGridViewImpl() );
+
+      const GridLevel *macroLevel = leafLevel_;
+      while( !macroLevel->isMacro() )
+        macroLevel = &(macroLevel->fatherLevel());
+      delete macroLevel;
+      leafLevel_ = 0;
     }
 
     template< int codim >
