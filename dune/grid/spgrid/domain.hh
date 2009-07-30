@@ -93,22 +93,22 @@ namespace Dune
       for( int i = 1; i < dimension; ++i )
         dir = (localCells_[ i ] > localCells_[ dir ] ? i : dir);
 
+      const int lsize = size / 2;
       const int cells = localCells_[ dir ];
-      const int lcells = cells / 2;
+      const int lcells = lsize * cells / size;
       const ctype lwidth = ctype( lcells )*localWidth_[ dir ] / ctype( cells );
-      const int srank = size / 2;
-      if( rank < srank )
+      if( rank < lsize )
       {
         localCells_[ dir ] = lcells;
         localWidth_[ dir ] = lwidth;
-        decompose( rank, srank );
+        decompose( rank, lsize );
       }
       else
       {
         localCells_[ dir ] -= lcells;
         localWidth_[ dir ] -= lwidth;
         localOrigin_[ dir ] += lwidth;
-        decompose( rank - srank, size - srank ); 
+        decompose( rank - lsize, size - lsize ); 
       }
     }
   }
