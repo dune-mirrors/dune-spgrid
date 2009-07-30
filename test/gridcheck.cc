@@ -61,6 +61,24 @@ try
     }
   }
 
+  std::cerr << ">>> Writing out grid..." << std::endl;
+  grid.writeGrid< Dune::ascii >( "gridcheck.spgrid", 0.0 );
+
+  std::cerr << ">>> Reading back grid..." << std::endl;
+  Grid rgrid;
+  double time;
+  rgrid.readGrid< Dune::ascii >( "gridcheck.spgrid", time );
+
+  std::cerr << ">>> Checking grid..." << std::endl;
+  gridcheck( rgrid );
+  std::cerr << ">>> Checking intersections..." << std::endl;
+  checkIntersectionIterator( rgrid );
+  if( rgrid.maxLevel() > 0 )
+  {
+    std::cerr << ">>> Checking geometry in father..." << std::endl;
+    checkGeometryInFather( rgrid );
+  }
+
   return 0;
 }
 catch( const Dune::Exception &e )
