@@ -18,6 +18,15 @@ namespace Dune
 
     typedef FieldVector< ctype, dimension > GlobalVector;
 
+    SPDomain ()
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        origin_[ i ] = ctype( 0 );
+        width_[ i ] = ctype( 1 );
+      }
+    }
+
     SPDomain ( const GlobalVector &a, const GlobalVector &b )
     {
       for( int i = 0; i < dimension; ++i )

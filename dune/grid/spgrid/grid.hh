@@ -428,7 +428,7 @@ namespace Dune
       ioData.width = domain().width();
       ioData.cells = gridLevel( 0 ).cells();
       ioData.maxLevel = maxLevel();
-      ioData.refDirections.resize( maxLevel );
+      ioData.refDirections.resize( maxLevel() );
       for( int level = 0; level < maxLevel(); ++level )
         ioData.refDirections[ level ] = gridLevel( level+1 ).refinementDirection();
 
@@ -455,7 +455,7 @@ namespace Dune
         DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
 
       clear();
-      name = ioData.name;
+      name_ = ioData.name;
       time = ioData.time;
       domain_ = Domain( ioData.origin, ioData.origin + ioData.width );
       leafLevel_ = new GridLevel( *this, ioData.cells );
@@ -465,7 +465,7 @@ namespace Dune
 
       for( int level = 0; level <= ioData.maxLevel; ++level )
       {
-        if( level < ioData.refDirections.size() )
+        if( (size_t)level < ioData.refDirections.size() )
           globalRefine( 1, ioData.refDirections[ level ] );
         else
           globalRefine( 1 );
