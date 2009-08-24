@@ -26,6 +26,7 @@ namespace Dune
         origin_[ i ] = ctype( 0 );
         width_[ i ] = ctype( 1 );
         cells_[ i ] = 1;
+        offset_[ i ] = 0;
       }
     }
 
@@ -37,6 +38,7 @@ namespace Dune
       {
         origin_[ i ] = std::min( a[ i ], b[ i ] );
         width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
+        offset_[ i ] = 0;
       }
     }
 
