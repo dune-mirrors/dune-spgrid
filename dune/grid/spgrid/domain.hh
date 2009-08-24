@@ -20,6 +20,7 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPDomain ()
+    : periodic_( 0 )
     {
       for( int i = 0; i < dimension; ++i )
       {
@@ -30,8 +31,10 @@ namespace Dune
       undecompose();
     }
 
-    SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells )
-    : globalCells_( cells )
+    SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+               const unsigned int periodic = 0 )
+    : globalCells_( cells ),
+      periodic_( periodic )
     {
       for( int i = 0; i < dimension; ++i )
       {
@@ -77,6 +80,7 @@ namespace Dune
     GlobalVector globalOrigin_, globalWidth_;
     GlobalVector localOrigin_, localWidth_;
     MultiIndex globalCells_, localCells_;
+    unsigned int periodic_;
   };
 
 

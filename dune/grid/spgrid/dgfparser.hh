@@ -54,9 +54,7 @@ namespace Dune
     typedef dgf::PeriodicFaceTransformationBlock::AffineTransformation Transformation;
     dgf::PeriodicFaceTransformationBlock trafoBlock( file, dim );
 
-    bool periodic[ dim ];
-    for( int i = 0; i < dim; ++i )
-      periodic[ i ] = false;
+    unsigned int periodic = 0;
 
     const int numTrafos = trafoBlock.numTransformations();
     for( int k = 0; k < numTrafos; ++k )
@@ -87,13 +85,13 @@ namespace Dune
                   << "' does not map boundaries on boundaries." << std::endl;
       }
       else
-        periodic[ dir ] = true;
+        periodic |= (1 << dir);
     }
 
     dgf::GridParameterBlock parameter( file );
     std::string gridName = parameter.name( "SPGrid" );
 
-    return new SPGrid< ct, dim >( a, b, cells, gridName );
+    return new SPGrid< ct, dim >( a, b, cells, periodic, gridName );
   }
 
 

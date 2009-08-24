@@ -167,44 +167,56 @@ namespace Dune
 
   public:
     SPGrid ( const CollectiveCommunication &comm = defaultCommunication() )
-    : domain_(),
-      name_( "SPGrid" ),
+    : name_( "SPGrid" ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
-      globalIdSet_(),
-      localIdSet_(),
       comm_( comm )
     {
-      domain_.decompose( comm_.rank(), comm_.size() );
-      leafLevel_ = new GridLevel( *this );
-      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-      getRealImplementation( leafView_ ).update( *leafLevel_ );
-      hierarchicIndexSet_.update();
-
       createLocalGeometries();
+      setupMacroGrid( Domain() );
+    }
+
+    SPGrid ( const Domain &domain,
+             const std::string &name = "SPGrid",
+             const CollectiveCommunication &comm = defaultCommunication() )
+    : name_( name ),
+      leafLevel_( 0 ),
+      leafView_( LeafGridViewImpl() ),
+      hierarchicIndexSet_( *this ),
+      comm_( comm )
+    {
+      createLocalGeometries();
+      setupMacroGrid( domain );
     }
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b,
              const int (&cells)[ dimension ],
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = defaultCommunication() )
-    : domain_( a, b, cells ),
-      name_( name ),
+    : name_( name ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
-      globalIdSet_(),
-      localIdSet_(),
       comm_( comm )
     {
-      domain_.decompose( comm_.rank(), comm_.size() );
-      leafLevel_ = new GridLevel( *this );
-      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-      getRealImplementation( leafView_ ).update( *leafLevel_ );
-      hierarchicIndexSet_.update();
-
       createLocalGeometries();
+      setupMacroGrid( Domain( a, b, cells ) );
+    }
+
+    SPGrid ( const GlobalVector &a, const GlobalVector &b,
+             const int (&cells)[ dimension ],
+             const unsigned int periodic,
+             const std::string &name = "SPGrid",
+             const CollectiveCommunication &comm = defaultCommunication() )
+    : name_( name ),
+      leafLevel_( 0 ),
+      leafView_( LeafGridViewImpl() ),
+      hierarchicIndexSet_( *this ),
+      comm_( comm )
+    {
+      createLocalGeometries();
+      setupMacroGrid( Domain( a, b, cells, periodic ) );
     }
 
     ~SPGrid ()
@@ -477,12 +489,7 @@ namespace Dune
       clear();
       name_ = ioData.name;
       time = ioData.time;
-      domain_ = Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells );
-      domain_.decompose( comm().rank(), comm().size() );
-      leafLevel_ = new GridLevel( *this );
-
-      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-      getRealImplementation( leafView_ ).update( *leafLevel_ );
+      setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells ) );
 
       for( int level = 0; level <= ioData.maxLevel; ++level )
       {
@@ -533,6 +540,16 @@ namespace Dune
         macroLevel = &(macroLevel->fatherLevel());
       delete macroLevel;
       leafLevel_ = 0;
+    }
+
+    void setupMacroGrid ( const Domain &domain )
+    {
+      domain_ = domain;
+      domain_.decompose( comm_.rank(), comm_.size() );
+      leafLevel_ = new GridLevel( *this );
+      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
+      getRealImplementation( leafView_ ).update( *leafLevel_ );
+      hierarchicIndexSet_.update();
     }
 
     static CollectiveCommunication defaultCommunication ()
