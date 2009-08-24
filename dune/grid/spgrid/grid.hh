@@ -545,7 +545,7 @@ namespace Dune
     void setupMacroGrid ( const Domain &domain )
     {
       domain_ = domain;
-      domain_.decompose( comm_.rank(), comm_.size() );
+      // domain_.decompose( comm_.rank(), comm_.size() );
       leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );

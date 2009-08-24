@@ -20,71 +20,56 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPDomain ()
-    : periodic_( 0 )
     {
       for( int i = 0; i < dimension; ++i )
       {
-        globalOrigin_[ i ] = ctype( 0 );
-        globalWidth_[ i ] = ctype( 1 );
-        globalCells_[ i ] = 1;
+        origin_[ i ] = ctype( 0 );
+        width_[ i ] = ctype( 1 );
+        cells_[ i ] = 1;
       }
-      undecompose();
     }
 
     SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const unsigned int periodic = 0 )
-    : globalCells_( cells ),
-      periodic_( periodic )
+    : cells_( cells )
     {
       for( int i = 0; i < dimension; ++i )
       {
-        globalOrigin_[ i ] = std::min( a[ i ], b[ i ] );
-        globalWidth_[ i ] = std::max( a[ i ], b[ i ] ) - globalOrigin_[ i ];
+        origin_[ i ] = std::min( a[ i ], b[ i ] );
+        width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
       }
-      undecompose();
     }
-
-    void undecompose ()
-    {
-      localOrigin_ = globalOrigin_;
-      localWidth_ = globalWidth_;
-      localCells_ = globalCells_;
-    }
-
-    void decompose ( int rank, int size );
 
     const GlobalVector &origin () const
     {
-      return localOrigin_;
+      return origin_;
     }
 
     const GlobalVector &width () const
     {
-      return localWidth_;
+      return width_;
     }
 
     const MultiIndex &cells () const
     {
-      return localCells_;
+      return cells_;
     }
 
     GlobalVector h () const
     {
       GlobalVector h;
       for( int i = 0; i < dimension; ++i )
-        h[ i ] = globalWidth_[ i ] / ctype( globalCells_[ i ] );
+        h[ i ] = width_[ i ] / ctype( cells_[ i ] );
       return h;
     }
 
   private:
-    GlobalVector globalOrigin_, globalWidth_;
-    GlobalVector localOrigin_, localWidth_;
-    MultiIndex globalCells_, localCells_;
-    unsigned int periodic_;
+    GlobalVector origin_, width_;
+    MultiIndex offset_, cells_;
   };
 
 
-  
+#if 0
   template< class ct, int dim >
   void SPDomain< ct, dim >::decompose ( int rank, int size )
   {
@@ -116,6 +101,7 @@ namespace Dune
       }
     }
   }
+#endif
 
 }
 
