@@ -2,6 +2,7 @@
 #define DUNE_SPGRID_GRID_HH
 
 #include <dune/common/mpicollectivecommunication.hh>
+#include <dune/common/interfaces.hh>
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
@@ -108,7 +109,8 @@ namespace Dune
 
   template< class ct, int dim >
   class SPGrid
-  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > >
+  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > >,
+    public HasHierarchicIndexSet
   {
     typedef SPGrid< ct, dim > This;
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > > Base;
@@ -153,6 +155,8 @@ namespace Dune
     typedef typename LevelGridView::IndexSet LevelIndexSet;
     typedef typename LeafGridView::IndexSet LeafIndexSet;
 
+    typedef SPHierarchyIndexSet< const This > HierarchicIndexSet;
+
     typedef SPGridLevel< const This > GridLevel;
 
     static const int numDirections = GridLevel::numDirections;
@@ -167,6 +171,7 @@ namespace Dune
       name_( "SPGrid" ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
+      hierarchicIndexSet_( *this ),
       globalIdSet_(),
       localIdSet_(),
       comm_( comm )
@@ -175,6 +180,7 @@ namespace Dune
       leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
+      hierarchicIndexSet_.update();
 
       createLocalGeometries();
     }
@@ -187,6 +193,7 @@ namespace Dune
       name_( name ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
+      hierarchicIndexSet_( *this ),
       globalIdSet_(),
       localIdSet_(),
       comm_( comm )
@@ -195,6 +202,7 @@ namespace Dune
       leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
+      hierarchicIndexSet_.update();
 
       createLocalGeometries();
     }
@@ -370,6 +378,11 @@ namespace Dune
       return leafView().indexSet();
     }
 
+    const HierarchicIndexSet &hierarchicIndexSet () const
+    {
+      return hierarchicIndexSet_;
+    }
+
     void globalRefine ( const int refCount,
                         const unsigned int refDir = numDirections-1 )
     {
@@ -542,6 +555,7 @@ namespace Dune
     GridLevel *leafLevel_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;
+    HierarchicIndexSet hierarchicIndexSet_;
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
