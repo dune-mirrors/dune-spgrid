@@ -42,6 +42,14 @@ namespace Dune
       }
     }
 
+    void decompose ( std::vector< This > &decomposition )
+    {
+      const unsigned int size = decomposition.size();
+      assert( size > 0 );
+      decomposition[ 0 ] = *this;
+      decompose( decomposition, 0, size );
+    }
+
     const GlobalVector &origin () const
     {
       return origin_;
@@ -66,44 +74,53 @@ namespace Dune
     }
 
   private:
+    static void decompose ( std::vector< This > &decomposition,
+                            const unsigned int offset, const unsigned int size );
+
     GlobalVector origin_, width_;
     MultiIndex offset_, cells_;
   };
 
 
-#if 0
   template< class ct, int dim >
-  void SPDomain< ct, dim >::decompose ( int rank, int size )
+  inline void
+  SPDomain< ct, dim >::decompose ( std::vector< This > &decomposition,
+                                   const unsigned int offset, const unsigned int size )
   {
-    undecompose();
-
-    assert( (rank >= 0) && (rank < size) );
+    assert( offset+size <= decomposition.size() );
     if( size > 1 )
     {
+      const int leftOffset = offset;
+      const int leftSize = size / 2;
+
+      const int rightOffset = leftOffset + leftSize;
+      const int rightSize = size - leftSize;
+
+      This &left = decomposition[ leftOffset ];
+      This &right = decomposition[ rightOffset ];
+
       int dir = 0;
       for( int i = 1; i < dimension; ++i )
-        dir = (localCells_[ i ] > localCells_[ dir ] ? i : dir);
+        dir = argmax( left.cells_, i, dir );
 
-      const int lsize = size / 2;
-      const int cells = localCells_[ dir ];
-      const int lcells = lsize * cells / size;
-      const ctype lwidth = ctype( lcells )*localWidth_[ dir ] / ctype( cells );
-      if( rank < lsize )
-      {
-        localCells_[ dir ] = lcells;
-        localWidth_[ dir ] = lwidth;
-        decompose( rank, lsize );
-      }
-      else
-      {
-        localCells_[ dir ] -= lcells;
-        localWidth_[ dir ] -= lwidth;
-        localOrigin_[ dir ] += lwidth;
-        decompose( rank - lsize, size - lsize ); 
-      }
+      const int cells = left.cells_[ dir ];
+      const int leftCells = (leftSize * cells) / size;
+      const int rightCells = cells - leftCells;
+
+      right = left;
+
+      left.cells_[ dir ] = leftCells;
+      left.width_[ dir ] *= ctype( leftCells ) / ctype( cells );
+
+      right.cells_[ dir ] = rightCells;
+      right.width_[ dir ] *= ctype( leftCells ) / ctype( cells );
+
+      right.offset_[ dir ] += left.width_[ dir ];
+
+      decompose( decomposition, leftOffset, leftSize );
+      decompose( decomposition, rightOffset, rightSize );
     }
   }
-#endif
 
 }
 

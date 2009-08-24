@@ -545,7 +545,9 @@ namespace Dune
     void setupMacroGrid ( const Domain &domain )
     {
       domain_ = domain;
-      // domain_.decompose( comm_.rank(), comm_.size() );
+      decomposition_.resize( comm().size() );
+      domain_.decompose( decomposition_ );
+
       leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
@@ -567,6 +569,7 @@ namespace Dune
     {};
   
     Domain domain_;
+    std::vector< Domain > decomposition_;
     std::string name_;
     GenericGeometry::CodimTable< TheCube, dimension > cubes_;
     GridLevel *leafLevel_;

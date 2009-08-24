@@ -12,6 +12,20 @@ namespace Dune
     return bitCount;
   }
 
+
+
+  template< class Array, class Index >
+  inline Index argmax( const Array &array, Index i, Index j )
+  {
+    return (array[ i ] > array[ j ] ? i : j);
+  }
+
+  template< class Array, class Index >
+  inline Index argmin( const Array &array, Index i, Index j )
+  {
+    return (array[ i ] < array[ j ] ? i : j);
+  }
+
 }
 
 #endif // #ifndef DUNE_SPGRID_MISC_HH
