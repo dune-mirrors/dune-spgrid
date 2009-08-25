@@ -57,6 +57,7 @@ namespace Dune
 
   private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
+    typedef typename GridLevel::Domain Domain;
 
   public:
     SPIntersection ( const EntityImpl &entityImpl, const int face )
@@ -82,7 +83,10 @@ namespace Dune
 
     bool boundary () const
     {
-      return !neighbor();
+      const MultiIndex &id = inside_->entityInfo().id();
+      const int i = face_ >> 1;
+      const int bound = 1 + (face_ & 1) * (2*gridLevel().cells()[ i ] - 2);
+      return (id[ i ] == bound);
     }
 
     int boundaryId () const
@@ -92,13 +96,10 @@ namespace Dune
 
     bool neighbor () const
     {
-      // this should be done much more efficiently
-      MultiIndex id = inside_->entityInfo().id();
-      id.axpy( 2, gridLevel().cube().subId( 1, face_ ) );
-      bool neighbor = true;
-      for( int i = 0; i < dimension; ++i )
-        neighbor &= ((id[ i ] > 0) && (id[ i ] < 2*gridLevel().cells()[ i ]));
-      return neighbor;
+      const MultiIndex &id = inside_->entityInfo().id();
+      const int i = face_ >> 1;
+      const int bound = 1 + (face_ & 1) * (2*gridLevel().cells()[ i ] - 2);
+      return (id[ i ] != bound) || gridLevel().domain().periodic( i );
     }
 
     EntityPointer inside () const
@@ -109,7 +110,12 @@ namespace Dune
     EntityPointer outside () const
     {
       MultiIndex id = inside_->entityInfo().id();
-      id.axpy( 2, gridLevel().cube().subId( 1, face_ ) );
+      const int i = face_ >> 1;
+      const int bound = 1 + (face_ & 1)*(2*gridLevel().cells()[ i ] - 2);
+      if( id[ i ] == bound )
+        id[ i ] = 1 + (1 - (face_ & 1)) * (2*gridLevel().cells()[ i ] - 2);
+      else
+        id[ i ] += 4*(face_ & 1) - 2;
       return EntityPointerImpl( gridLevel(), id );
     }
 
@@ -120,12 +126,12 @@ namespace Dune
 
     const LocalGeometry &geometryInInside () const
     {
-      return gridLevel().grid().localFaceGeometry ( indexInInside() );
+      return gridLevel().grid().localFaceGeometry( indexInInside() );
     }
 
     const LocalGeometry &geometryInOutside () const
     {
-      return gridLevel().grid().localFaceGeometry ( indexInOutside() );
+      return gridLevel().grid().localFaceGeometry( indexInOutside() );
     }
 
     const Geometry &geometry () const

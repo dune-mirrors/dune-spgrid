@@ -459,6 +459,7 @@ namespace Dune
       ioData.origin = domain().origin();
       ioData.width = domain().width();
       ioData.cells = domain().cells();
+      ioData.periodic = domain().periodic();
       ioData.maxLevel = maxLevel();
       ioData.refDirections.resize( maxLevel() );
       for( int level = 0; level < maxLevel(); ++level )
@@ -489,7 +490,7 @@ namespace Dune
       clear();
       name_ = ioData.name;
       time = ioData.time;
-      setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells ) );
+      setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
 
       for( int level = 0; level <= ioData.maxLevel; ++level )
       {
@@ -545,8 +546,6 @@ namespace Dune
     void setupMacroGrid ( const Domain &domain )
     {
       domain_ = domain;
-      decomposition_.resize( comm().size() );
-      //domain_.decompose( decomposition_ );
 
       leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
@@ -569,7 +568,6 @@ namespace Dune
     {};
   
     Domain domain_;
-    std::vector< Domain > decomposition_;
     std::string name_;
     GenericGeometry::CodimTable< TheCube, dimension > cubes_;
     GridLevel *leafLevel_;

@@ -8,6 +8,9 @@
 namespace Dune
 {
 
+  // SPDomain
+  // --------
+
   template< class ct, int dim >
   class SPDomain
   {
@@ -22,44 +25,27 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPDomain ()
+    : periodic_( 0 )
     {
       for( int i = 0; i < dimension; ++i )
       {
         origin_[ i ] = ctype( 0 );
         width_[ i ] = ctype( 1 );
         cells_[ i ] = 1;
-        offset_[ i ] = 0;
-
-        neighbor_[ 2*i ] = 0;
-        neighbor_[ 2*i+1 ] = 0;
       }
     }
 
     SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const unsigned int periodic = 0 )
-    : cells_( cells )
+    : cells_( cells ),
+      periodic_( periodic )
     {
       for( int i = 0; i < dimension; ++i )
       {
         origin_[ i ] = std::min( a[ i ], b[ i ] );
         width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
-        offset_[ i ] = 0;
-
-        This *nb = ((periodic & (1 << i)) != 0 ? this : 0);
-        neighbor_[ 2*i ] = nb;
-        neighbor_[ 2*i+1 ] = nb;
       }
     }
-
-#if 0
-    void decompose ( std::vector< This > &decomposition )
-    {
-      const unsigned int size = decomposition.size();
-      assert( size > 0 );
-      decomposition[ 0 ] = *this;
-      decompose( decomposition, 0, size );
-    }
-#endif
 
     const GlobalVector &origin () const
     {
@@ -84,16 +70,21 @@ namespace Dune
       return h;
     }
 
+    bool periodic ( const int i ) const
+    {
+      assert( (i >= 0) && (i < dimension) );
+      return ((periodic_ & (1 << i)) != 0);
+    }
+
+    unsigned int periodic () const
+    {
+      return periodic_;
+    }
+
   private:
-#if 0
-    static void decompose ( std::vector< This > &decomposition,
-                            const unsigned int offset, const unsigned int size );
-#endif
-
     GlobalVector origin_, width_;
-    MultiIndex offset_, cells_;
-
-    This *neighbor_[ 2*dimension ];
+    MultiIndex cells_;
+    unsigned int periodic_;
   };
 
 

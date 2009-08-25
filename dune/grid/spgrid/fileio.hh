@@ -24,6 +24,7 @@ namespace Dune
     Vector origin;
     Vector width;
     MultiIndex cells;
+    unsigned int periodic;
     int maxLevel;
     std::vector< unsigned int > refDirections;
 
@@ -54,6 +55,14 @@ namespace Dune
     fileOut << "cells";
     for( int i = 0; i < dim; ++i )
       fileOut << " " << cells[ i ];
+    fileOut << std::endl;
+
+    fileOut << "periodic";
+    for( int i = 0; i < dim; ++i )
+    {
+      if( (periodic & (1 << i)) != 0 )
+        fileOut << " " << i;
+    }
     fileOut << std::endl;
 
     fileOut << "maxLevel " << maxLevel << std::endl;
@@ -121,6 +130,17 @@ namespace Dune
         for( int i = 0; i < dim; ++i )
           lineIn >> cells[ i ];
         flags |= flagCells;
+      }
+      else if( cmd == "periodic" )
+      {
+        while( !lineIn.eof() )
+        {
+          int axis;
+          lineIn >> axis;
+          if( (axis < 0) || (axis >= dim) )
+            DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Invalid periodic axis: " << axis << "." );
+          periodic |= (1 << axis);
+        }
       }
       else if( cmd == "maxLevel" )
       {
