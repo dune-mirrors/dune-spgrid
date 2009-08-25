@@ -27,6 +27,9 @@ namespace Dune
         width_[ i ] = ctype( 1 );
         cells_[ i ] = 1;
         offset_[ i ] = 0;
+
+        neighbor_[ 2*i ] = 0;
+        neighbor_[ 2*i+1 ] = 0;
       }
     }
 
@@ -39,9 +42,14 @@ namespace Dune
         origin_[ i ] = std::min( a[ i ], b[ i ] );
         width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
         offset_[ i ] = 0;
+
+        This *neighbor = ((periodic & (1 << i)) != 0 ? this : 0);
+        neighbor_[ 2*i ] = neighbor;
+        neighbor_[ 2*i+1 ] = neighbor;
       }
     }
 
+#if 0
     void decompose ( std::vector< This > &decomposition )
     {
       const unsigned int size = decomposition.size();
@@ -49,6 +57,7 @@ namespace Dune
       decomposition[ 0 ] = *this;
       decompose( decomposition, 0, size );
     }
+#endif
 
     const GlobalVector &origin () const
     {
@@ -74,14 +83,19 @@ namespace Dune
     }
 
   private:
+#if 0
     static void decompose ( std::vector< This > &decomposition,
                             const unsigned int offset, const unsigned int size );
+#endif
 
     GlobalVector origin_, width_;
     MultiIndex offset_, cells_;
+
+    This *neighbor[ 2*dimension ];
   };
 
 
+#if 0
   template< class ct, int dim >
   inline void
   SPDomain< ct, dim >::decompose ( std::vector< This > &decomposition,
@@ -121,6 +135,7 @@ namespace Dune
       decompose( decomposition, rightOffset, rightSize );
     }
   }
+#endif
 
 }
 

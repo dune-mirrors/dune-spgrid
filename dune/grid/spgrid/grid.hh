@@ -546,7 +546,7 @@ namespace Dune
     {
       domain_ = domain;
       decomposition_.resize( comm().size() );
-      domain_.decompose( decomposition_ );
+      //domain_.decompose( decomposition_ );
 
       leafLevel_ = new GridLevel( *this );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
