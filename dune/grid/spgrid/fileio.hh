@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>

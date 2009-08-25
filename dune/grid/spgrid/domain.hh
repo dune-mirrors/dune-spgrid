@@ -3,6 +3,8 @@
 
 #include <dune/common/fvector.hh>
 
+#include <dune/grid/spgrid/multiindex.hh>
+
 namespace Dune
 {
 
@@ -43,9 +45,9 @@ namespace Dune
         width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
         offset_[ i ] = 0;
 
-        This *neighbor = ((periodic & (1 << i)) != 0 ? this : 0);
-        neighbor_[ 2*i ] = neighbor;
-        neighbor_[ 2*i+1 ] = neighbor;
+        This *nb = ((periodic & (1 << i)) != 0 ? this : 0);
+        neighbor_[ 2*i ] = nb;
+        neighbor_[ 2*i+1 ] = nb;
       }
     }
 
@@ -91,7 +93,7 @@ namespace Dune
     GlobalVector origin_, width_;
     MultiIndex offset_, cells_;
 
-    This *neighbor[ 2*dimension ];
+    This *neighbor_[ 2*dimension ];
   };
 
 
