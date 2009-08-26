@@ -1,6 +1,6 @@
 griddir = $(includedir)/dune/grid
 grid_HEADERS = spgrid.hh
 
-SUBDIRS = io spgrid utility
+SUBDIRS = common io spgrid utility
 
 include $(top_srcdir)/am/global-rules
