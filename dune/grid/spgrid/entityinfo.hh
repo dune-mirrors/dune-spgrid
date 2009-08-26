@@ -115,7 +115,9 @@ namespace Dune
     }
 
     void update ()
-    {}
+    {
+      assert( id_.direction() == direction() );
+    }
 
     void down ()
     {
@@ -200,7 +202,9 @@ namespace Dune
     }
 
     void update ()
-    {}
+    {
+      assert( id_.direction() == direction() );
+    }
 
   private:
     const GridLevel *gridLevel_;
