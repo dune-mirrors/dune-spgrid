@@ -23,9 +23,9 @@ namespace Dune
   {
     typedef SPEntityPointer< codim, Grid > This;
 
+  public:
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-  public:
     static const int dimension = Traits::Cube::dimension;
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
