@@ -1,21 +1,21 @@
 #ifndef DUNE_SPGRID_SEITERATOR_HH
 #define DUNE_SPGRID_SEITERATOR_HH
 
-#include <dune/grid/common/superelementiterator.hh>
+#include <dune/grid/common/superentityiterator.hh>
 
 #include <dune/grid/spgrid/entitypointer.hh>
 
 namespace Dune
 {
 
-  // SPSuperElementIterator
-  // ----------------------
+  // SPSuperEntityIterator
+  // ---------------------
 
   template< class Grid >
-  class SPSuperElementIterator
+  class SPSuperEntityterator
   : public SPEntityPointer< 0, Grid >
   {
-    typedef SPSuperElementIterator< Grid > This;
+    typedef SPSuperEntityIterator< Grid > This;
     typedef SPEntityPointer< 0, Grid > Base;
 
   public:
@@ -49,8 +49,8 @@ namespace Dune
 
   protected:
     template< int codim, class BeginEnd >
-    SPSuperElementIterator ( const typename Codim< codim >::EntityImpl &entityImpl,
-                             const BeginEnd &be )
+    SPSuperEntityIterator ( const typename Codim< codim >::EntityImpl &entityImpl,
+                            const BeginEnd &be )
     : Base( entityImpl.gridLevel() )
     {
       const unsigned int direction = entityImpl.entityInfo().direction();
@@ -82,11 +82,11 @@ namespace Dune
 
 
 
-  // SPSuperElementIterator::SequenceProvider
-  // ----------------------------------------
+  // SPSuperEntityIterator::SequenceProvider
+  // ---------------------------------------
 
   template< class Grid >
-  struct SPSuperElementIterator< Grid >::SequenceProvider
+  struct SPSuperEntityIterator< Grid >::SequenceProvider
   {
     static const unsigned int numDirections = 1 << dimension;
 
@@ -121,7 +121,7 @@ namespace Dune
 
 
   template< class Grid >
-  SPSuperElementIterator< Grid >::SequenceProvider::SequenceProvider ()
+  SPSuperEntityIterator< Grid >::SequenceProvider::SequenceProvider ()
   {
     for( unsigned int dir = 0; dir < numDirections; ++dir )
     {
@@ -160,7 +160,7 @@ namespace Dune
 
 
   template< class Grid >
-  SPSuperElementIterator< Grid >::SequenceProvider::~SequenceProvider ()
+  SPSuperEntityIterator< Grid >::SequenceProvider::~SequenceProvider ()
   {
     for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
     {
