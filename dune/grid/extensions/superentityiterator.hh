@@ -1,8 +1,6 @@
 #ifndef DUNE_GRID_SUPERENTITYITERATOR_HH
 #define DUNE_GRID_SUPERENTITYITERATOR_HH
 
-#include <dune/grid/common/superelementiterator.hh>
-
 namespace Dune
 {
 
@@ -64,7 +62,7 @@ namespace Dune
       static const bool hasSuperEntityIterator
         = ViewTraits::template Codim< codim >::hasSuperEntityIterator;
 
-      typedef ViewTraits::template Codim< codim >::SuperEntityIterator
+      typedef typename ViewTraits::template Codim< codim >::SuperEntityIterator
         SuperEntityIterator;
     };
 
@@ -73,27 +71,17 @@ namespace Dune
     {}
 
     template< class Entity >
-    SuperEntityIterator superEntityBegin ( const Entity &entity ) const
+    typename Codim< Entity::codimension >::SuperEntityIterator
+    superEntityBegin ( const Entity &entity ) const
     {
-      return superEntityBegin< Entity::codim >( entity );
+      return gridView_.superEntityBegin< Entity::codimension >( entity );
     }
 
     template< class Entity >
-    SuperEntityIterator superEntityEnd ( const Entity &entity ) const
+    typename Codim< Entity::codimension >::SuperEntityIterator
+    superEntityEnd ( const Entity &entity ) const
     {
-      return superEntityEnd< Entity::codim >( entity );
-    }
-
-    template< int codim >
-    SuperEntityIterator superEntityBegin ( const Entity &entity ) const
-    {
-      return gridView_.superEntityBegin( entity );
-    }
-
-    template< int codim >
-    SuperEntityIterator superEntityEnd ( const Entity &entity ) const
-    {
-      return gridView_.superEntityEnd( entity );
+      return gridView_.superEntityEnd< Entity::codimension >( entity );
     }
 
   private:

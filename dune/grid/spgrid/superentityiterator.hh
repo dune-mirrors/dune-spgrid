@@ -12,7 +12,7 @@ namespace Dune
   // ---------------------
 
   template< class Grid >
-  class SPSuperEntityterator
+  class SPSuperEntityIterator
   : public SPEntityPointer< 0, Grid >
   {
     typedef SPSuperEntityIterator< Grid > This;

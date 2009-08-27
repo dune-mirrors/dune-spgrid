@@ -3,6 +3,8 @@
 
 #include <dune/grid/common/capabilities.hh>
 
+#include <dune/grid/extensions/superentityiterator.hh>
+
 namespace Dune
 {
 
@@ -66,6 +68,18 @@ namespace Dune
     struct viewThreadSafe< SPGrid< ct, dim > >
     {
       static const bool v = false;
+    };
+
+  }
+
+
+  namespace Extensions
+  {
+
+    template< class ct, int dim >
+    struct SuperEntityIterator< SPGrid< ct, dim > >
+    {
+      static const bool v = true;
     };
 
   }

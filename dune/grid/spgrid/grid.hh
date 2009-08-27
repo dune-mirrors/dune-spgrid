@@ -10,7 +10,7 @@
 
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/gridview.hh>
-#include <dune/grid/spgrid/hiterator.hh>
+#include <dune/grid/spgrid/hierarchiciterator.hh>
 #include <dune/grid/spgrid/idset.hh>
 #include <dune/grid/spgrid/indexset.hh>
 #include <dune/grid/spgrid/fileio.hh>

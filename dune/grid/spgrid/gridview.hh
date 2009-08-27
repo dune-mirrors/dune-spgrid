@@ -5,11 +5,14 @@
 
 #include <dune/grid/common/gridview.hh>
 
+#include <dune/grid/extensions/superentityiterator.hh>
+
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/indexset.hh>
 #include <dune/grid/spgrid/intersection.hh>
 #include <dune/grid/spgrid/intersectioniterator.hh>
 #include <dune/grid/spgrid/iterator.hh>
+#include <dune/grid/spgrid/superentityiterator.hh>
 
 namespace Dune
 {
@@ -59,6 +62,9 @@ namespace Dune
 
       typedef typename Partition< pitype >::Iterator Iterator;
       typedef typename Partition< pitype >::IteratorImpl IteratorImpl;
+
+      static const bool hasSuperEntityIterator = true;
+      typedef Dune::SuperEntityIterator< const Grid, SPSuperEntityIterator > SuperEntityIterator;
     };
   };
 
@@ -241,6 +247,22 @@ namespace Dune
     IntersectionIterator iend ( const typename Codim< 0 >::Entity &entity ) const
     {
       return IntersectionIteratorImpl( entity, GridLevel::Cube::numFaces );
+    }
+
+    template< int codim >
+    typename Codim< codim >::SuperEntityIterator
+    superEntityBegin ( const typename Codim< codim >::Entity &entity ) const
+    {
+      typedef SPSuperEntityIterator< const Grid > Impl;
+      return Impl( Grid::getRealImplementaton( entity ), Impl::Begin() );
+    }
+
+    template< int codim >
+    typename Codim< codim >::SuperEntityIterator
+    superEntityEnd ( const typename Codim< codim >::Entity &entity ) const
+    {
+      typedef SPSuperEntityIterator< const Grid > Impl;
+      return Impl( Grid::getRealImplementaton( entity ), Impl::End() );
     }
 
     const CollectiveCommunication &comm () const
