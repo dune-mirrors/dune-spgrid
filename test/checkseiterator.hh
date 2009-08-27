@@ -62,7 +62,9 @@ namespace Dune
       {
         std::cout << "Number of super entities differs for entity "
                   << indexSet.index( entity )
-                  << " of codimension " << codim << "." << std::endl;
+                  << " of codimension " << codim
+                  << " (" << cnt << " != " << count[ indexSet.index( entity ) ] << ")."
+                  << std::endl;
       }
     }
   }

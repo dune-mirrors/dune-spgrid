@@ -47,13 +47,23 @@ namespace Dune
   protected:
     template< class EntityImpl, class BeginEnd >
     SPSuperEntityIterator ( const EntityImpl &entityImpl, const BeginEnd &be )
-    : Base( entityImpl.gridLevel() )
+    : Base( entityImpl.gridLevel() ),
+      fBoundary_( 0 )
     {
       const unsigned int direction = entityImpl.entityInfo().direction();
       sequence_ = SequenceProvider::sequence( direction, be );
 
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      entityInfo.id() = entityImpl.entityInfo().id();
+      MultiIndex &id = entityInfo.id();
+
+      id = entityImpl.entityInfo().id();
+      for( int i = 0; i < dimension; ++i )
+      {
+        const bool bndLow = (id[ i ] == 0);
+        const bool bndHigh = (id[ i ] == 2*entityInfo.gridLevel().cells()[ i ]);
+        fBoundary_ |= (int( bndLow ) | 2*int( bndHigh )) << (2*i);
+      }
+
       increment();
     }
 
@@ -64,8 +74,12 @@ namespace Dune
 
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
       entityInfo.id() += sequence_->idAdd;
+      const bool skip = ((fBoundary_ & sequence_->fBoundary) != 0);
       sequence_ = sequence_->next;
-      entityInfo.update();
+      if( skip )
+        increment();
+      else
+        entityInfo.update();
     }
 
   protected:
@@ -73,6 +87,7 @@ namespace Dune
 
   private:
     const Sequence *sequence_;
+    unsigned int fBoundary_;
   };
 
 
@@ -136,7 +151,7 @@ namespace Dune
           const int dirbit = int( (dir >> i) & 1);
           const int dbit = int( (d >> i) & 1 );
           next->idAdd[ i ] = (1 - dirbit) * (2*dbit - 1);
-          next->fBoundary |= (1 - dirbit) * (1 << 2*dbit);
+          next->fBoundary |= (1 - dirbit) * (1 << (2*i + dbit));
         }
         next->idAdd -= head->idAdd;
         head->idAdd += next->idAdd;
