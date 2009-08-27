@@ -53,18 +53,17 @@ namespace Dune
 
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
       entityInfo.id() = entityImpl.entityInfo().id();
-      entityInfo.id() += sequence_->idAdd;
-      entityInfo.update();
+      increment();
     }
 
   public:
     void increment ()
     {
-      sequence_ = sequence_->next;
       assert( sequence_ != 0 );
 
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
       entityInfo.id() += sequence_->idAdd;
+      sequence_ = sequence_->next;
       entityInfo.update();
     }
 
