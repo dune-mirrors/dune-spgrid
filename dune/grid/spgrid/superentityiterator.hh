@@ -39,7 +39,7 @@ namespace Dune
     {
       const Sequence *next;
       MultiIndex idAdd;
-      unsigned int fBorder;
+      unsigned int fBoundary;
     };
 
     struct SequenceProvider;
@@ -130,13 +130,13 @@ namespace Dune
           continue;
 
         Sequence *next = new Sequence;
-        next->fBorder = 0;
+        next->fBoundary = 0;
         for( int i = 0; i < dimension; ++i )
         {
           const int dirbit = int( (dir >> i) & 1);
           const int dbit = int( (d >> i) & 1 );
           next->idAdd[ i ] = (1 - dirbit) * (2*dbit - 1);
-          next->fBorder |= (1 - dirbit) * (1 << 2*dbit);
+          next->fBoundary |= (1 - dirbit) * (1 << 2*dbit);
         }
         next->idAdd -= head->idAdd;
         head->idAdd += next->idAdd;
@@ -148,13 +148,13 @@ namespace Dune
 
       Sequence *end = new Sequence;
       end->next = 0;
-      end->fBorder = 0;
+      end->fBoundary = 0;
       for( int i = 0; i < dimension; ++i )
         end->idAdd[ i ] = 3 * (1 - int( (dir >> i) & 1 ));
       end_[ dir ] = end;
 
       head->next = 0;
-      head->fBorder = 0;
+      head->fBoundary = 0;
       head->idAdd -= end->idAdd;
       head->idAdd *= -1;
       last->next = head;
