@@ -20,19 +20,18 @@ try
 
   typedef Dune::SPGrid< double, dimGrid > Grid;
 
-  if( argc < 3 )
+  if( argc < 2 )
   {
-    std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;
+    std::cerr << "Usage: " << argv[ 0 ] << " <dgf file>" << std::endl;
     return 1;
   }
 
   std::string dgfFile( argv[ 1 ] );
-  const int maxLevel = atoi( argv[ 2 ] );
 
   Dune::GridPtr< Grid > gridPtr( dgfFile );
   Grid &grid = *gridPtr;
 
-  checkSuperEntityIterator( grid.leafView() );
+  Dune::checkSuperEntityIterator< dimGrid >( grid.leafView() );
 
   return 0;
 }

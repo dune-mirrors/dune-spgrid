@@ -107,6 +107,9 @@ namespace Dune
 
       typedef typename Partition< pitype >::Iterator Iterator;
       typedef typename Partition< pitype >::IteratorImpl IteratorImpl;
+
+      static const bool hasSuperEntityIterator = true;
+      typedef Dune::SuperEntityIterator< const Grid, SPSuperEntityIterator > SuperEntityIterator;
     };
   };
 
@@ -254,7 +257,7 @@ namespace Dune
     superEntityBegin ( const typename Codim< codim >::Entity &entity ) const
     {
       typedef SPSuperEntityIterator< const Grid > Impl;
-      return Impl( Grid::getRealImplementaton( entity ), Impl::Begin() );
+      return Impl( Grid::getRealImplementation( entity ), typename Impl::Begin() );
     }
 
     template< int codim >
@@ -262,7 +265,7 @@ namespace Dune
     superEntityEnd ( const typename Codim< codim >::Entity &entity ) const
     {
       typedef SPSuperEntityIterator< const Grid > Impl;
-      return Impl( Grid::getRealImplementaton( entity ), Impl::End() );
+      return Impl( Grid::getRealImplementation( entity ), typename Impl::End() );
     }
 
     const CollectiveCommunication &comm () const

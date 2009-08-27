@@ -58,6 +58,13 @@ namespace Dune
       return *this;
     }
 
+    This &operator*= ( const int a )
+    {
+      for( int i = 0; i < dimension; ++i )
+        index_[ i ] *= a;
+      return *this;
+    }
+
     const int &operator[] ( const int i ) const
     {
       return index_[ i ];

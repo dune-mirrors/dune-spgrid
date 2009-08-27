@@ -18,6 +18,8 @@ namespace Dune
     typedef SPSuperEntityIterator< Grid > This;
     typedef SPEntityPointer< 0, Grid > Base;
 
+    template< class > friend class SPGridView;
+
   public:
     typedef typename Base::Traits Traits;
 
@@ -32,12 +34,6 @@ namespace Dune
     struct Begin {};
     struct End {};
 
-    template< int codim >
-    struct Codim
-    {
-      typedef SPEntity< codim, dimension, Grid > EntityImpl;
-    };
-
   private:
     struct Sequence
     {
@@ -48,16 +44,15 @@ namespace Dune
     struct SequenceProvider;
 
   protected:
-    template< int codim, class BeginEnd >
-    SPSuperEntityIterator ( const typename Codim< codim >::EntityImpl &entityImpl,
-                            const BeginEnd &be )
+    template< class EntityImpl, class BeginEnd >
+    SPSuperEntityIterator ( const EntityImpl &entityImpl, const BeginEnd &be )
     : Base( entityImpl.gridLevel() )
     {
       const unsigned int direction = entityImpl.entityInfo().direction();
       sequence_ = SequenceProvider::sequence( direction, be );
 
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      entityInfo.id() = entityImpl().entityInfo.id();
+      entityInfo.id() = entityImpl.entityInfo().id();
       entityInfo.id() += sequence_->idAdd;
       entityInfo.update();
     }
@@ -167,7 +162,7 @@ namespace Dune
       delete end_[ dir ];
       while( begin_[ dir ] != 0 )
       {
-        Sequence *tmp = begin_[ dir ];
+        const Sequence *tmp = begin_[ dir ];
         begin_[ dir ] = begin_[ dir ]->next;
         delete tmp;
       }
