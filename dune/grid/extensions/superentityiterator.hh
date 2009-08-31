@@ -29,6 +29,11 @@ namespace Dune
       realIterator.increment();
       return *this;
     }
+
+    int index () const
+    {
+      return realIterator.index();
+    }
     
     SuperEntityIterator ( const Implementation &implementation )
     : Base( implementation )

@@ -46,14 +46,22 @@ namespace Dune
 
         ++cnt;
 
-        bool found = false;
-        for( int i = 0; i < element.template count< codim >(); ++i )
-          found |= (element.template subEntity< codim >( i ) == codimIt);
-        if( !found )
+        int k = 0;
+        const int numSubs = element.template count< codim >();
+        while( (k < numSubs) && (element.template subEntity< codim >( k ) != codimIt) )
+          ++k;
+        if( k == numSubs )
         {
           std::cout << "Entity " << indexSet.index( entity )
                     << "of codimension " << codim
                     << "is not a subentity of its super entity iterator."
+                    << std::endl;
+        }
+        else if( k != seIt.index() )
+        {
+          std::cout << "Entity " << indexSet.index( entity )
+                    << "of codimension " << codim
+                    << "is subEntity " << k << " instead of " << seIt.index() << "."
                     << std::endl;
         }
       }

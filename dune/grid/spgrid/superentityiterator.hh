@@ -3,6 +3,7 @@
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
+#include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
 
 namespace Dune
@@ -39,6 +40,7 @@ namespace Dune
     {
       const Sequence *next;
       MultiIndex idAdd;
+      int index;
       unsigned int fBoundary;
     };
 
@@ -74,6 +76,7 @@ namespace Dune
 
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
       entityInfo.id() += sequence_->idAdd;
+      index_ = sequence_->index;
       const bool skip = ((fBoundary_ & sequence_->fBoundary) != 0);
       sequence_ = sequence_->next;
       if( skip )
@@ -82,11 +85,17 @@ namespace Dune
         entityInfo.update();
     }
 
+    int index () const
+    {
+      return index_;
+    }
+
   protected:
     using Base::entity_;
 
   private:
     const Sequence *sequence_;
+    int index_;
     unsigned int fBoundary_;
   };
 
@@ -133,8 +142,12 @@ namespace Dune
   template< class Grid >
   SPSuperEntityIterator< Grid >::SequenceProvider::SequenceProvider ()
   {
+    SPCube< typename Grid::ctype, dimension > cube;
+
     for( unsigned int dir = 0; dir < numDirections; ++dir )
     {
+      const int codim = dimension - bitCount( dir );
+
       Sequence *head = new Sequence;
 
       Sequence *last = head;
@@ -153,6 +166,17 @@ namespace Dune
           next->idAdd[ i ] = (1 - dirbit) * (2*dbit - 1);
           next->fBoundary |= (1 - dirbit) * (1 << (2*i + dbit));
         }
+        next->index = -1;
+        for( int k = 0; k < cube.count( codim ); ++k )
+        {
+          const MultiIndex &subId = cube.subId( codim, k );
+          bool found = true;
+          for( int i = 0; i < dimension; ++i )
+            found &= (next->idAdd[ i ] == -subId[ i ]);
+          if( found )
+            next->index = k;
+        }
+        assert( next->index != -1 );
         next->idAdd -= head->idAdd;
         head->idAdd += next->idAdd;
         
@@ -163,13 +187,15 @@ namespace Dune
 
       Sequence *end = new Sequence;
       end->next = 0;
+      end->index = -1;
       end->fBoundary = 0;
       for( int i = 0; i < dimension; ++i )
         end->idAdd[ i ] = 3 * (1 - int( (dir >> i) & 1 ));
       end_[ dir ] = end;
 
       head->next = 0;
-      head->fBoundary = 0;
+      head->index = end->index;
+      head->fBoundary = end->fBoundary;
       head->idAdd -= end->idAdd;
       head->idAdd *= -1;
       last->next = head;
