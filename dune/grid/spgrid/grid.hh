@@ -404,6 +404,7 @@ namespace Dune
         levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       }
       getRealImplementation( leafView_ ).update( *leafLevel_ );
+      hierarchicIndexSet_.update();
     }
 
     int overlapSize ( const int level, const int codim ) const
