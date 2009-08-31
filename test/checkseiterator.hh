@@ -118,6 +118,11 @@ namespace Dune
                     << "is subEntity " << k << " instead of " << seIt.index() << "."
                     << std::endl;
         }
+
+        SEIterator copy = seIt;
+        ++copy;
+        if( copy == seIt )
+          std::cout << "Two subsequent super entity iterators should differ." << std::endl;
       }
 
       if( cnt != count[ indexSet.index( entity ) ] )
