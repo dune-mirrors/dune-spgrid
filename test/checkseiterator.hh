@@ -2,17 +2,71 @@
 #define DUNE_SPGRID_CHECKSEITERATOR_HH
 
 #include <dune/grid/common/gridview.hh>
+#include <dune/grid/genericgeometry/misc.hh>
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
 namespace Dune
 {
 
-  template< int codim, class VT >
+  template< class VT >
+  struct CheckSuperEntityIterator;
+
+
+
+  template< class VT >
   void checkSuperEntityIterator ( const Dune::GridView< VT > &gridView )
   {
+    CheckSuperEntityIterator< VT >::apply( gridView );
+  }
+
+
+
+  template< class VT >
+  struct CheckSuperEntityIterator
+  {
     typedef Dune::GridView< VT > GridView;
+    typedef typename GridView::Grid Grid;
+
+    template< int codim >
+    struct Codim
+    {
+      template< bool b >
+      struct Check
+      {
+        static void apply ( const GridView &gridView );
+      };
+
+      template< bool b >
+      struct NoCheck
+      {
+        static void apply ( const GridView &gridView )
+        {}
+      };
+
+      static void apply ( const GridView &gridView )
+      {
+        const bool check = Extensions::SuperEntityIterator< Grid, codim >::v;
+        Dune::GenericGeometry::ProtectedIf< check, Check, NoCheck >::apply( gridView );
+      }
+    };
+
+    static void apply ( const GridView &gridView )
+    {
+      Dune::GenericGeometry::ForLoop< Codim, 1, GridView::dimension >::apply( gridView );
+    }
+  };
+
+
+  template< class VT >
+  template< int codim >
+  template< bool b >
+  inline void CheckSuperEntityIterator< VT >::Codim< codim >::Check< b >
+    ::apply ( const GridView &gridView )
+  {
     typedef typename GridView::IndexSet IndexSet;
+    std::cout << ">>> Checking SuperEntityIterator for codimension "
+              << codim << "..." << std::endl;
 
     const IndexSet &indexSet = gridView.indexSet();
     std::vector< int > count( indexSet.size( codim ), 0 );

@@ -31,7 +31,7 @@ try
   Dune::GridPtr< Grid > gridPtr( dgfFile );
   Grid &grid = *gridPtr;
 
-  Dune::checkSuperEntityIterator< dimGrid >( grid.leafView() );
+  Dune::checkSuperEntityIterator( grid.leafView() );
 
   return 0;
 }

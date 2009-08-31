@@ -98,16 +98,16 @@ namespace Dune
   namespace Extensions
   {
 
-    template< class Grid >
+    template< class Grid, int codim >
     struct SuperEntityIterator
     {
       static const bool v = false;
     };
 
-    template< class Grid >
-    struct SuperEntityIterator< const Grid >
+    template< class Grid, int codim >
+    struct SuperEntityIterator< const Grid, codim >
     {
-      static const bool v = SuperEntityIterator< Grid >::v;
+      static const bool v = SuperEntityIterator< Grid, codim >::v;
     };
 
   }

@@ -76,8 +76,8 @@ namespace Dune
   namespace Extensions
   {
 
-    template< class ct, int dim >
-    struct SuperEntityIterator< SPGrid< ct, dim > >
+    template< class ct, int dim, int codim >
+    struct SuperEntityIterator< SPGrid< ct, dim >, codim >
     {
       static const bool v = true;
     };
