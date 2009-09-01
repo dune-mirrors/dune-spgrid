@@ -307,7 +307,7 @@ namespace Dune
     const LevelIndexSet &levelIndexSet ( const int level ) const
     {
       assert( (level >= 0) && (level <= (int)levelIndexSets_.size()) );
-      assert( levelIndexSets_.size() == grid().maxLevel()+1 );
+      assert( (int)levelIndexSets_.size() == grid().maxLevel()+1 );
       return *levelIndexSets_[ level ];
     }
 
