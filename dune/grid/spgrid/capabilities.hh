@@ -70,6 +70,20 @@ namespace Dune
       static const bool v = false;
     };
 
+
+
+    // non-standard capabilities
+    // -------------------------
+
+    template< class Grid >
+    struct hasHierarchicIndexSet;
+
+    template< class ct, int dim >
+    struct hasHierarchicIndexSet< SPGrid< ct, dim > >
+    {
+      static const bool v = true;
+    };
+
   }
 
 
