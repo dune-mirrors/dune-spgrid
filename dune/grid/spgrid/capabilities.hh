@@ -72,8 +72,8 @@ namespace Dune
 
 
 
-    // non-standard capabilities
-    // -------------------------
+    // non-standard capabilities (see dune-fem)
+    // ----------------------------------------
 
     template< class Grid >
     struct hasHierarchicIndexSet;
@@ -84,8 +84,22 @@ namespace Dune
       static const bool v = true;
     };
 
+
+    template< class Grid >
+    struct supportsCallbackAdaptation;
+
+    template< class ct, int dim >
+    struct supportsCallbackAdaptation< SPGrid< ct, dim > >
+    {
+      static const bool v = true;
+    };
+
   }
 
+
+
+  // Extensions
+  // ----------
 
   namespace Extensions
   {

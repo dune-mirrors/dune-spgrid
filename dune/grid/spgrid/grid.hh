@@ -5,6 +5,7 @@
 #include <dune/common/interfaces.hh>
 
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/common/adaptcallback.hh>
 #include <dune/grid/genericgeometry/codimtable.hh>
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
@@ -405,6 +406,14 @@ namespace Dune
       }
       getRealImplementation( leafView_ ).update( *leafLevel_ );
       hierarchicIndexSet_.update();
+    }
+
+    template< class DataHandle >
+    void globalRefine ( const int refCount,
+                        AdaptDataHandleInterface< This, DataHandle > &handle,
+                        const unsigned int refDir = numDirections-1 )
+    {
+      DUNE_THROW( NotImplemented, "callback adaptation not yet supported." );
     }
 
     int overlapSize ( const int level, const int codim ) const
