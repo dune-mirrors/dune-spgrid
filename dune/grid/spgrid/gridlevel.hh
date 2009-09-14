@@ -182,6 +182,14 @@ namespace Dune
       return normal_[ i ];
     }
 
+    const int size () const
+    {
+      const int size = 1;
+      for( int i = 0; i < dimension; ++i )
+        size *= cells_[ i ];
+      return size;
+    }
+
   private:
     void buildGeometry ();
 

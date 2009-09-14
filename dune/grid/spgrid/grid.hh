@@ -413,7 +413,23 @@ namespace Dune
                         AdaptDataHandleInterface< This, DataHandle > &handle,
                         const unsigned int refDir = numDirections-1 )
     {
-      DUNE_THROW( NotImplemented, "callback adaptation not yet supported." );
+      for( int i = 0; i < refCount; ++i )
+      {
+        const LevelGridView fatherView = levelView( maxLevel() );
+
+        leafLevel_ = new GridLevel( *leafLevel_, refDir );
+        levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
+
+        hierarchicIndexSet_.update();
+        getRealImplementation( leafView_ ).update( *leafLevel_ );
+
+        handle.preAdapt( leafLevel_->size() );
+        typedef typename Codim< 0 >::LevelIterator LevelIterator;
+        const LevelIterator end = fatherView.template end< 0 >();
+        for( LevelIterator it = fatherView.template begin< 0 >(); it != end; ++it )
+          handle.postRefinement( *it );
+        handle.postAdapt();
+      }
     }
 
     int overlapSize ( const int level, const int codim ) const
