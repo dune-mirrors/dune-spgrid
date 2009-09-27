@@ -2,7 +2,6 @@
 #define DUNE_SPGRID_GRID_HH
 
 #include <dune/common/mpicollectivecommunication.hh>
-#include <dune/common/interfaces.hh>
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
@@ -110,8 +109,7 @@ namespace Dune
 
   template< class ct, int dim >
   class SPGrid
-  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > >,
-    public HasHierarchicIndexSet
+  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > >
   {
     typedef SPGrid< ct, dim > This;
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > > Base;
