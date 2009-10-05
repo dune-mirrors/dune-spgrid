@@ -4,9 +4,8 @@
 #include <cassert>
 #include <vector>
 
+#include <dune/common/forloop.hh>
 #include <dune/common/smartpointer.hh>
-
-#include <dune/grid/genericgeometry/misc.hh>
 
 #include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/misc.hh>
@@ -85,7 +84,7 @@ namespace Dune
       for( unsigned int dir = 0; dir < numDirections; ++dir )
         delete geometryInFather_[ dir ];
 
-      GenericGeometry::ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
+      ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
     }
 
     const Grid &grid () const
@@ -263,7 +262,7 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
-    GenericGeometry::ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
+    ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
     const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
     for( int face = 0; face < Cube::numFaces; ++face )
