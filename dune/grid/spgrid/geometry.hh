@@ -67,6 +67,11 @@ namespace Dune
       return global( cube.corner( i ) );
     }
 
+    bool affine () const
+    {
+      return true;
+    }
+
     GlobalVector global ( const LocalVector &local ) const
     {
       GlobalVector y = asImpl().origin();
