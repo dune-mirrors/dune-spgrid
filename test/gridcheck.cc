@@ -14,6 +14,7 @@
 #include <dune/grid/test/gridcheck.cc>
 #include <dune/grid/test/checkintersectionit.cc>
 #include <dune/grid/test/checkgeometryinfather.cc>
+#include <dune/grid/test/checkiterators.cc>
 
 static const int dimGrid = DIMGRID;
 
@@ -31,6 +32,7 @@ void performCheck ( Grid &grid, const int maxLevel )
     }
     std::cerr << ">>> Checking grid..." << std::endl;
     gridcheck( grid );
+    checkIterators( grid.leafView() );
     std::cerr << ">>> Checking intersections..." << std::endl;
     checkIntersectionIterator( grid );
     if( i > 0 )
