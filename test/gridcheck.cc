@@ -17,34 +17,11 @@
 
 static const int dimGrid = DIMGRID;
 
-int main ( int argc, char **argv )
-try
+
+
+template< class Grid >
+void performCheck ( Grid &grid, const int maxLevel )
 {
-  Dune::MPIHelper::instance( argc, argv );
-
-  typedef Dune::SPGrid< double, dimGrid > Grid;
-
-  if( argc < 3 )
-  {
-    std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;
-    return 1;
-  }
-
-  std::string dgfFile( argv[ 1 ] );
-  const int maxLevel = atoi( argv[ 2 ] );
-
-  Dune::GridPtr< Grid > gridPtr( dgfFile );
-  Grid &grid = *gridPtr;
-
-#if 0
-  Dune::FieldVector< double, dimGrid > a( 0.0 );
-  Dune::FieldVector< double, dimGrid > b( 1.0 );
-  int n[ dimGrid ];
-  for( int i = 0; i < dimGrid; ++i )
-    n[ i ] = 4;
-  Grid grid( a, b, n );
-#endif
-
   for( int i = 0; i <= maxLevel; ++i )
   {
     if( i > 0 )
@@ -64,12 +41,12 @@ try
   }
 
   std::cerr << ">>> Writing out grid..." << std::endl;
-  grid.writeGrid< Dune::ascii >( "gridcheck.spgrid", 0.0 );
+  grid.template writeGrid< Dune::ascii >( "gridcheck.spgrid", 0.0 );
 
   std::cerr << ">>> Reading back grid..." << std::endl;
   Grid rgrid;
   double time;
-  rgrid.readGrid< Dune::ascii >( "gridcheck.spgrid", time );
+  rgrid.template readGrid< Dune::ascii >( "gridcheck.spgrid", time );
 
   std::cerr << ">>> Checking grid..." << std::endl;
   gridcheck( rgrid );
@@ -80,6 +57,32 @@ try
     std::cerr << ">>> Checking geometry in father..." << std::endl;
     checkGeometryInFather( rgrid );
   }
+}
+
+
+int main ( int argc, char **argv )
+try
+{
+  Dune::MPIHelper::instance( argc, argv );
+
+
+  if( argc < 3 )
+  {
+    std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;
+    return 1;
+  }
+
+  std::string dgfFile( argv[ 1 ] );
+  const int maxLevel = atoi( argv[ 2 ] );
+
+  std::cout << "Isotropic grid" << std::endl;
+  Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPIsotropicRefinement > > isoGrid( dgfFile );
+  performCheck( *isoGrid, maxLevel );
+
+  std::cout << std::endl;
+  std::cout << "Anisotropic grid" << std::endl;
+  Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPAnisotropicRefinement > > anisoGrid( dgfFile );
+  performCheck( *anisoGrid, maxLevel );
 
   return 0;
 }

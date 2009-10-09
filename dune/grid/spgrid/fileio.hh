@@ -14,12 +14,12 @@
 namespace Dune
 {
 
-  template< class ctype, int dim >
+  template< class ctype, int dim, SPRefinementStrategy strategy >
   struct SPGridIOData
   {
     typedef FieldVector< ctype, dim > Vector;
     typedef SPMultiIndex< dim > MultiIndex;
-    typedef SPRefinement< ctype, dim > Refinement;
+    typedef SPRefinement< ctype, dim, strategy > Refinement;
 
     std::string name;
     ctype time;
@@ -42,9 +42,9 @@ namespace Dune
 
 
 
-  template< class ctype, int dim >
+  template< class ctype, int dim, SPRefinementStrategy strategy >
   inline void
-  SPGridIOData< ctype, dim >::writeAscii ( const std::string &filename ) const
+  SPGridIOData< ctype, dim, strategy >::writeAscii ( const std::string &filename ) const
   {
     std::ofstream fileOut( filename.c_str() );
 
@@ -78,9 +78,9 @@ namespace Dune
   }
 
 
-  template< class ctype, int dim >
+  template< class ctype, int dim, SPRefinementStrategy strategy >
   inline void
-  SPGridIOData< ctype, dim >::readAscii ( const std::string &filename )
+  SPGridIOData< ctype, dim, strategy >::readAscii ( const std::string &filename )
   {
     std::ifstream fileIn( filename.c_str() );
     if( !fileIn )
@@ -166,25 +166,12 @@ namespace Dune
 
     if( flags != flagAll )
       DUNE_THROW( IOError, "SPGrid file misses required fields: '" << filename << "'." );
-
-#if 0
-    std::cerr << "name=" << name << std::endl;
-    std::cerr << "time=" << time << std::endl;
-    std::cerr << "origin=" << origin << std::endl;
-    std::cerr << "width=" << width << std::endl;
-    std::cerr << "cells=" << cells << std::endl;
-    std::cerr << "maxLevel=" << maxLevel << std::endl;
-    std::cerr << "refDirections=";
-    for( size_t i = 0; i < refDirections.size(); ++i )
-      std::cerr << (i > 0 ? " ": "") << refDirections[ i ];
-    std::cerr << std::endl;
-#endif
   }
 
 
-  template< class ctype, int dim >
+  template< class ctype, int dim, SPRefinementStrategy strategy >
   inline std::string
-  SPGridIOData< ctype, dim >::readLine ( std::istream &in, unsigned int *count )
+  SPGridIOData< ctype, dim, strategy >::readLine ( std::istream &in, unsigned int *count )
   {
     std::string line;
     while( line.empty() && !in.eof() )
@@ -205,10 +192,10 @@ namespace Dune
   }
 
 
-  template< class ctype, int dim >
+  template< class ctype, int dim, SPRefinementStrategy strategy >
   template< class T >
   inline bool
-  SPGridIOData< ctype, dim >::match ( std::istream &in, const T &what )
+  SPGridIOData< ctype, dim, strategy >::match ( std::istream &in, const T &what )
   {
     T t;
     in >> t;

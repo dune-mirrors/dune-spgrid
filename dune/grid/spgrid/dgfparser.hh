@@ -10,25 +10,26 @@ namespace Dune
   // MacroGrid::Impl for SPGrid
   // --------------------------
 
-  template< class ct, int dim >
-  struct MacroGrid::Impl< SPGrid< ct, dim > >
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  struct MacroGrid::Impl< SPGrid< ct, dim, strategy > >
   {
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
     
-    static SPGrid< ct, dim > *
+    static SPGrid< ct, dim, strategy > *
     generate ( MacroGrid &macroGrid, const std::string &filename,
                MPICommunicatorType MPICOMM = MPIHelper::getCommunicator() );
   };
 
 
-  template< class ct, int dim >
-  inline SPGrid< ct, dim > *
-  MacroGrid::Impl< SPGrid< ct, dim > >
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy > *
+  MacroGrid::Impl< SPGrid< ct, dim, strategy > >
     ::generate ( MacroGrid &macroGrid, const std::string &filename, MPICommunicatorType )
   {
+    typedef SPGrid< ct, dim, strategy > Grid;
     macroGrid.element = Cube;
-    macroGrid.dimgrid = SPGrid< ct, dim >::dimension;
-    macroGrid.dimw = SPGrid< ct, dim >::dimensionworld;
+    macroGrid.dimgrid = Grid::dimension;
+    macroGrid.dimw = Grid::dimensionworld;
 
     std::ifstream file( filename.c_str() );
     dgf::IntervalBlock intervalBlock( file );
@@ -91,7 +92,7 @@ namespace Dune
     dgf::GridParameterBlock parameter( file );
     std::string gridName = parameter.name( "SPGrid" );
 
-    return new SPGrid< ct, dim >( a, b, cells, periodic, gridName );
+    return new Grid( a, b, cells, periodic, gridName );
   }
 
 
@@ -99,8 +100,8 @@ namespace Dune
   // DGFGridInfo for SPGrid
   // ----------------------
 
-  template< class ct, int dim >
-  struct DGFGridInfo< SPGrid< ct, dim > >
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  struct DGFGridInfo< SPGrid< ct, dim, strategy > >
   {
     static int refineStepsForHalf ()
     {

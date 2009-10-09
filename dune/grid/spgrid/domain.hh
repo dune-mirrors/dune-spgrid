@@ -24,7 +24,6 @@ namespace Dune
 
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
-    typedef SPRefinement< ctype, dimension > Refinement;
 
     SPDomain ()
     : periodic_( 0 )
@@ -49,7 +48,8 @@ namespace Dune
       }
     }
 
-    SPDomain ( const This &other, const Refinement &refinement )
+    template< SPRefinementStrategy strategy >
+    SPDomain ( const This &other, const SPRefinement< ctype, dimension, strategy > &refinement )
     : origin_( other.origin_ ),
       width_( other.width_ ),
       periodic_( other.periodic_ )

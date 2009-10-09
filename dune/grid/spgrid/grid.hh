@@ -21,7 +21,7 @@ namespace Dune
   // Internal Forward Declarations
   // -----------------------------
 
-  template< class ct, int dim >
+  template< class ct, int dim, SPRefinementStrategy strategy = SPIsotropicRefinement >
   class SPGrid;
 
 
@@ -29,16 +29,16 @@ namespace Dune
   // SPGridFamily
   // ------------
 
-  template< class ct, int dim >
+  template< class ct, int dim, SPRefinementStrategy strategy >
   struct SPGridFamily
   {
     struct Traits
     {
-      typedef SPGrid< ct, dim > Grid;
+      typedef SPGrid< ct, dim, strategy > Grid;
 
       typedef SPCube< ct, dim > Cube;
       typedef SPDomain< ct, dim > Domain;
-      typedef typename Domain::Refinement Refinement;
+      typedef SPRefinement< ct, dim, strategy > Refinement;
 
 #if HAVE_MPI
       typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
@@ -108,17 +108,17 @@ namespace Dune
 
 
 
-  template< class ct, int dim >
+  template< class ct, int dim, SPRefinementStrategy strategy >
   class SPGrid
-  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > >
+  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy > >
   {
-    typedef SPGrid< ct, dim > This;
-    typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim > > Base;
+    typedef SPGrid< ct, dim, strategy > This;
+    typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy > > Base;
 
     friend class SPIntersection< const This >;
 
   public:
-    typedef SPGridFamily< ct, dim > GridFamily;
+    typedef SPGridFamily< ct, dim, strategy > GridFamily;
 
     typedef typename GridFamily::Traits Traits;
 
@@ -397,7 +397,7 @@ namespace Dune
     }
 
     void globalRefine ( const int refCount,
-                        const Refinement &refinement = Refinement( numDirections-1 ) )
+                        const Refinement &refinement = Refinement() )
     {
       for( int i = 0; i < refCount; ++i )
       {
@@ -411,7 +411,7 @@ namespace Dune
     template< class DataHandle >
     void globalRefine ( const int refCount,
                         AdaptDataHandleInterface< This, DataHandle > &handle,
-                        const Refinement &refinement = Refinement( numDirections-1 ) )
+                        const Refinement &refinement = Refinement() )
     {
       for( int i = 0; i < refCount; ++i )
       {
@@ -478,7 +478,7 @@ namespace Dune
       if( comm().rank() != 0 )
         return true;
 
-      SPGridIOData< ctype, dimension > ioData;
+      SPGridIOData< ctype, dimension, strategy > ioData;
 
       ioData.name = name();
       ioData.time = time;
@@ -504,7 +504,7 @@ namespace Dune
     template< GrapeIOFileFormatType format >
     bool readGrid ( const std::string &filename, ctype &time )
     {
-      SPGridIOData< ctype, dimension > ioData;
+      SPGridIOData< ctype, dimension, strategy > ioData;
 
       if( format == xdr )
         return false;

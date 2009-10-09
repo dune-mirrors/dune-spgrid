@@ -39,14 +39,13 @@ namespace Dune
 
     typedef typename Traits::Cube Cube;
     typedef typename Traits::Domain Domain;
+    typedef typename Traits::Refinement Refinement;
 
     typedef typename Cube::ctype ctype;
     static const int dimension = Cube::dimension;
 
     typedef typename Cube::GlobalVector GlobalVector;
     typedef typename Cube::MultiIndex MultiIndex;
-
-    typedef typename Domain::Refinement Refinement;
 
     static const unsigned int numDirections = Cube::numCorners;
 
@@ -76,21 +75,7 @@ namespace Dune
     SPGridLevel ( const This &other );
 
   public:
-    ~SPGridLevel ()
-    {
-      if( child_ != 0 )
-        delete child_;
-      assert( child_ == 0 );
-      if( father_ != 0 )
-        father_->child_ = 0;
-
-      unsigned int numChildren = refinement().numChildren();
-      for( unsigned int index = 0; index < numChildren; ++index )
-        delete geometryInFather_[ index ];
-      delete geometryInFather_;
-
-      ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
-    }
+    ~SPGridLevel ();
 
     const Grid &grid () const
     {
@@ -147,7 +132,8 @@ namespace Dune
 
     const Refinement &refinement () const
     {
-      return refinement_;
+      assert( !isMacro() && (refinement_ != 0) );
+      return *refinement_;
     }
 
     const MultiIndex &cells () const
@@ -164,6 +150,7 @@ namespace Dune
 
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
     {
+      assert( !isMacro() && (geometryInFather_ != 0) );
       return *(geometryInFather_[ refinement().childIndex( id ) ]);
     }
 
@@ -197,7 +184,7 @@ namespace Dune
     GridLevel *father_, *child_;
 
     unsigned int level_;
-    const Refinement refinement_;
+    const Refinement *refinement_;
     Domain domain_;
     GlobalVector h_;
 
@@ -213,8 +200,10 @@ namespace Dune
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
+    refinement_( 0 ),
     domain_( grid.domain() ),
-    h_( domain().h() )
+    h_( domain().h() ),
+    geometryInFather_( 0 )
   {
     buildGeometry();
   }
@@ -227,28 +216,51 @@ namespace Dune
     father_( &father ),
     child_( 0 ),
     level_( father.level_ + 1 ),
-    refinement_( refinement ),
+    refinement_( new Refinement( refinement ) ),
     domain_( father.domain(), refinement ),
     h_( domain().h() )
   {
     assert( father.child_ == 0 );
     father.child_ = this;
+
+    const unsigned int numChildren = refinement.numChildren();
+    geometryInFather_ = new LocalGeometry *[ numChildren ];
+    const typename Codim< 0 >::GeometryCache cacheInFather( refinement.hInFather(), numDirections-1 );
+    for( unsigned int index = 0; index < numChildren; ++index )
+    {
+      const GlobalVector origin = refinement.originInFather( index );
+      geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
+    }
+
     buildGeometry();
+  }
+
+
+  template< class Grid >
+  inline SPGridLevel< Grid >::~SPGridLevel ()
+  {
+    if( child_ != 0 )
+      delete child_;
+    assert( child_ == 0 );
+    if( father_ != 0 )
+      father_->child_ = 0;
+
+    if( geometryInFather_ != 0 )
+    {
+      unsigned int numChildren = refinement().numChildren();
+      for( unsigned int index = 0; index < numChildren; ++index )
+        delete geometryInFather_[ index ];
+      delete geometryInFather_;
+    }
+
+    ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
+    delete refinement_;
   }
 
 
   template< class Grid >
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
-    const unsigned int numChildren = refinement().numChildren();
-    geometryInFather_ = new LocalGeometry *[ numChildren ];
-    const typename Codim< 0 >::GeometryCache cacheInFather( refinement().hInFather(), numDirections-1 );
-    for( unsigned int index = 0; index < numChildren; ++index )
-    {
-      const GlobalVector origin = refinement().originInFather( index );
-      geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
-    }
-
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
     const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
