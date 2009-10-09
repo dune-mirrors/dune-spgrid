@@ -38,6 +38,7 @@ namespace Dune
 
       typedef SPCube< ct, dim > Cube;
       typedef SPDomain< ct, dim > Domain;
+      typedef typename Domain::Refinement Refinement;
 
 #if HAVE_MPI
       typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
@@ -123,6 +124,7 @@ namespace Dune
 
     typedef typename Traits::Cube Cube;
     typedef typename Traits::Domain Domain;
+    typedef typename Traits::Refinement Refinement;
 
     typedef typename Cube::ctype ctype;
 
@@ -395,11 +397,11 @@ namespace Dune
     }
 
     void globalRefine ( const int refCount,
-                        const unsigned int refDir = numDirections-1 )
+                        const Refinement &refinement = Refinement( numDirections-1 ) )
     {
       for( int i = 0; i < refCount; ++i )
       {
-        leafLevel_ = new GridLevel( *leafLevel_, refDir );
+        leafLevel_ = new GridLevel( *leafLevel_, refinement );
         levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       }
       getRealImplementation( leafView_ ).update( *leafLevel_ );
@@ -409,13 +411,13 @@ namespace Dune
     template< class DataHandle >
     void globalRefine ( const int refCount,
                         AdaptDataHandleInterface< This, DataHandle > &handle,
-                        const unsigned int refDir = numDirections-1 )
+                        const Refinement &refinement = Refinement( numDirections-1 ) )
     {
       for( int i = 0; i < refCount; ++i )
       {
         const LevelGridView fatherView = levelView( maxLevel() );
 
-        leafLevel_ = new GridLevel( *leafLevel_, refDir );
+        leafLevel_ = new GridLevel( *leafLevel_, refinement );
         levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
 
         hierarchicIndexSet_.update();
@@ -485,9 +487,9 @@ namespace Dune
       ioData.cells = domain().cells();
       ioData.periodic = domain().periodic();
       ioData.maxLevel = maxLevel();
-      ioData.refDirections.resize( maxLevel() );
+      ioData.refinements.resize( maxLevel() );
       for( int level = 0; level < maxLevel(); ++level )
-        ioData.refDirections[ level ] = gridLevel( level+1 ).refinementDirection();
+        ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
 
       if( format == xdr )
         return false;
@@ -518,8 +520,8 @@ namespace Dune
 
       for( int level = 0; level <= ioData.maxLevel; ++level )
       {
-        if( (size_t)level < ioData.refDirections.size() )
-          globalRefine( 1, ioData.refDirections[ level ] );
+        if( (size_t)level < ioData.refinements.size() )
+          globalRefine( 1, ioData.refinements[ level ] );
         else
           globalRefine( 1 );
       }

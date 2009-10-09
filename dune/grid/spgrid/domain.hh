@@ -4,6 +4,7 @@
 #include <dune/common/fvector.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
+#include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
 {
@@ -23,6 +24,7 @@ namespace Dune
 
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
+    typedef SPRefinement< ctype, dimension > Refinement;
 
     SPDomain ()
     : periodic_( 0 )
@@ -45,6 +47,15 @@ namespace Dune
         origin_[ i ] = std::min( a[ i ], b[ i ] );
         width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
       }
+    }
+
+    SPDomain ( const This &other, const Refinement &refinement )
+    : origin_( other.origin_ ),
+      width_( other.width_ ),
+      periodic_( other.periodic_ )
+    {
+      for( int i = 0; i < dimension; ++i )
+        cells_[ i ] = refinement.factor( i ) * other.cells_[ i ];
     }
 
     const GlobalVector &origin () const

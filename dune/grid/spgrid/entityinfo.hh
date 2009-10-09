@@ -123,32 +123,19 @@ namespace Dune
     {
       assert( !gridLevel().isLeaf() );
       gridLevel_ = &gridLevel().childLevel();
-      const unsigned int refDir = gridLevel().refinementDirection();
-      for( int i = 0; i < dimension; ++i )
-        id_[ i ] = (((refDir >> i) & 1) != 0 ? (id_[ i ] << 1) - 1 : id_[ i ]);
+      gridLevel_->refinement().firstChild( id_ );
     }
 
     void up ()
     {
       assert( gridLevel().level() > 0 );
-      const unsigned int refDir = gridLevel().refinementDirection();
-      for( int i = 0; i < dimension; ++i )
-        id_[ i ] = (((refDir >> i) & 1) != 0 ? (id_[ i ] >> 1) | 1 : id_[ i ]);
+      gridLevel_->refinement().father( id_ );
       gridLevel_ = &gridLevel().fatherLevel();
     }
 
     bool nextChild ()
     {
-      const unsigned int refDir = gridLevel_->refinementDirection();
-      for( int i = 0; i < dimension; ++i )
-      {
-        if( ((refDir >> i) & 1) == 0 )
-          continue;
-        id_[ i ] ^= 2;
-        if( (id_[ i ] & 2) != 0 )
-          return true;
-      }
-      return false;
+      return gridLevel_->refinement().nextChild( id_ );
     }
 
   private:

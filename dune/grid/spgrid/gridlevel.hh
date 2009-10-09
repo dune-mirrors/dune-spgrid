@@ -9,6 +9,7 @@
 
 #include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/misc.hh>
+#include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
 
@@ -45,6 +46,8 @@ namespace Dune
     typedef typename Cube::GlobalVector GlobalVector;
     typedef typename Cube::MultiIndex MultiIndex;
 
+    typedef typename Domain::Refinement Refinement;
+
     static const unsigned int numDirections = Cube::numCorners;
 
     template< int codim >
@@ -67,7 +70,7 @@ namespace Dune
   public:
     SPGridLevel ( const Grid &grid );
 
-    SPGridLevel ( GridLevel &father, const unsigned int refDir );
+    SPGridLevel ( GridLevel &father, const Refinement &refinement );
 
   private:
     SPGridLevel ( const This &other );
@@ -81,8 +84,10 @@ namespace Dune
       if( father_ != 0 )
         father_->child_ = 0;
 
-      for( unsigned int dir = 0; dir < numDirections; ++dir )
-        delete geometryInFather_[ dir ];
+      unsigned int numChildren = refinement().numChildren();
+      for( unsigned int index = 0; index < numChildren; ++index )
+        delete geometryInFather_[ index ];
+      delete geometryInFather_;
 
       ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
     }
@@ -105,7 +110,7 @@ namespace Dune
 
     const Domain &domain () const
     {
-      return grid().domain();
+      return domain_;
     }
 
     const GridLevel &fatherLevel () const
@@ -140,30 +145,26 @@ namespace Dune
       return level_;
     }
 
-    unsigned int refinementDirection () const
+    const Refinement &refinement () const
     {
-      return refDir_;
+      return refinement_;
     }
 
     const MultiIndex &cells () const
     {
-      return cells_;
+      return domain().cells();
     }
 
     MultiIndex fatherId ( const MultiIndex &id ) const
     {
-      MultiIndex fatherId;
-      for( int i = 0; i < dimension; ++i )
-        fatherId[ i ] = ((refDir_ >> i) & 1 ? (id[ i ] >> 1) | 1 : id[ i ]);
+      MultiIndex fatherId( id );
+      refinement().father( fatherId );
       return fatherId;
     }
 
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
     {
-      unsigned int childIndex = 0;
-      for( int i = 0; i < dimension; ++i )
-        childIndex |= ((refDir_ >> i) & (id[ i ] >> 1) & 1) << i;
-      return *(geometryInFather_[ childIndex ]);
+      return *(geometryInFather_[ refinement().childIndex( id ) ]);
     }
 
     template< int codim >
@@ -185,7 +186,7 @@ namespace Dune
     {
       const int size = 1;
       for( int i = 0; i < dimension; ++i )
-        size *= cells_[ i ];
+        size *= cells()[ i ];
       return size;
     }
 
@@ -196,12 +197,12 @@ namespace Dune
     GridLevel *father_, *child_;
 
     unsigned int level_;
-    unsigned int refDir_;
-    MultiIndex cells_;
+    const Refinement refinement_;
+    Domain domain_;
     GlobalVector h_;
 
     void *geometryCache_[ numDirections ];
-    LocalGeometry *geometryInFather_[ numDirections ];
+    LocalGeometry **geometryInFather_;
     GlobalVector normal_[ Cube::numFaces ];
   };
 
@@ -212,49 +213,26 @@ namespace Dune
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
-    refDir_( 0 ),
-    cells_( domain().cells() ),
+    domain_( grid.domain() ),
     h_( domain().h() )
   {
-    for( unsigned int dir = 0; dir < numDirections; ++dir )
-      geometryInFather_[ dir ] = 0;
     buildGeometry();
   }
 
 
   template< class Grid >
   inline SPGridLevel< Grid >
-    ::SPGridLevel ( GridLevel &father, const unsigned int refDir )
+    ::SPGridLevel ( GridLevel &father, const Refinement &refinement )
   : grid_( father.grid_ ),
     father_( &father ),
     child_( 0 ),
     level_( father.level_ + 1 ),
-    refDir_( refDir )
+    refinement_( refinement ),
+    domain_( father.domain(), refinement ),
+    h_( domain().h() )
   {
     assert( father.child_ == 0 );
     father.child_ = this;
-    GlobalVector hInFather;
-    for( int i = 0; i < dimension; ++i )
-    {
-      const unsigned int factor = 2*((refDir >> i) & 1);
-      cells_[ i ] = factor * father.cells_[ i ];
-      hInFather[ i ] = ctype( 1 ) / ctype( factor );
-      h_[ i ] = father.h_[ i ] * hInFather[ i ];
-    }
-
-    const typename Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
-    for( unsigned int dir = 0; dir < numDirections; ++dir )
-    {
-      geometryInFather_[ dir ] = 0;
-      if( (dir & refDir) != dir )
-        continue;
-
-      GlobalVector origin;
-      for( int i = 0; i < dimension; ++i )
-        origin[ i ] = ctype( (dir >> i) & 1 ) / ctype( 2 );
-      geometryInFather_[ dir ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
-    }
-
     buildGeometry();
   }
 
@@ -262,6 +240,15 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
+    const unsigned int numChildren = refinement().numChildren();
+    geometryInFather_ = new LocalGeometry *[ numChildren ];
+    const typename Codim< 0 >::GeometryCache cacheInFather( refinement().hInFather(), numDirections-1 );
+    for( unsigned int index = 0; index < numChildren; ++index )
+    {
+      const GlobalVector origin = refinement().originInFather( index );
+      geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
+    }
+
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
     const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();

@@ -9,6 +9,7 @@
 #include <dune/common/exceptions.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
+#include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
 {
@@ -18,6 +19,7 @@ namespace Dune
   {
     typedef FieldVector< ctype, dim > Vector;
     typedef SPMultiIndex< dim > MultiIndex;
+    typedef SPRefinement< ctype, dim > Refinement;
 
     std::string name;
     ctype time;
@@ -26,7 +28,7 @@ namespace Dune
     MultiIndex cells;
     unsigned int periodic;
     int maxLevel;
-    std::vector< unsigned int > refDirections;
+    std::vector< Refinement > refinements;
 
     void writeAscii ( const std::string &filename ) const;
     void readAscii ( const std::string &filename );
@@ -67,9 +69,9 @@ namespace Dune
 
     fileOut << "maxLevel " << maxLevel << std::endl;
 
-    fileOut << "refDirections";
-    for( unsigned int i = 0; i < refDirections.size(); ++i )
-      fileOut << " " << refDirections[ i ];
+    fileOut << "refinements";
+    for( unsigned int i = 0; i < refinements.size(); ++i )
+      fileOut << " " << refinements[ i ];
     fileOut << std::endl;
 
     fileOut.close();
@@ -147,13 +149,13 @@ namespace Dune
         lineIn >> maxLevel;
         flags |= flagMaxLevel;
       }
-      else if( cmd == "refDirections" )
+      else if( cmd == "refinements" )
       {
         while( !lineIn.eof() )
         {
-          unsigned int dir;
-          lineIn >> dir;
-          refDirections.push_back( dir );
+          Refinement refinement;
+          lineIn >> refinement;
+          refinements.push_back( refinement );
         }
       }
       else
