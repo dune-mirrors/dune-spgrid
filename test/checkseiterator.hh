@@ -1,8 +1,10 @@
 #ifndef DUNE_SPGRID_CHECKSEITERATOR_HH
 #define DUNE_SPGRID_CHECKSEITERATOR_HH
 
+#include <dune/common/forloop.hh>
+#include <dune/common/typetraits.hh>
+
 #include <dune/grid/common/gridview.hh>
-#include <dune/grid/genericgeometry/misc.hh>
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
@@ -47,13 +49,13 @@ namespace Dune
       static void apply ( const GridView &gridView )
       {
         const bool check = Extensions::SuperEntityIterator< Grid, codim >::v;
-        Dune::GenericGeometry::ProtectedIf< check, Check, NoCheck >::apply( gridView );
+        Dune::SelectType< check, Check< true >, NoCheck< false > >::Type::apply( gridView );
       }
     };
 
     static void apply ( const GridView &gridView )
     {
-      Dune::GenericGeometry::ForLoop< Codim, 1, GridView::dimension >::apply( gridView );
+      Dune::ForLoop< Codim, 1, GridView::dimension >::apply( gridView );
     }
   };
 
