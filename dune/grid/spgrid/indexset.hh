@@ -74,13 +74,6 @@ namespace Dune
       return index( entityInfo.id() );
     }
 
-    template< int codim >
-    IndexType DUNE_DEPRECATED
-    subIndex ( const typename Codim< 0 >::Entity &entity, const int i ) const
-    {
-      DUNE_THROW( NotImplemented, "SPIndexSet does not implement the old subIndex method." );
-    }
-
     IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
                          const int i, const unsigned int codim ) const
     {

@@ -55,13 +55,6 @@ namespace Dune
       return id( entityInfo.gridLevel(), entityInfo.id() );
     }
 
-    template< int codim >
-    IdType DUNE_DEPRECATED
-    subId ( const typename Codim< 0 >::Entity &entity, const int i ) const
-    {
-      DUNE_THROW( NotImplemented, "SPLocalIdSet does not implement the old subId method." );
-    }
-
     IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const
     {
       const typename Codim< 0 >::EntityInfo &entityInfo
