@@ -241,7 +241,8 @@ namespace Dune
 
     EntityPointer father () const
     {
-      MultiIndex fatherId = gridLevel().fatherId( entityInfo().id() );
+      MultiIndex fatherId( entityInfo().id() );
+      gridLevel().refinement().father( fatherId );
       return EntityPointer( EntityInfo( gridLevel().fatherLevel(), fatherId ) );
     }
 

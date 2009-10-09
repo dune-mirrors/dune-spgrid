@@ -141,13 +141,6 @@ namespace Dune
       return domain().cells();
     }
 
-    MultiIndex fatherId ( const MultiIndex &id ) const
-    {
-      MultiIndex fatherId( id );
-      refinement().father( fatherId );
-      return fatherId;
-    }
-
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
     {
       assert( !isMacro() && (geometryInFather_ != 0) );
