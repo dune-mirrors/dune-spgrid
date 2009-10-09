@@ -9,7 +9,8 @@
 namespace Dune
 {
 
-  // SPRefinementStragety
+  // SPRefinementStrategy
+  // --------------------
 
   enum SPRefinementStrategy
   {
