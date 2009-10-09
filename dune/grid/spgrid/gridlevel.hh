@@ -132,8 +132,8 @@ namespace Dune
 
     const Refinement &refinement () const
     {
-      assert( !isMacro() && (refinement_ != 0) );
-      return *refinement_;
+      assert( !isMacro() );
+      return refinement_;
     }
 
     const MultiIndex &cells () const
@@ -184,7 +184,7 @@ namespace Dune
     GridLevel *father_, *child_;
 
     unsigned int level_;
-    const Refinement *refinement_;
+    const Refinement refinement_;
     Domain domain_;
     GlobalVector h_;
 
@@ -200,7 +200,6 @@ namespace Dune
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
-    refinement_( 0 ),
     domain_( grid.domain() ),
     h_( domain().h() ),
     geometryInFather_( 0 )
@@ -216,7 +215,7 @@ namespace Dune
     father_( &father ),
     child_( 0 ),
     level_( father.level_ + 1 ),
-    refinement_( new Refinement( refinement ) ),
+    refinement_( refinement ),
     domain_( father.domain(), refinement ),
     h_( domain().h() )
   {
@@ -254,7 +253,6 @@ namespace Dune
     }
 
     ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
-    delete refinement_;
   }
 
 
