@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <dune/common/forloop.hh>
-#include <dune/common/smartpointer.hh>
 
 #include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/misc.hh>
