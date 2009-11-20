@@ -58,6 +58,19 @@ namespace Dune
     typedef SPDecomposition< dim > This;
 
     struct Node;
+    {
+      Node ( const Partition &partition, const unsigned int size )
+      ~Node ();
+
+      const Partition &interiorPartition ( const unsigned int rank ) const;
+
+      const Partition &allPartition () const;
+
+    private:
+      Partition partition_;
+      unsigned int size_;
+      Node *left_, *right_;
+    };
 
   public:
     static const int dimension = dim;
@@ -66,41 +79,53 @@ namespace Dune
     typedef SPPartition< dimension > Partition;
 
   public:
-    SPDecomposition ( const MultiIndex &width, const unsigned int size )
-    : node_( new Node( Partition( MultiIndex::zero(), width ) ), size )
+    SPDecomposition ( const MultiIndex &width, const unsigned int size,
+                      const unsigned int periodic = 0 )
+    : root_( Partition( MultiIndex::zero(), width ), size ),
+      periodic_( periodic )
     {}
 
-    Partition partition ( const unsigned int rank, const PartitionIteratorType pitype ) const
+    Partition partition ( const unsigned int rank, const int overlap )
     {
-      switch( pitype )
+      const Partition &interior = root_.interiorPartition( rank );
+      const Partition &allPartition = root_.allPartition();
+
+      const MultiIndex &allOrigin = allPartition.origin();
+      const MultiIndex &allWidth = allPartition.width();
+
+      MultiIndex origin = interior.origin();
+      MultiIndex width = interior.width();
+      for( int i = 0; i < dimension; ++i )
       {
-      case Interior_Partition:
-        return root_->interiorPartition( rank );
-      
-      default:
-        DUNE_THROW( GridError, "Partition type " << pitype << " not supported." );
+        origin[ i ] -= overlap;
+        width[ i ] += 2*overlap;
+
+        if( !periodic( i ) )
+        {
+          const int lMargin = origin[ i ] - allOrigin[ i ];
+          if( lMartin < 0 )
+          {
+            origin[ i ] -= lMargin;
+            width[ i ] += lMargin;
+          }
+
+          const int rMargin = (allOrigin[ i ] + allWidth[ i ]) - (origin[ i ] + width[ i ]);
+          if( rMargin < 0 )
+            width[ i ] += rMargin;
+        }
       }
+      return Partition( origin, width );
+    }
+
+    bool periodic ( const int i ) const
+    {
+      assert( (i >= 0) && (i < dimension) );
+      return ((periodic_ & (1 << i)) != 0);
     }
 
   private:
-    Node *root_;
-  };
-
-
-  template< int dim >
-  struct SPDecomposition< dim >::Node
-  {
-
-    Node ( const Partition &partition, const unsigned int size )
-
-    ~Node ();
-
-    const Partition &interiorPartition ( const unsigned int rank ) const;
-
-  private:
-    Partition partition_;
-    unsigned int size_;
-    Node *left_, *right_;
+    Node root_;
+    unsigned int periodic_;
   };
 
 
@@ -154,6 +179,14 @@ namespace Dune
     }
     else
       return partition_;
+  }
+
+
+  template< int dim >
+  const typename SPDecomposition< dim >::Partition &
+  SPDecomposition< dim >::Node::allPartition () const
+  {
+    return partition_;
   }
 
 }
