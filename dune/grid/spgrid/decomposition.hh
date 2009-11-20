@@ -57,9 +57,21 @@ namespace Dune
     typedef SPPartition< dimension > Partition;
 
   public:
-    SPDecomposition ( const unsigned int size, const MultiIndex &width )
-    : node_( new Node( size, Partition( MultiIndex::zero(), width ) ) )
+    SPDecomposition ( const MultiIndex &width, const unsigned int size )
+    : node_( new Node( Partition( MultiIndex::zero(), width ) ), size )
     {}
+
+    Partition partition ( const unsigned int rank, const PartitionIteratorType pitype ) const
+    {
+      switch( pitype )
+      {
+      case Interior_Partition:
+        return root_->interiorPartition( rank );
+      
+      default:
+        DUNE_THROW( GridError, "Partition type " << pitype << " not supported." );
+      }
+    }
 
   private:
     Node *root_;
@@ -73,6 +85,8 @@ namespace Dune
     Node ( const Partition &partition, const unsigned int size )
 
     ~Node ();
+
+    const Partition &interiorPartition ( const unsigned int rank ) const;
 
   private:
     Partition partition_;
@@ -102,8 +116,8 @@ namespace Dune
       MultiIndex rightOrigin = partition_.origin();
       rightOrigin[ dir ] += leftWidth[ dir ];
 
-      left_ = new Node( size/2, Partition( leftOrigin, leftWidth ) );
-      right_ = new Node( size - size/2, Partition( rightOrigin, rightWidth ) );
+      left_ = new Node( Partition( leftOrigin, leftWidth ), size/2 );
+      right_ = new Node( Partition( rightOrigin, rightWidth ), size - size/2 );
     }
   }
 
@@ -113,6 +127,24 @@ namespace Dune
   {
     delete left_;
     delete right_;
+  }
+
+
+  template< int dim >
+  const typename SPDecomposition< dim >::Partition &
+  SPDecomposition< dim >::Node::interiorPartition ( const unsigned int rank ) const
+  {
+    assert( rank < size_ );
+    if( size_ > 1 )
+    {
+      assert( (left_ != 0) && (right_ != 0) );
+      if( rank_ < size_/2 )
+        return left_->interiorPartition_( rank );
+      else
+        return right_->interiorPartition_( rank );
+    }
+    else
+      return partition_;
   }
 
 }
