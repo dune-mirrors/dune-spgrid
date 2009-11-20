@@ -130,10 +130,16 @@ namespace Dune
       return dir;
     }
 
+    static This zero ()
+    {
+      This zero;
+      zero.clear();
+      return zero;
+    }
+
   private:
     int index_[ dimension ];
   };
-
 
 
   template< int dim >
@@ -143,6 +149,24 @@ namespace Dune
     for( int i = 1; i < dim; ++i )
       out << ", " << multiIndex[ i ];
     return out << " )";
+  }
+
+
+  template< int dim >
+  inline int argmax( const SPMultiIndex< dim > &multiIndex )
+  {
+    int m = 0;
+    for( int i = 1; i < dim; ++i )
+      m = argmax( width_, i, m );
+  }
+
+
+  template< int dim >
+  inline int argmin( const SPMultiIndex< dim > &multiIndex )
+  {
+    int m = 0;
+    for( int i = 1; i < dim; ++i )
+      m = argmin( width_, i, m );
   }
 
 }

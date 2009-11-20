@@ -98,49 +98,6 @@ namespace Dune
     unsigned int periodic_;
   };
 
-
-#if 0
-  template< class ct, int dim >
-  inline void
-  SPDomain< ct, dim >::decompose ( std::vector< This > &decomposition,
-                                   const unsigned int offset, const unsigned int size )
-  {
-    assert( offset+size <= decomposition.size() );
-    if( size > 1 )
-    {
-      const int leftOffset = offset;
-      const int leftSize = size / 2;
-
-      const int rightOffset = leftOffset + leftSize;
-      const int rightSize = size - leftSize;
-
-      This &left = decomposition[ leftOffset ];
-      This &right = decomposition[ rightOffset ];
-
-      int dir = 0;
-      for( int i = 1; i < dimension; ++i )
-        dir = argmax( left.cells_, i, dir );
-
-      const int cells = left.cells_[ dir ];
-      const int leftCells = (leftSize * cells) / size;
-      const int rightCells = cells - leftCells;
-
-      right = left;
-
-      left.cells_[ dir ] = leftCells;
-      left.width_[ dir ] *= ctype( leftCells ) / ctype( cells );
-
-      right.cells_[ dir ] = rightCells;
-      right.width_[ dir ] *= ctype( leftCells ) / ctype( cells );
-
-      right.offset_[ dir ] += left.width_[ dir ];
-
-      decompose( decomposition, leftOffset, leftSize );
-      decompose( decomposition, rightOffset, rightSize );
-    }
-  }
-#endif
-
 }
 
 #endif // #ifndef DUNE_SPGRID_DOMAIN_HH
