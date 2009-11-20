@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <dune/grid/spgrid/misc.hh>
+
 namespace Dune
 {
 

@@ -2,6 +2,7 @@
 #define DUNE_SPGRID_DECOMPOSITION_HH
 
 #include <dune/grid/spgrid/multiindex.hh>
+#include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
 {
@@ -23,6 +24,14 @@ namespace Dune
     : origin_( origin ),
       width_( width )
     {}
+
+    template< class ctype, SPRefinementStrategy strategy >
+    SPDomain ( const This &other, const SPRefinement< ctype, dimension, strategy > &refinement )
+    : origin_( other.origin_ )
+    {
+      for( int i = 0; i < dimension; ++i )
+        width_[ i ] = refinement.factor( i ) * other.width_[ i ];
+    }
 
     const MultiIndex &origin () const
     {
