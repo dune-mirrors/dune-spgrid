@@ -159,7 +159,8 @@ namespace Dune
   {
     int m = 0;
     for( int i = 1; i < dim; ++i )
-      m = argmax( width_, i, m );
+      m = argmax( multiIndex, i, m );
+    return m;
   }
 
 
@@ -168,7 +169,8 @@ namespace Dune
   {
     int m = 0;
     for( int i = 1; i < dim; ++i )
-      m = argmin( width_, i, m );
+      m = argmin( multiIndex, i, m );
+    return m;
   }
 
 }
