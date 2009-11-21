@@ -67,7 +67,7 @@ namespace Dune
         for( int j = 0; j < dim; ++j )
           identity &= (fabs( (i == j ? 1.0 : 0.0) - trafo.matrix( i, j ) ) < 1e-10);
       if( !identity )
-        DUNE_THROW( DGFException, "YaspGrid can only handle shifts as periodic face transformations." );
+        DUNE_THROW( DGFException, "SPGrid< ct, " << dim << " > can only handle shifts as periodic face transformations." );
 
       int numDirs = 0;
       int dir = -1;
@@ -90,7 +90,7 @@ namespace Dune
     }
 
     dgf::GridParameterBlock parameter( file );
-    std::string gridName = parameter.name( "SPGrid" );
+    const std::string gridName = parameter.name( "SPGrid" );
 
     return new Grid( a, b, cells, periodic, gridName );
   }
