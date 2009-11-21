@@ -62,7 +62,7 @@ namespace Dune
       Node ( const Partition &partition, const unsigned int size )
       ~Node ();
 
-      const Partition &interiorPartition ( const unsigned int rank ) const;
+      const Partition &Partition ( const unsigned int rank, const int overlap ) const;
 
       const Partition &allPartition () const;
 
