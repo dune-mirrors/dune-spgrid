@@ -155,6 +155,26 @@ namespace Dune
 
 
   template< int dim >
+  inline MultiIndex< dim >
+  operator+ ( const MultiIndex< dim > &a, const MultiIndex< dim > &b )
+  {
+    MultiIndex c = a;
+    c += b;
+    return c;
+  }
+
+
+  template< int dim >
+  inline MultiIndex< dim >
+  operator- ( const MultiIndex< dim > &a, const MultiIndex< dim > &b )
+  {
+    MultiIndex c = a;
+    c -= b;
+    return c;
+  }
+
+
+  template< int dim >
   inline int argmax( const SPMultiIndex< dim > &multiIndex )
   {
     int m = 0;
