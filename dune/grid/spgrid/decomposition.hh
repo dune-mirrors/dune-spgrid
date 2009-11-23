@@ -48,6 +48,14 @@ namespace Dune
   };
 
 
+  template< int dim >
+  inline std::ostream &
+  operator<< ( std::ostream &out, const SPPartition< dim > &partition )
+  {
+    return out << "[ " << partition.origin() << ", " << (partition.origin() + partition.width()) << " [";
+  }
+
+
 
   // SPDecomposition
   // ---------------
