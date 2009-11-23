@@ -158,7 +158,7 @@ namespace Dune
   inline std::basic_istream< char_type, Traits > &
   operator>> ( std::basic_istream< char_type, Traits > &in, SPMultiIndex< dim > &multiIndex )
   {
-    multiIndex m;
+    SPMultiIndex< dim > m;
     in >> match( '(' ) >> m[ 0 ];
     for( int i = 1; i < dim; ++i )
       in >> match( ',' ) >> m[ i ];
@@ -170,20 +170,20 @@ namespace Dune
 
 
   template< int dim >
-  inline MultiIndex< dim >
-  operator+ ( const MultiIndex< dim > &a, const MultiIndex< dim > &b )
+  inline SPMultiIndex< dim >
+  operator+ ( const SPMultiIndex< dim > &a, const SPMultiIndex< dim > &b )
   {
-    MultiIndex c = a;
+    SPMultiIndex< dim > c = a;
     c += b;
     return c;
   }
 
 
   template< int dim >
-  inline MultiIndex< dim >
-  operator- ( const MultiIndex< dim > &a, const MultiIndex< dim > &b )
+  inline SPMultiIndex< dim >
+  operator- ( const SPMultiIndex< dim > &a, const SPMultiIndex< dim > &b )
   {
-    MultiIndex c = a;
+    SPMultiIndex< dim > c = a;
     c -= b;
     return c;
   }
