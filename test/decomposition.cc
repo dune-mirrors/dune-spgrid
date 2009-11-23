@@ -31,10 +31,31 @@ int main ( int argc, char **argv )
   for( int i = 3; i < argc; ++i )
   {
     unsigned int dir;
-    std::istringstream periodicStream;
+    std::istringstream periodicStream( argv[ i ] );
     periodicStream >> dir;
     periodic |= (1 << dir);
   }
 
-  std::cout << "width =  " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
+  std::cout << "width = " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
+  SPDecomposition< dimGrid > decomposition( width, size, periodic );
+
+  std::cout << std::endl;
+  std::cout << "Interior Partitions:" << std::endl;
+  std::cout << "--------------------" << std::endl;
+  for( unsigned int rank = 0; rank < size; ++rank )
+  {
+    SPPartition< dimGrid > partition = decomposition.partition( rank, 0 );
+    std::cout << "rank " << rank << ": " << partition << std::endl;
+  }
+
+  std::cout << std::endl;
+  std::cout << "Overlap Partitions (1 level of overlap):" << std::endl;
+  std::cout << "----------------------------------------" << std::endl;
+  for( unsigned int rank = 0; rank < size; ++rank )
+  {
+    SPPartition< dimGrid > partition = decomposition.partition( rank, 1 );
+    std::cout << "rank " << rank << ": " << partition << std::endl;
+  }
+
+  return 0;
 }
