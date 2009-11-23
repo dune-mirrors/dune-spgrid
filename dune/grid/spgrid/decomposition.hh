@@ -81,6 +81,8 @@ namespace Dune
       const Partition &interiorPartition ( const unsigned int rank ) const;
       const Partition &allPartition () const;
 
+      unsigned int size () const;
+
     private:
       Partition partition_;
       unsigned int size_;
@@ -100,6 +102,11 @@ namespace Dune
     {
       assert( (i >= 0) && (i < dimension) );
       return ((periodic_ & (1 << i)) != 0);
+    }
+
+    unsigned int size () const
+    {
+      return root_.size();
     }
 
   private:
@@ -166,6 +173,13 @@ namespace Dune
   SPDecomposition< dim >::Node::allPartition () const
   {
     return partition_;
+  }
+
+
+  template< int dim >
+  inline unsigned int SPDecomposition< dim >::Node::size () const
+  {
+    return size_;
   }
 
 

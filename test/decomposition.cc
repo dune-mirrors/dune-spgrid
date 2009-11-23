@@ -14,6 +14,28 @@ using namespace Dune;
 
 static const int dimGrid = DIMGRID;
 
+void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const int overlap )
+{
+  const unsigned int size = decomposition.size();
+
+  unsigned int maxload = std::numeric_limits< unsigned int >::min();
+  unsigned int minload = std::numeric_limits< unsigned int >::max();
+  for( unsigned int rank = 0; rank < size; ++rank )
+  {
+    SPPartition< dimGrid > partition = decomposition.partition( rank, overlap );
+    unsigned int load = 1;
+    for( int i = 0; i < dimGrid; ++i )
+      load *= partition.width()[ i ];
+    minload = std::min( minload, load );
+    maxload = std::max( maxload, load );
+    std::cout << "rank " << rank << ": " << partition;
+    std::cout << " (load: " << load << ")" << std::endl;
+  }
+  std::cout << std::endl;
+  std::cout << "maximal load: " << maxload << ", minimal load: " << minload
+            << ", ratio: " << (double( maxload ) / double( minload )) << std::endl;
+}
+
 int main ( int argc, char **argv )
 {
   if( argc < 3 )
@@ -45,31 +67,12 @@ int main ( int argc, char **argv )
   std::cout << std::endl;
   std::cout << "Interior Partitions:" << std::endl;
   std::cout << "--------------------" << std::endl;
-  unsigned int maxload = std::numeric_limits< unsigned int >::min();
-  unsigned int minload = std::numeric_limits< unsigned int >::max();
-  for( unsigned int rank = 0; rank < size; ++rank )
-  {
-    SPPartition< dimGrid > partition = decomposition.partition( rank, 0 );
-    unsigned int load = 1;
-    for( int i = 0; i < dimGrid; ++i )
-      load *= partition.width()[ i ];
-    minload = std::min( minload, load );
-    maxload = std::max( maxload, load );
-    std::cout << "rank " << rank << ": " << partition;
-    std::cout << " (load: " << load << ")" << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << "maximal load: " << maxload << ", minimal load: " << minload
-            << ", ratio: " << (double( maxload ) / double( minload )) << std::endl;
+  listPartitions( decomposition, 0 );
 
   std::cout << std::endl;
   std::cout << "Overlap Partitions (1 level of overlap):" << std::endl;
   std::cout << "----------------------------------------" << std::endl;
-  for( unsigned int rank = 0; rank < size; ++rank )
-  {
-    SPPartition< dimGrid > partition = decomposition.partition( rank, 1 );
-    std::cout << "rank " << rank << ": " << partition << std::endl;
-  }
+  listPartitions( decomposition, 1 );
 
   typedef SPGrid< double, dimGrid > Grid;
   FieldVector< double, dimGrid > a( 0.0 ), b( 1.0 );
