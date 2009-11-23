@@ -49,7 +49,7 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
       {
         const int s = ((dir >> i) & 1) * amount;
-        o[ i ] = origin()[ i ] + s;
+        o[ i ] = origin()[ i ] - s;
         w[ i ] = width()[ i ] + 2*s;
       }
       return This( o, w );
@@ -57,13 +57,14 @@ namespace Dune
 
     This intersect ( const This &other ) const
     {
-      MultiIndex o;
-      MultiIndex w;
+      MultiIndex o, w;
       for( int i = 0; i < dimension; ++i )
       {
         o[ i ] = std::max( origin()[ i ], other.origin()[ i ] );
-        w[ i ] = std::max( std::min( origin()[ i ] + width()[ i ], other.origin()[ i ] + other.width()[ i ] ) - origin[ i ], 0 );
+        const int c = std::min( origin()[ i ] + width()[ i ], other.origin()[ i ] + other.width()[ i ] );
+        w[ i ] = std::max( c - o[ i ], 0 );
       }
+      return This( o, w );
     }
 
     const MultiIndex &origin () const
@@ -138,12 +139,6 @@ namespace Dune
     {}
 
     Partition partition ( const unsigned int rank, const int overlap = 0 ) const;
-
-    bool periodic ( const int i ) const
-    {
-      assert( (i >= 0) && (i < dimension) );
-      return ((periodic_ & (1 << i)) != 0);
-    }
 
     unsigned int size () const
     {
@@ -243,31 +238,9 @@ namespace Dune
   inline typename SPDecomposition< dim >::Partition
   SPDecomposition< dim >::partition ( const unsigned int rank, const int overlap ) const
   {
-    Partition partition = root_.partition( rank, overlap );
-    Partition allPartition = root_.partition();
-
-    const MultiIndex &allOrigin = allPartition.origin();
-    const MultiIndex &allWidth = allPartition.width();
-
-    MultiIndex origin = partition.origin();
-    MultiIndex width = partition.width();
-    for( int i = 0; i < dimension; ++i )
-    {
-      if( !periodic( i ) )
-      {
-        const int lMargin = origin[ i ] - allOrigin[ i ];
-        if( lMargin < 0 )
-        {
-          origin[ i ] -= lMargin;
-          width[ i ] += lMargin;
-        }
-
-        const int rMargin = (allOrigin[ i ] + allWidth[ i ]) - (origin[ i ] + width[ i ]);
-        if( rMargin < 0 )
-          width[ i ] += rMargin;
-      }
-    }
-    return Partition( origin, width );
+    const Partition partition = root_.partition( rank, overlap );
+    const Partition allPartition = root_.partition().grow( overlap, periodic_ );
+    return partition.intersect( allPartition );
   }
 
 }
