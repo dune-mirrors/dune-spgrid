@@ -78,8 +78,9 @@ namespace Dune
       Node ( const Partition &partition, const unsigned int size );
       ~Node ();
 
-      const Partition &interiorPartition ( const unsigned int rank ) const;
-      const Partition &allPartition () const;
+      Partition partition ( const int overlap = 0 ) const;
+      Partition partition ( const unsigned int rank, const int overlap = 0 ) const;
+      void partitions ( std::vector< Partition > &partitions, const int overlap = 0 ) const;
 
       unsigned int size () const;
 
@@ -96,7 +97,7 @@ namespace Dune
       periodic_( periodic )
     {}
 
-    Partition partition ( const unsigned int rank, const int overlap ) const;
+    Partition partition ( const unsigned int rank, const int overlap = 0 ) const;
 
     bool periodic ( const int i ) const
     {
@@ -116,7 +117,7 @@ namespace Dune
 
 
   template< int dim >
-  SPDecomposition< dim >::Node::Node ( const Partition &partition, const unsigned int size )
+  inline SPDecomposition< dim >::Node::Node ( const Partition &partition, const unsigned int size )
   : partition_( partition ),
     size_( size ),
     left_( 0 ),
@@ -143,7 +144,7 @@ namespace Dune
 
 
   template< int dim >
-  SPDecomposition< dim >::Node::~Node ()
+  inline SPDecomposition< dim >::Node::~Node ()
   {
     delete left_;
     delete right_;
@@ -151,28 +152,50 @@ namespace Dune
 
 
   template< int dim >
-  const typename SPDecomposition< dim >::Partition &
-  SPDecomposition< dim >::Node::interiorPartition ( const unsigned int rank ) const
+  inline typename SPDecomposition< dim >::Partition
+  SPDecomposition< dim >::Node::partition ( const int overlap ) const
+  {
+    MultiIndex origin = partition_.origin();
+    MultiIndex width = partition_.width();
+    for( int i = 0; i < dimension; ++i )
+    {
+      origin[ i ] -= overlap;
+      width[ i ] += 2*overlap;
+    }
+    return Partition( origin, width );
+  }
+
+
+  template< int dim >
+  inline typename SPDecomposition< dim >::Partition
+  SPDecomposition< dim >::Node::partition ( const unsigned int rank, const int overlap ) const
   {
     assert( rank < size_ );
     if( size_ > 1 )
     {
       assert( (left_ != 0) && (right_ != 0) );
       if( rank < size_/2 )
-        return left_->interiorPartition( rank );
+        return left_->partition( rank, overlap );
       else
-        return right_->interiorPartition( rank - size_/2 );
+        return right_->partition( rank - size_/2, overlap );
     }
     else
-      return partition_;
+      return partition( overlap );
   }
 
 
   template< int dim >
-  inline const typename SPDecomposition< dim >::Partition &
-  SPDecomposition< dim >::Node::allPartition () const
+  inline void
+  SPDecomposition< dim >::Node::partitions ( std::vector< Partition > &partitions, const int overlap ) const
   {
-    return partition_;
+    if( size_ > 1 )
+    {
+      assert( (left_ != 0) && (right_ != 0) );
+      left_->partitions( partitions, overlap );
+      right_->partitions( partitions, overlap );
+    }
+    else
+      partitions.push_back( partition( overlap ) );
   }
 
 
@@ -187,19 +210,16 @@ namespace Dune
   inline typename SPDecomposition< dim >::Partition
   SPDecomposition< dim >::partition ( const unsigned int rank, const int overlap ) const
   {
-    const Partition &interior = root_.interiorPartition( rank );
-    const Partition &allPartition = root_.allPartition();
+    Partition partition = root_.partition( rank, overlap );
+    Partition allPartition = root_.partition();
 
     const MultiIndex &allOrigin = allPartition.origin();
     const MultiIndex &allWidth = allPartition.width();
 
-    MultiIndex origin = interior.origin();
-    MultiIndex width = interior.width();
+    MultiIndex origin = partition.origin();
+    MultiIndex width = partition.width();
     for( int i = 0; i < dimension; ++i )
     {
-      origin[ i ] -= overlap;
-      width[ i ] += 2*overlap;
-
       if( !periodic( i ) )
       {
         const int lMargin = origin[ i ] - allOrigin[ i ];
