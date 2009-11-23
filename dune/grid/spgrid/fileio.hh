@@ -54,10 +54,13 @@ namespace Dune
     fileOut << "origin " << origin << std::endl;
     fileOut << "width " << width << std::endl;
 
+    fileOut << "cells " << cells << std::endl;
+#if 0
     fileOut << "cells";
     for( int i = 0; i < dim; ++i )
       fileOut << " " << cells[ i ];
     fileOut << std::endl;
+#endif
 
     fileOut << "periodic";
     for( int i = 0; i < dim; ++i )
@@ -129,8 +132,11 @@ namespace Dune
       }
       else if( cmd == "cells" )
       {
+        lineIn >> cells;
+#if 0
         for( int i = 0; i < dim; ++i )
           lineIn >> cells[ i ];
+#endif
         flags |= flagCells;
       }
       else if( cmd == "periodic" )
