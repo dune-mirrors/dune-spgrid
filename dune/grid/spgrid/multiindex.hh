@@ -1,8 +1,7 @@
 #ifndef DUNE_SPGRID_MULTIINDEX_HH
 #define DUNE_SPGRID_MULTIINDEX_HH
 
-#include <iostream>
-
+#include <dune/common/iostream.hh>
 #include <dune/grid/spgrid/misc.hh>
 
 namespace Dune
@@ -144,13 +143,29 @@ namespace Dune
   };
 
 
-  template< int dim >
-  inline std::ostream &operator<< ( std::ostream &out, const SPMultiIndex< dim > &multiIndex )
+  template< class char_type, class Traits, int dim >
+  inline std::basic_ostream< char_type, Traits > &
+  operator<< ( std::basic_ostream< char_type, Traits > &out, const SPMultiIndex< dim > &multiIndex )
   {
     out << "( " << multiIndex[ 0 ];
     for( int i = 1; i < dim; ++i )
       out << ", " << multiIndex[ i ];
     return out << " )";
+  }
+
+
+  template< class char_type, class Traits, int dim >
+  inline std::basic_istream< char_type, Traits > &
+  operator>> ( std::basic_istream< char_type, Traits > &in, SPMultiIndex< dim > &multiIndex )
+  {
+    multiIndex m;
+    in >> match( '(' ) >> m[ 0 ];
+    for( int i = 1; i < dim; ++i )
+      in >> match( ',' ) >> m[ i ];
+    in >> match( ')' );
+    if( in.good() )
+      multiIndex = m;
+    return in;
   }
 
 

@@ -14,6 +14,7 @@ LIBS="$DUNE_LIBS"
 AC_CONFIG_FILES([
   Makefile
   dune/Makefile
+  dune/common/Makefile
   dune/grid/Makefile
   dune/grid/extensions/Makefile
   dune/grid/io/Makefile

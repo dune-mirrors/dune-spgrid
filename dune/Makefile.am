@@ -1,5 +1,5 @@
 griddir = $(includedir)/dune
 
-SUBDIRS = grid
+SUBDIRS = common grid
 
 include $(top_srcdir)/am/global-rules
