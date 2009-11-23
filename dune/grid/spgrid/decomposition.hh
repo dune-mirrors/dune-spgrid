@@ -34,9 +34,49 @@ namespace Dune
         width_[ i ] = refinement.factor( i ) * other.width_[ i ];
     }
 
+    bool empty () const
+    {
+      bool empty = false;
+      for( int i = 0; i < dimension; ++i )
+        empty |= (width()[ i ] == 0);
+      return empty;
+    }
+
+    This grow ( const int amount, const unsigned int dir = ((1 << dimension)-1) ) const
+    {
+      MultiIndex o;
+      MultiIndex w;
+      for( int i = 0; i < dimension; ++i )
+      {
+        const int s = ((dir >> i) & 1) * amount;
+        o[ i ] = origin()[ i ] + s;
+        w[ i ] = width()[ i ] + 2*s;
+      }
+      return This( o, w );
+    }
+
+    This intersect ( const This &other ) const
+    {
+      MultiIndex o;
+      MultiIndex w;
+      for( int i = 0; i < dimension; ++i )
+      {
+        o[ i ] = std::max( origin()[ i ], other.origin()[ i ] );
+        w[ i ] = std::max( std::min( origin()[ i ] + width()[ i ], other.origin()[ i ] + other.width()[ i ] ) - origin[ i ], 0 );
+      }
+    }
+
     const MultiIndex &origin () const
     {
       return origin_;
+    }
+
+    int volume () const
+    {
+      int volume = 1;
+      for( int i = 0; i < dimension; ++i )
+        volume *= width()[ i ];
+      return volume;
     }
 
     const MultiIndex &width () const
@@ -155,14 +195,7 @@ namespace Dune
   inline typename SPDecomposition< dim >::Partition
   SPDecomposition< dim >::Node::partition ( const int overlap ) const
   {
-    MultiIndex origin = partition_.origin();
-    MultiIndex width = partition_.width();
-    for( int i = 0; i < dimension; ++i )
-    {
-      origin[ i ] -= overlap;
-      width[ i ] += 2*overlap;
-    }
-    return Partition( origin, width );
+    return partition_.grow( overlap );
   }
 
 
