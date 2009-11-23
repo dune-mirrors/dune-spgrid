@@ -18,14 +18,12 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const int
 {
   const unsigned int size = decomposition.size();
 
-  unsigned int maxload = std::numeric_limits< unsigned int >::min();
-  unsigned int minload = std::numeric_limits< unsigned int >::max();
+  int maxload = std::numeric_limits< int >::min();
+  int minload = std::numeric_limits< int >::max();
   for( unsigned int rank = 0; rank < size; ++rank )
   {
     SPPartition< dimGrid > partition = decomposition.partition( rank, overlap );
-    unsigned int load = 1;
-    for( int i = 0; i < dimGrid; ++i )
-      load *= partition.width()[ i ];
+    const int load = partition.volume();
     minload = std::min( minload, load );
     maxload = std::max( maxload, load );
     std::cout << "rank " << rank << ": " << partition;
