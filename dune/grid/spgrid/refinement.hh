@@ -240,24 +240,24 @@ namespace Dune
 
 
 
-  template< class ct, int dim >
-  inline std::ostream &
-  operator<< ( std::ostream &out, const SPRefinement< ct, dim, SPIsotropicRefinement > &refinement )
+  template< class char_type, class Traits, class ct, int dim >
+  inline std::ostream< char_type, Traits > &
+  operator<< ( std::basic_ostream< char_type, Traits > &out, const SPRefinement< ct, dim, SPIsotropicRefinement > &refinement )
   {
     const unsigned int refDir = (1 << dim)-1;
     return out << refDir;
   }
 
-  template< class ct, int dim >
-  inline std::ostream &
-  operator<< ( std::ostream &out, const SPRefinement< ct, dim, SPAnisotropicRefinement > &refinement )
+  template< class char_type, class Traits, class ct, int dim >
+  inline std::basic_ostream< char_type, Traits > &
+  operator<< ( std::basic_ostream< char_type, Traits > &out, const SPRefinement< ct, dim, SPAnisotropicRefinement > &refinement )
   {
     return out << refinement.refDir_;
   }
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline std::istream &
-  operator>> ( std::istream &in, SPRefinement< ct, dim, strategy > &refinement )
+  template< class char_type, class Traits, class ct, int dim, SPRefinementStrategy strategy >
+  inline std::basic_istream< char_type, Traits > &
+  operator>> ( std::basic_istream< char_type, Traits > &in, SPRefinement< ct, dim, strategy > &refinement )
   {
     unsigned int refDir;
     in >> refDir;

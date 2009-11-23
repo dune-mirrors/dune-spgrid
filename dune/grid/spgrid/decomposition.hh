@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_DECOMPOSITION_HH
 #define DUNE_SPGRID_DECOMPOSITION_HH
 
+#include <dune/common/iostream.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
 
