@@ -152,9 +152,9 @@ namespace Dune
     {
       assert( (left_ != 0) && (right_ != 0) );
       if( rank < size_/2 )
-        return left_->interiorPartition_( rank );
+        return left_->interiorPartition( rank );
       else
-        return right_->interiorPartition_( rank );
+        return right_->interiorPartition( rank - size_/2 );
     }
     else
       return partition_;
