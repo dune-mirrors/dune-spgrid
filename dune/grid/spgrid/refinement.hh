@@ -3,6 +3,7 @@
 
 #include <dune/common/fvector.hh>
 
+#include <dune/grid/common/grid.hh>
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 
@@ -241,7 +242,7 @@ namespace Dune
 
 
   template< class char_type, class Traits, class ct, int dim >
-  inline std::ostream< char_type, Traits > &
+  inline std::basic_ostream< char_type, Traits > &
   operator<< ( std::basic_ostream< char_type, Traits > &out, const SPRefinement< ct, dim, SPIsotropicRefinement > &refinement )
   {
     const unsigned int refDir = (1 << dim)-1;
