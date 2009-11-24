@@ -1,0 +1,18 @@
+
+dune-spgrid's To-Do-List
+------------------------
+
+Parallelization:
+ * implement communication
+ * implement iterators for different partitions
+ * adapt local / global id set to partitioning
+ * correct partitioning for periodic grids
+
+Refinement techniques:
+ * implement bisection refinement
+
+Id Sets:
+ * id set needs to return the same id for each copy of a vertex
+
+Extended Iterators:
+ * simplify access
