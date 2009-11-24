@@ -113,6 +113,7 @@ namespace Dune
 
   private:
     const GridLevel *gridLevel_;
+    MultiIndex origin_, cells_;
     IndexType offsets_[ 1 << dimension ];
     IndexType size_[ dimension+1 ];
     std::vector< GeometryType > geomTypes_[ dimension+1 ];
@@ -127,8 +128,9 @@ namespace Dune
   void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
   {
     gridLevel_ = &gridLevel;
+    origin_ = gridLevel.allPartition().begin();
+    cells_ = gridLevel.allPartition().width();
 
-    const MultiIndex &cells = gridLevel.cells();
     for( int codim = 0; codim <= dimension; ++codim )
       size_[ codim ] = 0;
 
@@ -139,7 +141,7 @@ namespace Dune
       for( int j = 0; j < dimension; ++j )
       {
         const unsigned int d = (dir >> j) & 1;
-        factor *= cells[ j ] + (1-d);
+        factor *= cells_[ j ] + (1-d);
         codim -= d;
       }
       offsets_[ dir ] = size_[ codim ];
@@ -152,15 +154,17 @@ namespace Dune
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >::index ( const MultiIndex &id ) const
   {
-    const MultiIndex &cells = gridLevel().cells();
     IndexType index = 0;
     IndexType factor = 1;
     unsigned int dir = 0;
     for( int j = 0; j < dimension; ++j )
     {
       const unsigned int d = id[ j ] & 1;
-      index += (id[ j ] >> 1) * factor;
-      factor *= cells[ j ] + (1-d);
+      const IndexType idLocal = (id[ j ] >> 1) - origin_[ j ];
+      const IndexType width = cells_[ j ] + (1-d);
+      assert( (idLocal >= 0) && (idLocal < width) );
+      index += idLocal * factor;
+      factor *= width;
       dir |= (d << j);
     }
     return offsets_[ dir ] + index;

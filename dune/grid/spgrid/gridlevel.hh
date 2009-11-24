@@ -10,6 +10,7 @@
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
+#include <dune/grid/spgrid/partition.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
 
 namespace Dune
@@ -45,6 +46,8 @@ namespace Dune
 
     typedef typename Cube::GlobalVector GlobalVector;
     typedef typename Cube::MultiIndex MultiIndex;
+
+    typedef SPPartition< dimension > Partition;
 
     static const unsigned int numDirections = Cube::numCorners;
 
@@ -95,6 +98,11 @@ namespace Dune
     const Domain &domain () const
     {
       return domain_;
+    }
+
+    const Partition &allPartition () const
+    {
+      return allPartition_;
     }
 
     const GridLevel &fatherLevel () const
@@ -178,6 +186,7 @@ namespace Dune
     unsigned int level_;
     const Refinement refinement_;
     Domain domain_;
+    Partition allPartition_;
     GlobalVector h_;
 
     void *geometryCache_[ numDirections ];
@@ -193,6 +202,7 @@ namespace Dune
     child_( 0 ),
     level_( 0 ),
     domain_( grid.domain() ),
+    allPartition_( domain_.cells() ),
     h_( domain().h() ),
     geometryInFather_( 0 )
   {
@@ -209,6 +219,7 @@ namespace Dune
     level_( father.level_ + 1 ),
     refinement_( refinement ),
     domain_( father.domain(), refinement ),
+    allPartition_( father.allPartition(), refinement ),
     h_( domain().h() )
   {
     assert( father.child_ == 0 );
