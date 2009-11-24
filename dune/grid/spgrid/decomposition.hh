@@ -47,7 +47,7 @@ namespace Dune
     {}
 
     Partition partition ( const unsigned int rank, const int overlap = 0 ) const;
-    void partitions ( std::vector< Partition > &partitions, const int overlap = 0 ) const;
+    std::vector< Partition > partitions ( const int overlap = 0 ) const;
 
     unsigned int size () const
     {
@@ -156,11 +156,12 @@ namespace Dune
 
 
   template< int dim >
-  inline void
-  SPDecomposition< dim >::partitions ( std::vector< Partition > &partitions, const int overlap ) const
+  inline std::vector< typename SPDecomposition< dim >::Partition >
+  SPDecomposition< dim >::partitions ( const int overlap ) const
   {
     typedef typename std::vector< Partition >::iterator Iterator;
 
+    std::vector< Partition > partitions;
     partitions.reserve( root_.size() );
     root_.partitions( partitions, overlap );
 
@@ -168,6 +169,7 @@ namespace Dune
     const Iterator end = partitions.end();
     for( Iterator it = partitions.begin(); it != end; ++it )
       *it = it->intersect( allPartition );
+    return partitions;
   }
 
 }
