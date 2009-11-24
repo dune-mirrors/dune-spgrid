@@ -66,6 +66,13 @@ namespace Dune
       return *this;
     }
 
+    This &operator/= ( const int a )
+    {
+      for( int i = 0; i < dimension; ++i )
+        index_[ i ] /= a;
+      return *this;
+    }
+
     const int &operator[] ( const int i ) const
     {
       return index_[ i ];
@@ -185,6 +192,34 @@ namespace Dune
   {
     SPMultiIndex< dim > c = a;
     c -= b;
+    return c;
+  }
+
+
+  template< int dim >
+  inline SPMultiIndex< dim >
+  operator* ( const SPMultiIndex< dim > &a, const int &b )
+  {
+    SPMultiIndex< dim > c = a;
+    c *= b;
+    return c;
+  }
+
+  
+  template< int dim >
+  inline SPMultiIndex< dim >
+  operator* ( const int &a, const SPMultiIndex< dim > &b )
+  {
+    return (b*a);
+  }
+
+
+  template< int dim >
+  inline SPMultiIndex< dim >
+  operator/ ( const SPMultiIndex< dim > &a, const int &b )
+  {
+    SPMultiIndex< dim > c = a;
+    c /= b;
     return c;
   }
 
