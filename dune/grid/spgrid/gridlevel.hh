@@ -216,10 +216,11 @@ namespace Dune
 
     const unsigned int numChildren = refinement.numChildren();
     geometryInFather_ = new LocalGeometry *[ numChildren ];
-    const typename Codim< 0 >::GeometryCache cacheInFather( refinement.hInFather(), numDirections-1 );
+    const GlobalVector hInFather = refinement.template hInFather< ctype >();
+    const typename Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
     for( unsigned int index = 0; index < numChildren; ++index )
     {
-      const GlobalVector origin = refinement.originInFather( index );
+      const GlobalVector origin = refinement.template originInFather< ctype >( index );
       geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
     }
 

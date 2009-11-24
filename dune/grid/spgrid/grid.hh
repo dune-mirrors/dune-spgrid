@@ -38,7 +38,7 @@ namespace Dune
 
       typedef SPCube< ct, dim > Cube;
       typedef SPDomain< ct, dim > Domain;
-      typedef SPRefinement< ct, dim, strategy > Refinement;
+      typedef SPRefinement< dim, strategy > Refinement;
 
 #if HAVE_MPI
       typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;

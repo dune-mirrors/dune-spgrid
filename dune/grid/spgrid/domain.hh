@@ -49,7 +49,7 @@ namespace Dune
     }
 
     template< SPRefinementStrategy strategy >
-    SPDomain ( const This &other, const SPRefinement< ctype, dimension, strategy > &refinement )
+    SPDomain ( const This &other, const SPRefinement< dimension, strategy > &refinement )
     : origin_( other.origin_ ),
       width_( other.width_ ),
       periodic_( other.periodic_ )

@@ -24,28 +24,22 @@ namespace Dune
   // Internal Forward Declarations
   // -----------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< int dim, SPRefinementStrategy strategy >
   struct SPRefinement;
-
-  template< class ct, int dim >
-  std::ostream &operator<< ( std::ostream &, const SPRefinement< ct, dim, SPAnisotropicRefinement > & );
 
 
 
   // SPRefinement
   // ------------
 
-  template< class ct, int dim >
-  class SPRefinement< ct, dim, SPIsotropicRefinement >
+  template< int dim >
+  class SPRefinement< dim, SPIsotropicRefinement >
   {
-    typedef SPRefinement< ct, dim, SPIsotropicRefinement > This;
+    typedef SPRefinement< dim, SPIsotropicRefinement > This;
 
   public:
-    typedef ct ctype;
-
     static const int dimension = dim;
 
-    typedef FieldVector< ctype, dimension > GlobalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPRefinement ()
@@ -108,41 +102,43 @@ namespace Dune
         id[ i ] = (id[ i ] >> 1) | 1;
     }
 
-    GlobalVector hInFather () const
+    template< class ctype >
+    FieldVector< ctype, dimension > hInFather () const
     {
-      GlobalVector h;
+      FieldVector< ctype, dimension > h;
       for( int i = 0; i < dimension; ++i )
         h[ i ] = ctype( 1 ) / ctype( factor( i ) );
       return h;
     }
 
-    GlobalVector originInFather ( const unsigned int index ) const
+    template< class ctype >
+    FieldVector< ctype, dimension > originInFather ( const unsigned int index ) const
     {
-      GlobalVector origin;
+      FieldVector< ctype, dimension > origin;
       for( int i = 0; i < dimension; ++i )
         origin[ i ] = ctype( (index >> i) & 1 ) / ctype( 2 );
       return origin;
     }
 
-  private:
-    unsigned int refDir_;
+    template< class char_type, class traits >
+    friend std::basic_ostream< char_type, traits > &
+    operator<< ( std::basic_ostream< char_type, traits > &out, const This &refinement )
+    {
+      const unsigned int refDir = (1 << dim)-1;
+      return out << refDir;
+    }
   };
 
 
 
-  template< class ct, int dim >
-  class SPRefinement< ct, dim, SPAnisotropicRefinement >
+  template< int dim >
+  class SPRefinement< dim, SPAnisotropicRefinement >
   {
-    typedef SPRefinement< ct, dim, SPAnisotropicRefinement > This;
-
-    friend std::ostream &operator<<<> ( std::ostream &, const This & );
+    typedef SPRefinement< dim, SPAnisotropicRefinement > This;
 
   public:
-    typedef ct ctype;
-
     static const int dimension = dim;
 
-    typedef FieldVector< ctype, dimension > GlobalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPRefinement ()
@@ -215,17 +211,19 @@ namespace Dune
         id[ i ] = (((refDir_ >> i) & 1) != 0 ? (id[ i ] >> 1) | 1 : id[ i ]);
     }
 
-    GlobalVector hInFather () const
+    template< class ctype >
+    FieldVector< ctype, dimension > hInFather () const
     {
-      GlobalVector h;
+      FieldVector< ctype, dimension > h;
       for( int i = 0; i < dimension; ++i )
         h[ i ] = ctype( 1 ) / ctype( factor( i ) );
       return h;
     }
 
-    GlobalVector originInFather ( unsigned int index ) const
+    template< class ctype >
+    FieldVector< ctype, dimension > originInFather ( unsigned int index ) const
     {
-      GlobalVector origin;
+      FieldVector< ctype, dimension > origin;
       for( int i = 0; i < dimension; ++i )
       {
         unsigned int b = (refDir_ >> i) & 1;
@@ -235,35 +233,30 @@ namespace Dune
       return origin;
     }
 
+    template< class char_type, class traits >
+    friend std::basic_ostream< char_type, traits > &
+    operator<< ( std::basic_ostream< char_type, traits > &out, const This &refinement )
+    {
+      return out << refinement.refDir_;
+    }
+
   private:
     unsigned int refDir_;
   };
 
 
 
-  template< class char_type, class Traits, class ct, int dim >
-  inline std::basic_ostream< char_type, Traits > &
-  operator<< ( std::basic_ostream< char_type, Traits > &out, const SPRefinement< ct, dim, SPIsotropicRefinement > &refinement )
-  {
-    const unsigned int refDir = (1 << dim)-1;
-    return out << refDir;
-  }
+  // Auxilliary Functions for SPRefinement
+  // -------------------------------------
 
-  template< class char_type, class Traits, class ct, int dim >
-  inline std::basic_ostream< char_type, Traits > &
-  operator<< ( std::basic_ostream< char_type, Traits > &out, const SPRefinement< ct, dim, SPAnisotropicRefinement > &refinement )
-  {
-    return out << refinement.refDir_;
-  }
-
-  template< class char_type, class Traits, class ct, int dim, SPRefinementStrategy strategy >
-  inline std::basic_istream< char_type, Traits > &
-  operator>> ( std::basic_istream< char_type, Traits > &in, SPRefinement< ct, dim, strategy > &refinement )
+  template< class char_type, class traits, int dim, SPRefinementStrategy strategy >
+  inline std::basic_istream< char_type, traits > &
+  operator>> ( std::basic_istream< char_type, traits > &in, SPRefinement< dim, strategy > &refinement )
   {
     unsigned int refDir;
     in >> refDir;
     if( in )
-      refinement = SPRefinement< ct, dim, strategy >( refDir );
+      refinement = SPRefinement< dim, strategy >( refDir );
     return in;
   }
 

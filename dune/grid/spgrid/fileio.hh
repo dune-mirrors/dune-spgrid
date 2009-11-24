@@ -19,7 +19,7 @@ namespace Dune
   {
     typedef FieldVector< ctype, dim > Vector;
     typedef SPMultiIndex< dim > MultiIndex;
-    typedef SPRefinement< ctype, dim, strategy > Refinement;
+    typedef SPRefinement< dim, strategy > Refinement;
 
     std::string name;
     ctype time;
