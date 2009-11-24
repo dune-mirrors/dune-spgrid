@@ -81,8 +81,8 @@ int main ( int argc, char **argv )
   for( unsigned int rank = 0; rank < size; ++rank )
   {
     SPPartition< dimGrid > partition = decomposition.partition( rank, 0 );
-    SPMultiIndex< dimGrid > pos = partition.origin();
-    SPMultiIndex< dimGrid > end = partition.origin() + partition.width();
+    SPMultiIndex< dimGrid > pos = partition.begin();
+    SPMultiIndex< dimGrid > end = partition.end();
     for( int d = 0; d < dimGrid; )
     {
       unsigned int index = 0;
@@ -98,7 +98,7 @@ int main ( int argc, char **argv )
       {
         if( ++pos[ d ] < end[ d ] )
           break;
-        pos[ d ] = partition.origin()[ 0 ];
+        pos[ d ] = partition.begin()[ 0 ];
       }
     }
   }
