@@ -11,6 +11,7 @@
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
 #include <dune/grid/spgrid/partition.hh>
+#include <dune/grid/spgrid/decomposition.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
 
 namespace Dune
@@ -47,7 +48,8 @@ namespace Dune
     typedef typename Cube::GlobalVector GlobalVector;
     typedef typename Cube::MultiIndex MultiIndex;
 
-    typedef SPPartition< dimension > Partition;
+    typedef SPDecomposition< dimension > Decomposition;
+    typedef typename Decomposition::Partition Partition;
 
     static const unsigned int numDirections = Cube::numCorners;
 
@@ -69,7 +71,7 @@ namespace Dune
     struct DestroyGeometryCache;
 
   public:
-    SPGridLevel ( const Grid &grid );
+    SPGridLevel ( const Grid &grid, const Decomposition &decomposition );
 
     SPGridLevel ( GridLevel &father, const Refinement &refinement );
 
@@ -196,13 +198,14 @@ namespace Dune
 
 
   template< class Grid >
-  inline SPGridLevel< Grid >::SPGridLevel ( const Grid &grid )
+  inline SPGridLevel< Grid >
+    ::SPGridLevel ( const Grid &grid, const Decomposition &decomposition )
   : grid_( &grid ),
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
     domain_( grid.domain() ),
-    allPartition_( domain_.cells() ),
+    allPartition_( decomposition.partition( grid.comm().rank() ) ),
     h_( domain().h() ),
     geometryInFather_( 0 )
   {

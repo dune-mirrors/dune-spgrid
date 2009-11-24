@@ -573,7 +573,9 @@ namespace Dune
     {
       domain_ = domain;
 
-      leafLevel_ = new GridLevel( *this );
+      SPDecomposition< dimension > decomposition( domain_.cells(), comm().size(), domain_.periodic() );
+
+      leafLevel_ = new GridLevel( *this, decomposition );
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
       hierarchicIndexSet_.update();
