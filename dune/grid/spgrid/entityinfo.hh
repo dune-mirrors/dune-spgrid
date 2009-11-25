@@ -233,7 +233,8 @@ namespace Dune
     {}
 
     SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
-    : Base( gridLevel, id )
+    : Base( gridLevel, id ),
+      origin_( computeOrigin() )
     {}
 
     using Base::direction;
@@ -252,6 +253,23 @@ namespace Dune
 
     GlobalVector origin () const
     {
+      return origin_;
+    }
+
+    const GeometryCache &geometryCache () const
+    {
+      return gridLevel().template geometryCache< codim >( direction() );
+    }
+
+    void update ()
+    {
+      Base::update();
+      origin_ = computeOrigin();
+    }
+
+  private:
+    GlobalVector computeOrigin () const
+    {
       const GlobalVector &h = gridLevel().h();
       GlobalVector origin = gridLevel().domain().origin();
       for( int i = 0; i < dimension; ++i )
@@ -259,10 +277,7 @@ namespace Dune
       return origin;
     }
 
-    const GeometryCache &geometryCache () const
-    {
-      return gridLevel().template geometryCache< codim >( direction() );
-    }
+    GlobalVector origin_;
   };
 
 }
