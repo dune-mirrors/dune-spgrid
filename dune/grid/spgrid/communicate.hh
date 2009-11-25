@@ -113,14 +113,15 @@ namespace Dune
   struct SPPartitionSend
   {
     typedef SPGridLevel< Grid > GridLevel;
+    typedef typename GridLevel::PartitionList PartitionList;
 
     static const unsigned int dimension = GridLevel::dimension;
 
-    void operator() ( const unsigned int rank, const Partition *partition )
+    void operator() ( const unsigned int rank, const PartitionList &partitionList )
     {
       SPMessageWriteBuffer< int > sizes;
       SPMessageWriteBuffer< typename DataHandle::DataType > buffer;
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partition, sizes, buffer );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
       sizes.send( rank, 1, gridLevel_.grid().comm() );
       buffer.send( rank, 2, buffer, gridLevel_.grid().comm() );
     }
@@ -143,12 +144,13 @@ namespace Dune
     template< class SizeBuffer, class MessageBuffer >
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const Partition *&partition, SizeBuffer &sizes, MessageBuffer &buffer )
+            const PartitionList &partitionList,
+            SizeBuffer &sizes, MessageBuffer &buffer )
     {
       if( dataHandle.contains( dimension, codim ) )
       {
-        const Iterator end( gridLevel, 0 );
-        for( Iterator it( gridLevel, partition ); it != end; ++it )
+        const Iterator end( gridLevel, partitionList, typename Iterator::End() );
+        for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
         {
           sizes.write( dataHandle.size( *it ) );
           dataHandle.gather( buffer, *it ); 
@@ -166,14 +168,15 @@ namespace Dune
   struct SPPartitionReceive
   {
     typedef SPGridLevel< Grid > GridLevel;
+    typedef typename GridLevel::PartitionList PartitionList;
 
     static const unsigned int dimension = GridLevel::dimension;
 
-    void operator() ( const unsigned int rank, const Partition *partition )
+    void operator() ( const unsigned int rank, const PartitionList &partitionList )
     {
       SPMessageReadBuffer sizes( rank, 1, gridLevel_.grid().comm() );
       SPMessageReadBuffer buffer( rank, 2, gridLevel_.grid().comm() );
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partition, sizes, buffer );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
     }
 
   private:
@@ -191,12 +194,13 @@ namespace Dune
     template< class SizeBuffer, class MessageBuffer >
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const Partition *&partition, SizeBuffer &sizes, MessageBuffer &buffer )
+            const PartitionList &partitionList,
+            SizeBuffer &sizes, MessageBuffer &buffer )
     {
       if( dataHandle.contains( dimension, codim ) )
       {
-        const Iterator end( gridLevel, 0 );
-        for( Iterator it( gridLevel, partition ); it != end; ++it )
+        const Iterator end( gridLevel, partitionList, typename Iterator::End() );
+        for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
           dataHandle.scatter( buffer, *it, sizes.read() ); 
       }
     };

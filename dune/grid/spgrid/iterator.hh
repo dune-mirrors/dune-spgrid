@@ -21,7 +21,7 @@ namespace Dune
     typedef typename Base::EntityInfo EntityInfo;
     typedef typename Base::GridLevel GridLevel;
 
-    typedef typename GridLevel::Partition Partition;
+    typedef typename GridLevel::PartitionList PartitionList;
 
     static const int dimension = Base::dimension;
     static const int codimension = Base::codimension;
@@ -29,13 +29,19 @@ namespace Dune
 
     static const unsigned int numDirections = GridLevel::numDirections;
 
+    struct Begin {};
+    struct End {};
+
   protected:
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
     using Base::gridLevel;
 
-    SPPartitionIterator ( const GridLevel &gridLevel, const Partition *partition, const unsigned int sweepDir = 0 );
+    SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
+                          const Begin &b, const unsigned int sweepDir = 0 );
+    SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
+                          const End &e, const unsigned int sweepDir = 0 );
 
     void increment ();
 
@@ -43,13 +49,13 @@ namespace Dune
     int begin ( const int i, const unsigned int dir ) const;
     int end ( const int i, const unsigned int dir ) const;
 
-    void init ( const Partition *partition );
+    void init ();
 
   protected:
     using Base::entity_;
 
   private:
-    const Partition *partition_;
+    typename PartitionList::Iterator partition_;
     unsigned int sweepDirection_;
   };
 
@@ -60,21 +66,33 @@ namespace Dune
 
   template< int codim, class Grid >
   inline SPPartitionIterator< codim, Grid >
-    ::SPPartitionIterator ( const GridLevel &gridLevel, const Partition *partition, const unsigned int sweepDir )
+    ::SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
+                            const Begin &b, const unsigned int sweepDir )
   : Base( gridLevel ),
+    partition_( partitionList.begin() ),
     sweepDirection_( sweepDir )
   {
     assert( sweepDir < numDirections );
+    init();
+  }
 
-    init( partition );
+
+  template< int codim, class Grid >
+  inline SPPartitionIterator< codim, Grid >
+    ::SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
+                            const End &e, const unsigned int sweepDir )
+  : Base( gridLevel ),
+    partition_( partitionList.end() ),
+    sweepDirection_( sweepDir )
+  {
+    assert( sweepDir < numDirections );
+    init();
   }
 
 
   template< int codim, class Grid >
   inline void SPPartitionIterator< codim, Grid >::increment ()
   {
-    assert( partition_ != 0 );
-
     EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
     MultiIndex &id = entityInfo.id();
     for( int i = 0; i < dimension; ++i )
@@ -96,7 +114,10 @@ namespace Dune
       entityInfo.update();
     }
     else
-      init( partition_->next() );
+    {
+      ++partition_;
+      init();
+    }
   }
 
 
@@ -104,7 +125,6 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::begin ( const int i, const unsigned int dir ) const
   {
-    assert( partition_ != 0 );
     //const MultiIndex &cells = gridLevel().cells();
     const MultiIndex &begin = partition_->begin();
     const MultiIndex &end = partition_->end();
@@ -119,7 +139,6 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::end ( const int i, const unsigned int dir ) const
   {
-    assert( partition_ != 0 );
     //const MultiIndex &cells = gridLevel().cells();
     const MultiIndex &begin = partition_->begin();
     const MultiIndex &end = partition_->end();
@@ -132,13 +151,11 @@ namespace Dune
 
   template< int codim, class Grid >
   inline void
-  SPPartitionIterator< codim, Grid >::init ( const Partition *partition )
+  SPPartitionIterator< codim, Grid >::init ()
   {
-    partition_ = partition;
-
     EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
     MultiIndex &id = entityInfo.id();
-    if( partition_ != 0 )
+    if( !!partition_ )
     {
       unsigned int dir = 0;
       const unsigned int mydim = mydimension;
@@ -169,15 +186,9 @@ namespace Dune
   public:
     typedef typename Base::GridLevel GridLevel;
 
-    struct Begin {};
-    struct End {};
-
-    SPIterator ( const GridLevel &gridLevel, const Begin &b, const unsigned int sweepDir = 0 )
-    : Base( gridLevel, &gridLevel.allPartition(), sweepDir )
-    {}
-
-    SPIterator ( const GridLevel &gridLevel, const End &e, const unsigned int sweepDir = 0 )
-    : Base( gridLevel, 0, sweepDir )
+    template< class BeginEnd >
+    SPIterator ( const GridLevel &gridLevel, const BeginEnd &be, const unsigned int sweepDir = 0 )
+    : Base( gridLevel, gridLevel.allPartition(), be, sweepDir )
     {}
   };
 

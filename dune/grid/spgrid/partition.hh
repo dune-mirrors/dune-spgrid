@@ -2,6 +2,8 @@
 #define DUNE_SPGRID_PARTITION_HH
 
 #include <dune/common/iostream.hh>
+#include <dune/common/smallobject.hh>
+
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
 
@@ -22,8 +24,7 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPPartition ( const MultiIndex &width )
-    : next_( 0 ),
-      begin_( MultiIndex::zero() ),
+    : begin_( MultiIndex::zero() ),
       end_( width )
     {}
 
@@ -32,17 +33,11 @@ namespace Dune
 
   private:
     SPPartition ( const MultiIndex &begin, const MultiIndex &end )
-    : next_( 0 ),
-      begin_( begin ),
+    : begin_( begin ),
       end_( end )
     {}
 
   public:
-    const This *next () const
-    {
-      return next_;
-    }
-
     const MultiIndex &begin () const
     {
       return begin_;
@@ -64,7 +59,6 @@ namespace Dune
     MultiIndex width () const;
 
   private:
-    This *next_;
     MultiIndex begin_, end_;
   };
 
@@ -76,7 +70,6 @@ namespace Dune
   template< int dim >
   template< SPRefinementStrategy strategy >
   inline SPPartition< dim >::SPPartition ( const This &other, const SPRefinement< dimension, strategy > &refinement )
-  : next_( other.next() != 0 ? new This( *(other.next()), refinement ) : 0 )
   {
     for( int i = 0; i < dimension; ++i )
     {

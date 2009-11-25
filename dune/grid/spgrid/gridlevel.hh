@@ -10,7 +10,7 @@
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
-#include <dune/grid/spgrid/partition.hh>
+#include <dune/grid/spgrid/partitionlist.hh>
 #include <dune/grid/spgrid/decomposition.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
 
@@ -49,7 +49,7 @@ namespace Dune
     typedef typename Cube::MultiIndex MultiIndex;
 
     typedef SPDecomposition< dimension > Decomposition;
-    typedef typename Decomposition::Partition Partition;
+    typedef SPPartitionList< dimension > PartitionList;
 
     static const unsigned int numDirections = Cube::numCorners;
 
@@ -102,7 +102,7 @@ namespace Dune
       return domain_;
     }
 
-    const Partition &allPartition () const
+    const PartitionList &allPartition () const
     {
       return allPartition_;
     }
@@ -188,7 +188,7 @@ namespace Dune
     unsigned int level_;
     const Refinement refinement_;
     Domain domain_;
-    Partition allPartition_;
+    PartitionList allPartition_;
     GlobalVector h_;
 
     void *geometryCache_[ numDirections ];

@@ -128,8 +128,8 @@ namespace Dune
   void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
   {
     gridLevel_ = &gridLevel;
-    origin_ = gridLevel.allPartition().begin();
-    cells_ = gridLevel.allPartition().width();
+    origin_ = gridLevel.allPartition().begin()->begin();
+    cells_ = gridLevel.allPartition().begin()->width();
 
     for( int codim = 0; codim <= dimension; ++codim )
       size_[ codim ] = 0;
