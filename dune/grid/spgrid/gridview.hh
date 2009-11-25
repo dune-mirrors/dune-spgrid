@@ -70,8 +70,8 @@ namespace Dune
 
 
 
-  // SPLeqafGridViewTraits
-  // ---------------------
+  // SPLeafGridViewTraits
+  // --------------------
 
   template< class G, PartitionIteratorType pitype >
   struct SPLeafGridViewTraits
