@@ -22,7 +22,8 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
 
     SPPartition ( const MultiIndex &width )
-    : begin_( MultiIndex::zero() ),
+    : next_( 0 ),
+      begin_( MultiIndex::zero() ),
       end_( width )
     {}
 
@@ -31,11 +32,17 @@ namespace Dune
 
   private:
     SPPartition ( const MultiIndex &begin, const MultiIndex &end )
-    : begin_( begin ),
+    : next_( 0 ),
+      begin_( begin ),
       end_( end )
     {}
 
   public:
+    const This *next () const
+    {
+      return next_;
+    }
+
     const MultiIndex &begin () const
     {
       return begin_;
@@ -57,6 +64,7 @@ namespace Dune
     MultiIndex width () const;
 
   private:
+    This *next_;
     MultiIndex begin_, end_;
   };
 
@@ -68,6 +76,7 @@ namespace Dune
   template< int dim >
   template< SPRefinementStrategy strategy >
   inline SPPartition< dim >::SPPartition ( const This &other, const SPRefinement< dimension, strategy > &refinement )
+  : next_( 0 )
   {
     for( int i = 0; i < dimension; ++i )
     {

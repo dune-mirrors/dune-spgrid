@@ -43,6 +43,8 @@ namespace Dune
     int begin ( const int i, const unsigned int dir ) const;
     int end ( const int i, const unsigned int dir ) const;
 
+    void init ( const Partition *partition );
+
   protected:
     using Base::entity_;
 
@@ -60,27 +62,11 @@ namespace Dune
   inline SPPartitionIterator< codim, Grid >
     ::SPPartitionIterator ( const GridLevel &gridLevel, const Partition *partition, const unsigned int sweepDir )
   : Base( gridLevel ),
-    partition_( partition ),
     sweepDirection_( sweepDir )
   {
     assert( sweepDir < numDirections );
-    EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
 
-    MultiIndex &id = entityInfo.id();
-    if( partition_ != 0 )
-    {
-      unsigned int dir = 0;
-      const unsigned int mydim = mydimension;
-      for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
-      assert( dir < numDirections );
-
-      for( int i = 0; i < dimension; ++i )
-        id[ i ] = begin( i, dir );
-    }
-    else
-      id = std::numeric_limits< MultiIndex >::max();
-
-    entityInfo.update();
+    init( partition );
   }
 
 
@@ -107,14 +93,10 @@ namespace Dune
     {
       for( int i = 0; i < dimension; ++i )
         id[ i ] = begin( i, dir );
+      entityInfo.update();
     }
     else
-    {
-      partition_ = 0;
-      id = std::numeric_limits< MultiIndex >::max();
-    }
-
-    entityInfo.update();
+      init( partition_->next() );
   }
 
 
@@ -145,6 +127,31 @@ namespace Dune
     const unsigned int d = (dir >> i) & 1;
     //return (d-2) + (1-sweep)*2*(cells[ i ]-(d-2));
     return (1-sweep)*(2*end[ i ] - (d-2)) + sweep*(2*begin[ i ] + (d-2));
+  }
+
+
+  template< int codim, class Grid >
+  inline void
+  SPPartitionIterator< codim, Grid >::init ( const Partition *partition )
+  {
+    partition_ = partition;
+
+    EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
+    MultiIndex &id = entityInfo.id();
+    if( partition_ != 0 )
+    {
+      unsigned int dir = 0;
+      const unsigned int mydim = mydimension;
+      for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
+      assert( dir < numDirections );
+
+      for( int i = 0; i < dimension; ++i )
+        id[ i ] = begin( i, dir );
+    }
+    else
+      id = std::numeric_limits< MultiIndex >::max();
+
+    entityInfo.update();
   }
 
 
