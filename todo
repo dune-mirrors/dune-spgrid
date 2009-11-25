@@ -2,6 +2,9 @@
 dune-spgrid's To-Do-List
 ------------------------
 
+Interface:
+ * implement boundary index (needs information from refinement technique)
+
 Parallelization:
  * implement communication
  * store lists of partitions on grid level (to support periodicity)
