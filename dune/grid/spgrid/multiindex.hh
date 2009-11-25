@@ -152,9 +152,9 @@ namespace Dune
   };
 
 
-  template< class char_type, class Traits, int dim >
-  inline std::basic_ostream< char_type, Traits > &
-  operator<< ( std::basic_ostream< char_type, Traits > &out, const SPMultiIndex< dim > &multiIndex )
+  template< class char_type, class traits, int dim >
+  inline std::basic_ostream< char_type, traits > &
+  operator<< ( std::basic_ostream< char_type, traits > &out, const SPMultiIndex< dim > &multiIndex )
   {
     out << "( " << multiIndex[ 0 ];
     for( int i = 1; i < dim; ++i )
@@ -163,16 +163,16 @@ namespace Dune
   }
 
 
-  template< class char_type, class Traits, int dim >
-  inline std::basic_istream< char_type, Traits > &
-  operator>> ( std::basic_istream< char_type, Traits > &in, SPMultiIndex< dim > &multiIndex )
+  template< class char_type, class traits, int dim >
+  inline std::basic_istream< char_type, traits > &
+  operator>> ( std::basic_istream< char_type, traits > &in, SPMultiIndex< dim > &multiIndex )
   {
     SPMultiIndex< dim > m;
     in >> match( '(' ) >> m[ 0 ];
     for( int i = 1; i < dim; ++i )
       in >> match( ',' ) >> m[ i ];
     in >> match( ')' );
-    if( in.good() )
+    if( !in.fail() )
       multiIndex = m;
     return in;
   }

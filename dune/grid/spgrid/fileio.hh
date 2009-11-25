@@ -35,9 +35,6 @@ namespace Dune
 
   private:
     static std::string readLine ( std::istream &in, unsigned int *count = 0 );
-
-    template< class T >
-    static bool match ( std::istream &in, const T &t );
   };
 
 
@@ -55,12 +52,6 @@ namespace Dune
     fileOut << "width " << width << std::endl;
 
     fileOut << "cells " << cells << std::endl;
-#if 0
-    fileOut << "cells";
-    for( int i = 0; i < dim; ++i )
-      fileOut << " " << cells[ i ];
-    fileOut << std::endl;
-#endif
 
     fileOut << "periodic";
     for( int i = 0; i < dim; ++i )
@@ -71,6 +62,8 @@ namespace Dune
     fileOut << std::endl;
 
     fileOut << "maxLevel " << maxLevel << std::endl;
+
+    fileOut << "refinement " << Refinement::type() << std::endl;
 
     fileOut << "refinements";
     for( unsigned int i = 0; i < refinements.size(); ++i )
@@ -92,7 +85,8 @@ namespace Dune
     unsigned int lineNr = 0;
     std::string line = readLine( fileIn, &lineNr );
     std::istringstream lineIn( line );
-    if( !match( lineIn, std::string( "SPGrid" ) ) || !match( lineIn, dim ) )
+    lineIn >> match( std::string( "SPGrid" ) ) >> match( dim );
+    if( lineIn.fail() )
       DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: 'SPGrid " << dim << "' expected." );
 
     name = "SPGrid";
@@ -102,7 +96,8 @@ namespace Dune
     const unsigned int flagWidth = 2;
     const unsigned int flagCells = 4;
     const unsigned int flagMaxLevel = 8;
-    const unsigned int flagAll = 15;
+    const unsigned int flagRefinement = 16;
+    const unsigned int flagAll = 31;
     unsigned int flags = 0;
 
     while( true )
@@ -133,10 +128,6 @@ namespace Dune
       else if( cmd == "cells" )
       {
         lineIn >> cells;
-#if 0
-        for( int i = 0; i < dim; ++i )
-          lineIn >> cells[ i ];
-#endif
         flags |= flagCells;
       }
       else if( cmd == "periodic" )
@@ -155,9 +146,17 @@ namespace Dune
         lineIn >> maxLevel;
         flags |= flagMaxLevel;
       }
+      else if( cmd == "refinement" )
+      {
+        lineIn >> match( Refinement::type() );
+        if( lineIn.fail() )
+          DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Refinement technique must be " << Refinement::type() << "." );
+        flags |= flagRefinement;
+      }
       else if( cmd == "refinements" )
       {
-        while( !lineIn.eof() )
+        //while( !lineIn.eof() )
+        while( lineIn.good() )
         {
           Refinement refinement;
           lineIn >> refinement;
@@ -195,19 +194,6 @@ namespace Dune
       line = line.substr( 0, line.find_first_of( '#' ) );
     }
     return line;
-  }
-
-
-  template< class ctype, int dim, SPRefinementStrategy strategy >
-  template< class T >
-  inline bool
-  SPGridIOData< ctype, dim, strategy >::match ( std::istream &in, const T &what )
-  {
-    T t;
-    in >> t;
-    if( !in )
-      return false;
-    return (t == what);
   }
 
 }

@@ -2,6 +2,7 @@
 #define DUNE_SPGRID_REFINEMENT_HH
 
 #include <dune/common/fvector.hh>
+#include <dune/common/iostream.hh>
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/spgrid/misc.hh>
@@ -44,14 +45,6 @@ namespace Dune
 
     SPRefinement ()
     {}
-
-    explicit SPRefinement ( const unsigned int refDir )
-    {
-      if( refDir >= (1 << dimension) )
-        DUNE_THROW( GridError, "Trying to create isotropic refinement from invalid value " << refDir << "." );
-      if( refDir < (1 << dimension)-1 )
-        DUNE_THROW( GridError, "Trying to create isotropic refinement from anisotropic value " << refDir << "." );
-    }
 
     unsigned int factor ( const int i ) const
     {
@@ -120,12 +113,24 @@ namespace Dune
       return origin;
     }
 
+    static std::string type ()
+    {
+      return "isotropic";
+    }
+
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
     operator<< ( std::basic_ostream< char_type, traits > &out, const This &refinement )
     {
-      const unsigned int refDir = (1 << dim)-1;
-      return out << refDir;
+      return out << ((1 << dimension)-1);
+    }
+    
+    template< class char_type, class traits >
+    friend std::basic_istream< char_type, traits > &
+    operator>> ( std::basic_istream< char_type, traits > &in, This &refinement )
+    {
+      in >> match( (1 << dimension)-1 );
+      return in;
     }
   };
 
@@ -233,6 +238,11 @@ namespace Dune
       return origin;
     }
 
+    static std::string type ()
+    {
+      return "anisotropic";
+    }
+
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
     operator<< ( std::basic_ostream< char_type, traits > &out, const This &refinement )
@@ -240,25 +250,20 @@ namespace Dune
       return out << refinement.refDir_;
     }
 
+    template< class char_type, class traits >
+    friend std::basic_istream< char_type, traits > &
+    operator>> ( std::basic_istream< char_type, traits > &in, This &refinement )
+    {
+      unsigned int refDir;
+      in >> refDir;
+      if( !in.fail() )
+        refinement = This( refDir );
+      return in;
+    }
+
   private:
     unsigned int refDir_;
   };
-
-
-
-  // Auxilliary Functions for SPRefinement
-  // -------------------------------------
-
-  template< class char_type, class traits, int dim, SPRefinementStrategy strategy >
-  inline std::basic_istream< char_type, traits > &
-  operator>> ( std::basic_istream< char_type, traits > &in, SPRefinement< dim, strategy > &refinement )
-  {
-    unsigned int refDir;
-    in >> refDir;
-    if( in )
-      refinement = SPRefinement< dim, strategy >( refDir );
-    return in;
-  }
 
 }
 
