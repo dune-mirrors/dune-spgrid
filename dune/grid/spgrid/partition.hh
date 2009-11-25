@@ -76,7 +76,7 @@ namespace Dune
   template< int dim >
   template< SPRefinementStrategy strategy >
   inline SPPartition< dim >::SPPartition ( const This &other, const SPRefinement< dimension, strategy > &refinement )
-  : next_( 0 )
+  : next_( other.next() != 0 ? new This( *(other.next()), refinement ) : 0 )
   {
     for( int i = 0; i < dimension; ++i )
     {
@@ -170,9 +170,9 @@ namespace Dune
   // Auxilliary functions for SPPartition
   // ------------------------------------
 
-  template< int dim >
-  inline std::ostream &
-  operator<< ( std::ostream &out, const SPPartition< dim > &partition )
+  template< class char_type, class traits, int dim >
+  inline std::basic_ostream< char_type, traits > &
+  operator<< ( std::basic_ostream< char_type, traits > &out, const SPPartition< dim > &partition )
   {
     return out << "[ " << partition.begin() << ", " << partition.end() << " [";
   }
