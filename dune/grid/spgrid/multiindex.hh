@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_MULTIINDEX_HH
 #define DUNE_SPGRID_MULTIINDEX_HH
 
+#include <limits>
+
 #include <dune/common/iostream.hh>
 #include <dune/grid/spgrid/misc.hh>
 
@@ -242,6 +244,35 @@ namespace Dune
       m = argmin( multiIndex, i, m );
     return m;
   }
+
+}
+
+
+namespace std
+{
+  
+  template< int dim >
+  class numeric_limits< Dune::SPMultiIndex< dim > >
+  {
+    typedef Dune::SPMultiIndex< dim > MultiIndex;
+
+  public:
+    static MultiIndex min ()
+    {
+      MultiIndex multiIndex;
+      for( int i = 0; i < dim; ++i )
+        multiIndex[ i ] = numeric_limits< int >::min();
+      return multiIndex;
+    }
+
+    static MultiIndex max ()
+    {
+      MultiIndex multiIndex;
+      for( int i = 0; i < dim; ++i )
+        multiIndex[ i ] = numeric_limits< int >::max();
+      return multiIndex;
+    }
+  };
 
 }
 

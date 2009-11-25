@@ -116,7 +116,7 @@ namespace Dune
 
     void update ()
     {
-      assert( id_.direction() == direction() );
+      assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
     }
 
     void down ()
@@ -190,7 +190,7 @@ namespace Dune
 
     void update ()
     {
-      assert( id_.direction() == direction() );
+      assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
     }
 
   private:
