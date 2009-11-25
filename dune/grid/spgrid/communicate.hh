@@ -41,11 +41,11 @@ namespace Dune
     }
 
     template< class C >
-    int send ( int rank, int tag, CollectiveCommunication< C > &comm )
+    int send ( int rank, int tag, const CollectiveCommunication< C > &comm )
     {}
 
 #if HAVE_MPI
-    int send ( int rank, int tag, CollectiveCommunication< MPI_Comm > &comm )
+    int send ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
     {
       MPI_Datatype mpitype = Generic_MPI_Datatype< T >::get();
       return MPI_Send( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm );
@@ -65,12 +65,12 @@ namespace Dune
   struct SPMessageReadBuffer< T >
   {
     template< class C >
-    SPMessageReadBuffer ( int rank, int tag, CollectiveCommunication< C > &comm )
+    SPMessageReadBuffer ( int rank, int tag, const CollectiveCommunication< C > &comm )
     : read_( buffer.begin() )
     {}
 
 #if HAVE_MPI
-    SPMessageReadBuffer ( int rank, int tag, CollectiveCommunication< MPI_Comm > &comm )
+    SPMessageReadBuffer ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
     : read_( buffer_.begin() )
     {
       MPI_Status;
@@ -121,8 +121,8 @@ namespace Dune
       SPMessageWriteBuffer< int > sizes;
       SPMessageWriteBuffer< typename DataHandle::DataType > buffer;
       ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partition, sizes, buffer );
-      sizes.send( rank, 1, comm );
-      buffer.send( rank, 2, buffer );
+      sizes.send( rank, 1, gridLevel_.grid().comm() );
+      buffer.send( rank, 2, buffer, gridLevel_.grid().comm() );
     }
 
   private:
@@ -171,8 +171,8 @@ namespace Dune
 
     void operator() ( const unsigned int rank, const Partition *partition )
     {
-      SPMessageReadBuffer sizes( rank, 1, comm );
-      SPMessageReadBuffer buffer( rank, 2, comm );
+      SPMessageReadBuffer sizes( rank, 1, gridLevel_.grid().comm() );
+      SPMessageReadBuffer buffer( rank, 2, gridLevel_.grid().comm() );
       ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partition, sizes, buffer );
     }
 
