@@ -9,45 +9,45 @@ namespace Dune
   namespace iostream
   {
 
-    template< class char_type >
+    template< class T >
     struct Match
     {
-      explicit Match ( const char_type &c )
-      : c_( c )
+      explicit Match ( const T &value )
+      : value_( value )
       {}
 
-      template< class T >
-      Match ( const Match< T > &other )
-      : c_( other.c_ )
+      template< class U >
+      Match ( const Match< U > &other )
+      : value_( other.value_ )
       {}
 
-      bool operator() ( const char_type &c ) const
+      bool operator() ( const T &value ) const
       {
-        return (c_ == c);
+        return (value_ == value);
       }
 
     private:
-      char_type c_;
+      T value_;
     };
 
   }
 
 
-  template< class char_type >
-  iostream::Match< char_type > match ( const char_type &c )
+  template< class T >
+  iostream::Match< T > match ( const T &value )
   {
-    return iostream::Match< char_type >( c );
+    return iostream::Match< T >( value );
   }
 
 
-  template< class char_type, class Traits >
-  inline std::basic_istream< char_type, Traits > &
-  operator>> ( std::basic_istream< char_type, Traits > &in, const iostream::Match< char_type > &match )
+  template< class char_type, class traits, class T >
+  inline std::basic_istream< char_type, traits > &
+  operator>> ( std::basic_istream< char_type, traits > &in, const iostream::Match< T > &match )
   {
-    char c;
-    in >> c;
-    if( !match( c ) )
-      in.clear( std::ios_base::badbit );
+    T value;
+    in >> value;
+    if( !match( value ) )
+      in.clear( std::ios_base::failbit );
     return in;
   }
 
