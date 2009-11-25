@@ -4,9 +4,12 @@ dune-spgrid's To-Do-List
 
 Parallelization:
  * implement communication
+ * store lists of partitions on grid level (to support periodicity)
  * implement iterators for different partitions
+ * adapt index sets to support lists of partitions
  * adapt local / global id set to partitioning
  * correct partitioning for periodic grids
+ * implement method partitionType
 
 Refinement techniques:
  * implement bisection refinement
