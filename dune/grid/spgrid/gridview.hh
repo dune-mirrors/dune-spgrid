@@ -286,7 +286,20 @@ namespace Dune
     template< class DataHandle, class Data >
     void communicate ( CommDataHandleIF< DataHandle, Data > &data,
                        InterfaceType interface, CommunicationDirection dir ) const
-    {}
+    {
+      const int rank = comm().rank();
+      const int size = comm().size();
+      for( int r = 0; r < rank; ++r )
+      {
+        receive( r, data, interface, dir );
+        send( r, data, interface, dir );
+      }
+      for( int r = rank+1; r < size; ++r )
+      {
+        send( r, data, interface, dir );
+        receive( r, data, interface, dir );
+      }
+    }
 
     const GridLevel &gridLevel () const
     {
@@ -299,6 +312,16 @@ namespace Dune
     }
 
   private:
+    template< class DataHandle, class Data >
+    void send ( const int rank, CommDataHandleIF< DataHandle, Data > &data,
+                InterfaceType interface, CommunicationDirection dir ) const
+    {}
+
+    template< class DataHandle, class Data >
+    void receive ( const int rank, CommDataHandleIF< DataHandle, Data > &data,
+                   InterfaceType interface, CommunicationDirection dir ) const
+    {}
+
     IndexSetPair *indexSet_;
   };
 
