@@ -15,12 +15,6 @@ namespace Dune
   // Internal Forward Declarations
   // -----------------------------
 
-  template< class T >
-  struct SPMessageWriteBuffer;
-
-  template< class T >
-  struct SPMessageReadBuffer;
-
   template< class Grid, class DataHandle >
   struct SPPartitionSend;
 
@@ -29,11 +23,47 @@ namespace Dune
 
 
 
-  // SPMessageWriteBuffer
-  // --------------------
+  // SPPartitionSend
+  // ---------------
 
+  template< class Grid, class DataHandle >
+  class SPPartitionSend
+  {
+    template< class T >
+    class Buffer;
+
+    template< int codim >
+    struct Codim;
+
+  public:
+    typedef SPGridLevel< Grid > GridLevel;
+    typedef typename GridLevel::PartitionList PartitionList;
+
+    static const unsigned int dimension = GridLevel::dimension;
+
+    SPPartitionSend ( const GridLevel &gridLevel, const DataHandle &dataHandle )
+    : gridLevel_( gridLevel ),
+      dataHandle_( dataHandle )
+    {}
+
+    void operator() ( const unsigned int rank, const PartitionList &partitionList )
+    {
+      Buffer< int > sizes;
+      Buffer< typename DataHandle::DataType > buffer;
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
+      sizes.send( rank, 1, gridLevel_.grid().comm() );
+      buffer.send( rank, 2, buffer, gridLevel_.grid().comm() );
+    }
+
+  private:
+    const GridLevel &gridLevel_;
+    const DataHandle &dataHandle_;
+  };
+
+
+  template< class Grid, class DataHandle >
   template< class T >
-  struct SPMessageWriteBuffer
+  struct SPPartitionSend< Grid, DataHandle >::Buffer
   {
     void write ( const T &value )
     {
@@ -54,84 +84,6 @@ namespace Dune
 
   private:
     std::vector< T > buffer_;
-  };
-
-
-
-  // SPMessageReadBuffer
-  // -------------------
-
-  template< class T >
-  struct SPMessageReadBuffer< T >
-  {
-    template< class C >
-    SPMessageReadBuffer ( int rank, int tag, const CollectiveCommunication< C > &comm )
-    : read_( buffer.begin() )
-    {}
-
-#if HAVE_MPI
-    SPMessageReadBuffer ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
-    : read_( buffer_.begin() )
-    {
-      MPI_Status;
-      MPI_Probe( rank, tag, comm, &status );
-
-      MPI_Datatype mpitype = Generic_MPI_Datatype< T >::get();
-
-      int count;
-      MPI_Get_count( &status, mpitype, &count );
-      buffer_.resize( count );
-
-      MPI_Recv( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm, &status );
-
-      read_ = buffer_.begin();
-    }
-#endif // #if HAVE_MPI
-
-    void read ( T &value )
-    {
-      if( read_ != buffer_.end() )
-      {
-        value = *read_;
-        ++read_;
-      }
-      else
-        DUNE_THROW( IOError, "Cannot read beyond the buffer's end." );
-    }
-
-  private:
-    std::vector< T > buffer_;
-    typename std::vector< T >::const_iterator read_;
-  };
-
-
-
-  // SPPartitionSend
-  // ---------------
-
-  template< class Grid, class DataHandle >
-  struct SPPartitionSend
-  {
-    typedef SPGridLevel< Grid > GridLevel;
-    typedef typename GridLevel::PartitionList PartitionList;
-
-    static const unsigned int dimension = GridLevel::dimension;
-
-    void operator() ( const unsigned int rank, const PartitionList &partitionList )
-    {
-      SPMessageWriteBuffer< int > sizes;
-      SPMessageWriteBuffer< typename DataHandle::DataType > buffer;
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
-      sizes.send( rank, 1, gridLevel_.grid().comm() );
-      buffer.send( rank, 2, buffer, gridLevel_.grid().comm() );
-    }
-
-  private:
-    template< int codim >
-    struct Codim;
-
-    const GridLevel &gridLevel_;
-    const DataHandle &dataHandle_;
   };
 
 
@@ -165,12 +117,24 @@ namespace Dune
   // ------------------
 
   template< class Grid, class DataHandle >
-  struct SPPartitionReceive
+  class SPPartitionReceive
   {
+    template< class T >
+    struct Buffer;
+
+    template< int codim >
+    struct Codim;
+
+  public:
     typedef SPGridLevel< Grid > GridLevel;
     typedef typename GridLevel::PartitionList PartitionList;
 
     static const unsigned int dimension = GridLevel::dimension;
+
+    SPPartitionReceive ( const GridLevel &gridLevel, DataHandle &dataHandle )
+    : gridLevel_( gridLevel ),
+      dataHandle_( dataHandle )
+    {}
 
     void operator() ( const unsigned int rank, const PartitionList &partitionList )
     {
@@ -182,6 +146,51 @@ namespace Dune
   private:
     const GridLevel &gridLevel_;
     DataHandle &dataHandle_;
+  };
+
+
+  template< class Grid, class DataHandle >
+  template< class T >
+  struct SPPartitionReceive< Grid, DataHandle >::Buffer
+  {
+    template< class C >
+    Buffer ( int rank, int tag, const CollectiveCommunication< C > &comm )
+    : read_( buffer.begin() )
+    {}
+
+#if HAVE_MPI
+    Buffer ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
+    : read_( buffer_.begin() )
+    {
+      MPI_Status;
+      MPI_Probe( rank, tag, comm, &status );
+
+      MPI_Datatype mpitype = Generic_MPI_Datatype< T >::get();
+
+      int count;
+      MPI_Get_count( &status, mpitype, &count );
+      buffer_.resize( count );
+
+      MPI_Recv( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm, &status );
+
+      read_ = buffer_.begin();
+    }
+#endif // #if HAVE_MPI
+
+    void read ( T &value )
+    {
+      if( read_ != buffer_.end() )
+      {
+        value = *read_;
+        ++read_;
+      }
+      else
+        DUNE_THROW( IOError, "Cannot read beyond the buffer's end." );
+    }
+
+  private:
+    std::vector< T > buffer_;
+    typename std::vector< T >::const_iterator read_;
   };
 
 
