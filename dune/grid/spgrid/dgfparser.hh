@@ -7,29 +7,67 @@
 namespace Dune
 {
 
-  // MacroGrid::Impl for SPGrid
-  // --------------------------
+  // DGFGridFactory< SPGrid >
+  // ------------------------
 
   template< class ct, int dim, SPRefinementStrategy strategy >
-  struct MacroGrid::Impl< SPGrid< ct, dim, strategy > >
+  struct DGFGridFactory< SPGrid< ct, dim, strategy > >
   {
+    typedef SPGrid< ct, dim, strategy > Grid;
+
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
-    
-    static SPGrid< ct, dim, strategy > *
-    generate ( MacroGrid &macroGrid, const std::string &filename,
-               MPICommunicatorType MPICOMM = MPIHelper::getCommunicator() );
+
+    static const int dimension = Grid::dimension;
+    typedef typename Grid::template Codim< 0 >::Entity Element;
+    typedef typename Grid::template Codim< dimension >::Entity Vertex;
+
+    explicit DGFGridFactory ( const std::string &filename,
+                              MPICommunicatorType comm = MPIHelper::getCommunicator() );
+
+    Grid *grid () const
+    {
+      return grid_;
+    }
+
+    template< class Intersection >
+    bool wasInserted ( const Intersection &intersection ) const
+    {
+      return false;
+    }
+
+    template< class Intersection >
+    int boundaryId ( const Intersection &intersection ) const
+    {
+      return intersection.boundaryId();
+    }
+
+    int elementParameters () const
+    {
+      return 0;
+    }
+
+    int vertexParameters () const
+    {
+      return 0;
+    }
+
+    template< class Entity >
+    std::vector< double > &parameter ( const Entity &entity )
+    {
+      DUNE_THROW( InvalidStateException,
+                  "Calling DGFGridFactory::parameter is only allowed if there are parameters." );
+    }
+
+  private:
+    Grid *grid_;
   };
 
 
   template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy > *
-  MacroGrid::Impl< SPGrid< ct, dim, strategy > >
-    ::generate ( MacroGrid &macroGrid, const std::string &filename, MPICommunicatorType )
+  inline DGFGridFactory< SPGrid< ct, dim, strategy > >
+    ::DGFGridFactory ( const std::string &filename, MPICommunicatorType )
   {
     typedef SPGrid< ct, dim, strategy > Grid;
-    macroGrid.element = Cube;
-    macroGrid.dimgrid = Grid::dimension;
-    macroGrid.dimw = Grid::dimensionworld;
 
     std::ifstream file( filename.c_str() );
     dgf::IntervalBlock intervalBlock( file );
@@ -92,13 +130,13 @@ namespace Dune
     dgf::GridParameterBlock parameter( file );
     const std::string gridName = parameter.name( "SPGrid" );
 
-    return new Grid( a, b, cells, periodic, gridName );
+    grid_ = new Grid( a, b, cells, periodic, gridName );
   }
 
 
 
-  // DGFGridInfo for SPGrid
-  // ----------------------
+  // DGFGridInfo< SPGrid >
+  // ---------------------
 
   template< class ct, int dim, SPRefinementStrategy strategy >
   struct DGFGridInfo< SPGrid< ct, dim, strategy > >
