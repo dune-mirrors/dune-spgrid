@@ -12,25 +12,17 @@
 namespace Dune
 {
 
-  // Internal Forward Declarations
-  // -----------------------------
-
-  template< class Grid, class DataHandle >
-  struct SPPartitionSend;
-
-  template< class Grid, class DataHandle >
-  struct SPPartitionReceive;
-
-
-
-  // SPPartitionSend
+  // SPCommunication
   // ---------------
 
   template< class Grid, class DataHandle >
-  class SPPartitionSend
+  class SPCommunication
   {
     template< class T >
-    class Buffer;
+    class WriteBuffer;
+
+    template< class T >
+    class ReadBuffer;
 
     template< int codim >
     struct Codim;
@@ -41,29 +33,36 @@ namespace Dune
 
     static const unsigned int dimension = GridLevel::dimension;
 
-    SPPartitionSend ( const GridLevel &gridLevel, const DataHandle &dataHandle )
+    SPCommunication ( const GridLevel &gridLevel, DataHandle &dataHandle )
     : gridLevel_( gridLevel ),
       dataHandle_( dataHandle )
     {}
 
-    void operator() ( const unsigned int rank, const PartitionList &partitionList )
+    void gather ( const unsigned int rank, const PartitionList &partitionList )
     {
-      Buffer< int > sizes;
-      Buffer< typename DataHandle::DataType > buffer;
+      WriteBuffer< int > sizes;
+      WriteBuffer< typename DataHandle::DataType > buffer;
       ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
       sizes.send( rank, 1, gridLevel_.grid().comm() );
       buffer.send( rank, 2, buffer, gridLevel_.grid().comm() );
     }
 
+    void scatter ( const unsigned int rank, const PartitionList &partitionList )
+    {
+      ReadBuffer sizes( rank, 1, gridLevel_.grid().comm() );
+      ReadBuffer buffer( rank, 2, gridLevel_.grid().comm() );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
+    }
+
   private:
     const GridLevel &gridLevel_;
-    const DataHandle &dataHandle_;
+    DataHandle &dataHandle_;
   };
 
 
   template< class Grid, class DataHandle >
   template< class T >
-  struct SPPartitionSend< Grid, DataHandle >::Buffer
+  struct SPCommunication< Grid, DataHandle >::WriteBuffer
   {
     void write ( const T &value )
     {
@@ -88,78 +87,16 @@ namespace Dune
 
 
   template< class Grid, class DataHandle >
-  template< int codim >
-  struct SPPartitionSend< Grid, DataHandle >::Codim
-  {
-    typedef SPPartitionIterator< codim, Grid > Iterator;
-
-    template< class SizeBuffer, class MessageBuffer >
-    static void
-    apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const PartitionList &partitionList,
-            SizeBuffer &sizes, MessageBuffer &buffer )
-    {
-      if( dataHandle.contains( dimension, codim ) )
-      {
-        const Iterator end( gridLevel, partitionList, typename Iterator::End() );
-        for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
-        {
-          sizes.write( dataHandle.size( *it ) );
-          dataHandle.gather( buffer, *it ); 
-        }
-      }
-    };
-  };
-
-
-
-  // SPPartitionReceive
-  // ------------------
-
-  template< class Grid, class DataHandle >
-  class SPPartitionReceive
-  {
-    template< class T >
-    struct Buffer;
-
-    template< int codim >
-    struct Codim;
-
-  public:
-    typedef SPGridLevel< Grid > GridLevel;
-    typedef typename GridLevel::PartitionList PartitionList;
-
-    static const unsigned int dimension = GridLevel::dimension;
-
-    SPPartitionReceive ( const GridLevel &gridLevel, DataHandle &dataHandle )
-    : gridLevel_( gridLevel ),
-      dataHandle_( dataHandle )
-    {}
-
-    void operator() ( const unsigned int rank, const PartitionList &partitionList )
-    {
-      SPMessageReadBuffer sizes( rank, 1, gridLevel_.grid().comm() );
-      SPMessageReadBuffer buffer( rank, 2, gridLevel_.grid().comm() );
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
-    }
-
-  private:
-    const GridLevel &gridLevel_;
-    DataHandle &dataHandle_;
-  };
-
-
-  template< class Grid, class DataHandle >
   template< class T >
-  struct SPPartitionReceive< Grid, DataHandle >::Buffer
+  struct SPCommunication< Grid, DataHandle >::ReadBuffer
   {
     template< class C >
-    Buffer ( int rank, int tag, const CollectiveCommunication< C > &comm )
+    ReadBuffer ( int rank, int tag, const CollectiveCommunication< C > &comm )
     : read_( buffer.begin() )
     {}
 
 #if HAVE_MPI
-    Buffer ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
+    ReadBuffer ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
     : read_( buffer_.begin() )
     {
       MPI_Status;
@@ -196,15 +133,30 @@ namespace Dune
 
   template< class Grid, class DataHandle >
   template< int codim >
-  struct SPPartitionReceive< Grid, DataHandle >::Codim
+  struct SPCommunication< Grid, DataHandle >::Codim
   {
     typedef SPPartitionIterator< codim, Grid > Iterator;
 
-    template< class SizeBuffer, class MessageBuffer >
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
             const PartitionList &partitionList,
-            SizeBuffer &sizes, MessageBuffer &buffer )
+            WriteBuffer< int > &sizes, WriteBuffer< DataType > &buffer )
+    {
+      if( dataHandle.contains( dimension, codim ) )
+      {
+        const Iterator end( gridLevel, partitionList, typename Iterator::End() );
+        for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
+        {
+          sizes.write( dataHandle.size( *it ) );
+          dataHandle.gather( buffer, *it ); 
+        }
+      }
+    }
+
+    static void
+    apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
+            const PartitionList &partitionList,
+            ReadBuffer< int > &sizes, ReadBuffer< DataType > &buffer )
     {
       if( dataHandle.contains( dimension, codim ) )
       {
@@ -212,7 +164,7 @@ namespace Dune
         for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
           dataHandle.scatter( buffer, *it, sizes.read() ); 
       }
-    };
+    }
   };
 
 }
