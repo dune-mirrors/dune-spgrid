@@ -41,12 +41,8 @@ namespace Dune
       return intersection.boundaryId();
     }
 
-    int elementParameters () const
-    {
-      return 0;
-    }
-
-    int vertexParameters () const
+    template< int codim >
+    int numParameters () const
     {
       return 0;
     }
