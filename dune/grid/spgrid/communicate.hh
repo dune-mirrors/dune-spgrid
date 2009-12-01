@@ -33,18 +33,36 @@ namespace Dune
 
     static const unsigned int dimension = GridLevel::dimension;
 
+    typedef typename DataHandle::DataType DataType;
+
+  private:
+    typedef std::pair< WriteBuffer< int >, WriteBuffer< DataType > > Packet;
+
+  public:
     SPCommunication ( const GridLevel &gridLevel, DataHandle &dataHandle )
     : gridLevel_( gridLevel ),
       dataHandle_( dataHandle )
     {}
 
+    ~SPCommunication ()
+    {
+      typedef typename std::vector< Packet * >::iterator Iterator;
+      const Iterator end = packets_.end();
+      for( Iterator it = packets_.begin(); it != end; ++it )
+      {
+        it->first.wait( gridLevel_.grid().comm() );
+        it->second.wait( gridLevel_.grid().comm() );
+        delete *it;
+      }
+    }
+
     void gather ( const unsigned int rank, const PartitionList &partitionList )
     {
-      WriteBuffer< int > sizes;
-      WriteBuffer< typename DataHandle::DataType > buffer;
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, sizes, buffer );
-      sizes.send( rank, 1, gridLevel_.grid().comm() );
-      buffer.send( rank, 2, buffer, gridLevel_.grid().comm() );
+      Packet *packet = new Packet;
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, partitionList, packet->first, packet->second );
+      packet->first.send( rank, 1, gridLevel_.grid().comm() );
+      packet->second.send( rank, 2, gridLevel_.grid().comm() );
+      packets_.push_back( packet );
     }
 
     void scatter ( const unsigned int rank, const PartitionList &partitionList )
@@ -55,8 +73,11 @@ namespace Dune
     }
 
   private:
+    SPCommunication ( const SPCommunication &other );
+
     const GridLevel &gridLevel_;
     DataHandle &dataHandle_;
+    std::vector< Packet * > packets_;
   };
 
 
@@ -76,13 +97,28 @@ namespace Dune
 #if HAVE_MPI
     int send ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
     {
-      MPI_Datatype mpitype = Generic_MPI_Datatype< T >::get();
-      return MPI_Send( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm );
+      MPI_Datatype mpiDataType = Generic_MPI_Datatype< T >::get();
+      return MPI_Isend( &(buffer_[ 0 ]), buffer_.size(), mpiDataType, rank, tag, comm, &request_ );
+    }
+#endif // #if HAVE_MPI
+
+    template< class C >
+    int wait ( const CollectiveCommunication &comm )
+    {}
+
+#if HAVE_MPI
+    int wait ( const CollectiveCommunication< MPI_Comm > &comm )
+    {
+      MPI_Status status;
+      return MPI_Wait( &request_, &status );
     }
 #endif // #if HAVE_MPI
 
   private:
     std::vector< T > buffer_;
+#if HAVE_MPI
+    MPI_Request request_;
+#endif // #if HAVE_MPI
   };
 
 
@@ -99,7 +135,7 @@ namespace Dune
     ReadBuffer ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
     : read_( buffer_.begin() )
     {
-      MPI_Status;
+      MPI_Status status;
       MPI_Probe( rank, tag, comm, &status );
 
       MPI_Datatype mpitype = Generic_MPI_Datatype< T >::get();
@@ -156,13 +192,17 @@ namespace Dune
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
             const PartitionList &partitionList,
-            ReadBuffer< int > &sizes, ReadBuffer< DataType > &buffer )
+            ReadBuffer< int > &sizes, ReadBuffer< DataType > &data )
     {
       if( dataHandle.contains( dimension, codim ) )
       {
         const Iterator end( gridLevel, partitionList, typename Iterator::End() );
         for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
-          dataHandle.scatter( buffer, *it, sizes.read() ); 
+        {
+          int n;
+          sizes.read( n );
+          dataHandle.scatter( data, *it, n ); 
+        }
       }
     }
   };
