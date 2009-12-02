@@ -318,4 +318,4 @@ namespace Dune
 
 }
 
-#endif // #ifndef DUNE_SPGRID_COMMUNICATE_HH
+#endif // #ifndef DUNE_SPGRID_COMMUNICATION_HH
