@@ -152,6 +152,10 @@ namespace Dune
   };
 
 
+
+  // Auxilliary Functions for SPMultiIndex
+  // -------------------------------------
+
   template< class char_type, class traits, int dim >
   inline std::basic_ostream< char_type, traits > &
   operator<< ( std::basic_ostream< char_type, traits > &out, const SPMultiIndex< dim > &multiIndex )
@@ -250,7 +254,10 @@ namespace Dune
 
 namespace std
 {
-  
+
+  // numeric_limits for SPMultiIndex
+  // -------------------------------
+
   template< int dim >
   class numeric_limits< Dune::SPMultiIndex< dim > >
   {

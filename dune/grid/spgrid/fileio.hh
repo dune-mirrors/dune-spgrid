@@ -14,6 +14,9 @@
 namespace Dune
 {
 
+  // SPGridIOData
+  // ------------
+
   template< class ctype, int dim, SPRefinementStrategy strategy >
   struct SPGridIOData
   {
@@ -38,6 +41,9 @@ namespace Dune
   };
 
 
+
+  // Implementation of SPGridIOData
+  // ------------------------------
 
   template< class ctype, int dim, SPRefinementStrategy strategy >
   inline void
