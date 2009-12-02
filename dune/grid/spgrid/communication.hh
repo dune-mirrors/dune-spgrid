@@ -1,5 +1,5 @@
-#ifndef DUNE_SPGRID_COMMUNICATE_HH
-#define DUNE_SPGRID_COMMUNICATE_HH
+#ifndef DUNE_SPGRID_COMMUNICATION_HH
+#define DUNE_SPGRID_COMMUNICATION_HH
 
 #include <dune/common/forloop.hh>
 #include <dune/common/collectivecommunication.hh>
