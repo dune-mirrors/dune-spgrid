@@ -186,11 +186,8 @@ namespace Dune
     : Base( entityInfo )
     {}
 
-  protected:
     using Base::entityInfo;
     using Base::gridLevel;
-
-  public:
     using Base::isLeaf;
     using Base::level;
 
