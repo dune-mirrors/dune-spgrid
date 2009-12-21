@@ -145,9 +145,27 @@ namespace Dune
       return refinement_;
     }
 
+    MultiIndex macroId ( const MultiIndex &id ) const
+    {
+      MultiIndex macroId;
+      for( int i = 0; i < dimension; ++i )
+        macroId[ i ] = (((id[ i ] >> 1) / macroFactor_[ i ]) << 1) | (id[ i ] & 1);
+      return macroId;
+    }
+
     const MultiIndex &cells () const
     {
       return domain().cells();
+    }
+
+    unsigned int boundaryIndex ( const MultiIndex &id, const int face )
+    {
+      // note: boundaryIndex ignores the last bit of macroId,
+      //       hence we can use this fast computation
+      MultiIndex macroId;
+      for( int i = 0; i < dimension; ++i )
+        macroId[ i ] = id[ i ] / macroFactor_[ i ];
+      return grid().boundaryIndex( macroId, face );
     }
 
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const

@@ -160,6 +160,7 @@ namespace Dune
 
     typedef SPGridLevel< const This > GridLevel;
 
+    typedef typename GridLevel::MultiIndex MultiIndex;
     static const int numDirections = GridLevel::numDirections;
 
   private:
@@ -535,7 +536,29 @@ namespace Dune
       return getRealImplementation( levelViews_[ level ] ).gridLevel();
     }
 
+    unsigned int boundarySize () const
+    {
+      return boundaryOffset_[ dimension ];
+    }
+
   private:
+    // note: this method ignores the last bit of the macroId
+    unsigned int boundaryIndex ( const MultiIndex &macroId, const int face ) const
+    {
+      assert( (face >= 0) && (face < 2*dimension) );
+      unsigned int index = 0;
+      unsigned int factor = 1;
+      for( int i = 0; i < dimension; ++i )
+      {
+        if( i == face/2 )
+          continue;
+        assert( (macroId[ i ] >> 1) < domain_.cells()[ i ] );
+        index += (macroId[ i ] >> 1) * factor;
+        factor *= domain_.cells()[ i ];
+      }
+      return index + boundaryOffset_[ face/2 ] + (face & 1)*factor;
+    }
+
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
     {
       assert( (face >= 0) && (face < Cube::numFaces) );
@@ -579,6 +602,15 @@ namespace Dune
       levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
       getRealImplementation( leafView_ ).update( *leafLevel_ );
       hierarchicIndexSet_.update();
+
+      boundaryOffset_[ 0 ] = 0;
+      for( int i = 0; i < dimension; ++i )
+      {
+        unsigned int size = 1;
+        for( int j = 0; j < dimension; ++j )
+          size *= (i == j ? 1 : domain_.cells()[ j ]);
+        boundaryOffset_[ i+1 ] = boundaryOffset_[ i ] + size;
+      }
     }
 
     static CollectiveCommunication defaultCommunication ()
@@ -605,6 +637,7 @@ namespace Dune
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
+    unsigned int boundaryOffset_[ dimension+1 ];
     const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ Cube::numFaces ];
   };
 

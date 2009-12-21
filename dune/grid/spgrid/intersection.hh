@@ -94,6 +94,12 @@ namespace Dune
       return 1;
     }
 
+    unsigned int boundaryIndex () const
+    {
+      assert( boundary() );
+      return gridLevel.boundaryIndex( inside_->entityInfo().id(), face_ );
+    }
+
     bool neighbor () const
     {
       const MultiIndex &id = inside_->entityInfo().id();
