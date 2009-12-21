@@ -43,9 +43,6 @@ namespace Dune
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
-    SPRefinement ()
-    {}
-
     unsigned int factor ( const int i ) const
     {
       return 2;

@@ -187,6 +187,7 @@ namespace Dune
 
     unsigned int level_;
     const Refinement refinement_;
+    unsigned int macroFactor_[ dimension ];
     Domain domain_;
     PartitionList allPartition_;
     GlobalVector h_;
@@ -204,11 +205,14 @@ namespace Dune
     father_( 0 ),
     child_( 0 ),
     level_( 0 ),
+    refinement_(),
     domain_( grid.domain() ),
     allPartition_( decomposition.partition( grid.comm().rank() ) ),
     h_( domain().h() ),
     geometryInFather_( 0 )
   {
+    for( int i = 0; i < dimension; ++i )
+      macroFactor_[ i ] = 1;
     buildGeometry();
   }
 
@@ -227,6 +231,9 @@ namespace Dune
   {
     assert( father.child_ == 0 );
     father.child_ = this;
+
+    for( int i = 0; i < dimension; ++i )
+      macroFactor_[ i ] = father.macroFactor_[ i ] * refinement.factor( i );
 
     const unsigned int numChildren = refinement.numChildren();
     geometryInFather_ = new LocalGeometry *[ numChildren ];
