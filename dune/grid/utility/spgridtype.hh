@@ -9,7 +9,13 @@
   #endif
 
   #include <dune/grid/spgrid.hh>
-  typedef Dune::SPGrid< double, dimgrid > GridType;
+  namespace Dune
+  {
+    namespace GridSelector
+    {
+      typedef SPGrid< double, dimgrid > GridType;
+    }
+  }
   #define HAVE_GRIDTYPE 1
 #endif
 
