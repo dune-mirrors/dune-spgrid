@@ -158,7 +158,7 @@ namespace Dune
       return domain().cells();
     }
 
-    unsigned int boundaryIndex ( const MultiIndex &id, const int face )
+    size_t boundaryIndex ( const MultiIndex &id, const int face ) const
     {
       // note: boundaryIndex ignores the last bit of macroId,
       //       hence we can use this fast computation

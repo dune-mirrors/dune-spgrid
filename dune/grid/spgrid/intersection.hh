@@ -94,10 +94,10 @@ namespace Dune
       return 1;
     }
 
-    unsigned int boundaryIndex () const
+    size_t boundarySegmentIndex () const
     {
       assert( boundary() );
-      return gridLevel.boundaryIndex( inside_->entityInfo().id(), face_ );
+      return gridLevel().boundaryIndex( inside_->entityInfo().id(), face_ );
     }
 
     bool neighbor () const

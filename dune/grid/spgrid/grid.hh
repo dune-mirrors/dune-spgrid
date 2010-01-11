@@ -116,6 +116,7 @@ namespace Dune
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy > > Base;
 
     friend class SPIntersection< const This >;
+    friend class SPGridLevel< const This >;
 
   public:
     typedef SPGridFamily< ct, dim, strategy > GridFamily;
@@ -536,27 +537,27 @@ namespace Dune
       return getRealImplementation( levelViews_[ level ] ).gridLevel();
     }
 
-    unsigned int boundarySize () const
+    size_t numBoundarySegments () const
     {
       return boundaryOffset_[ dimension ];
     }
 
   private:
     // note: this method ignores the last bit of the macroId
-    unsigned int boundaryIndex ( const MultiIndex &macroId, const int face ) const
+    size_t boundaryIndex ( const MultiIndex &macroId, const int face ) const
     {
       assert( (face >= 0) && (face < 2*dimension) );
-      unsigned int index = 0;
-      unsigned int factor = 1;
+      size_t index = 0;
+      size_t factor = 1;
       for( int i = 0; i < dimension; ++i )
       {
         if( i == face/2 )
           continue;
         assert( (macroId[ i ] >> 1) < domain_.cells()[ i ] );
-        index += (macroId[ i ] >> 1) * factor;
-        factor *= domain_.cells()[ i ];
+        index += size_t( macroId[ i ] >> 1 ) * factor;
+        factor *= size_t( domain_.cells()[ i ] );
       }
-      return index + boundaryOffset_[ face/2 ] + (face & 1)*factor;
+      return index + boundaryOffset_[ face/2 ] + size_t( face & 1 ) * factor;
     }
 
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
@@ -606,7 +607,7 @@ namespace Dune
       boundaryOffset_[ 0 ] = 0;
       for( int i = 0; i < dimension; ++i )
       {
-        unsigned int size = 1;
+        size_t size = 2;
         for( int j = 0; j < dimension; ++j )
           size *= (i == j ? 1 : domain_.cells()[ j ]);
         boundaryOffset_[ i+1 ] = boundaryOffset_[ i ] + size;
@@ -637,7 +638,7 @@ namespace Dune
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
-    unsigned int boundaryOffset_[ dimension+1 ];
+    size_t boundaryOffset_[ dimension+1 ];
     const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ Cube::numFaces ];
   };
 
