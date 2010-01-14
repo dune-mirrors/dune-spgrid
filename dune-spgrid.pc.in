@@ -10,6 +10,6 @@ Name: @PACKAGE_NAME@
 Version: @VERSION@
 Description: dune-spgrid module
 URL: http://dune.mathematik.uni-freiburg.de/
-Requires: dune-common dune-grid
-Libs:
-Cflags:
+Requires: ${DEPENDENCIES}
+Libs: -L${libdir}
+Cflags: -I${includedir}
