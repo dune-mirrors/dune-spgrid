@@ -68,6 +68,11 @@ namespace Dune
       return corner_[ i ];
     }
 
+    const GlobalVector &center () const
+    {
+      return center_;
+    }
+
     const GlobalVector &normal ( const int i ) const
     {
       assert( (i >= 0) && (i < numFaces) );
@@ -98,6 +103,7 @@ namespace Dune
 
     std::vector< MultiIndex > subId_[ dimension+1 ];
     GlobalVector corner_[ numCorners ];
+    GlobalVector center_;
     GlobalVector normal_[ numFaces ];
   };
 
@@ -122,6 +128,9 @@ namespace Dune
         corner_[ i ][ j ] = ctype( (sid[ j ]+1)/2 );
       }
     }
+
+    for( int j = 0; j < dimension; ++j )
+      center_[ j ] = ctype( 1 ) / ctype( 2 );
 
     for( int i = 0; i < numFaces; ++i )
     {
