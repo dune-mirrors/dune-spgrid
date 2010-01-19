@@ -236,6 +236,11 @@ namespace Dune
       return hasBoundaryIntersections;
     }
 
+    bool hasFather () const
+    {
+      return (level() > 0);
+    }
+
     EntityPointer father () const
     {
       MultiIndex fatherId( entityInfo().id() );
