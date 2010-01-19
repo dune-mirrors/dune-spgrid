@@ -170,9 +170,14 @@ namespace Dune
       return gridLevel().volumeNormal( face_ );
     }
 
-    GlobalVector unitOuterNormal ( const LocalVector &local ) const
+    GlobalVector centerUnitOuterNormal () const
     {
       return gridLevel().cube().normal( face_ );
+    }
+
+    GlobalVector unitOuterNormal ( const LocalVector &local ) const
+    {
+      return centerUnitOuterNormal();
     }
 
     bool equals ( const This &other ) const
