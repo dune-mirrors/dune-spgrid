@@ -2,7 +2,7 @@
 #define DUNE_SPGRID_DECOMPOSITION_HH
 
 #include <dune/grid/spgrid/multiindex.hh>
-#include <dune/grid/spgrid/partition.hh>
+#include <dune/grid/spgrid/mesh.hh>
 
 namespace Dune
 {
@@ -19,35 +19,42 @@ namespace Dune
     static const int dimension = dim;
 
     typedef SPMultiIndex< dimension > MultiIndex;
-    typedef SPPartition< dimension > Partition;
+    typedef SPMesh< dimension > Mesh;
 
   private:
     struct Node
     {
-      Node ( const Partition &partition, const unsigned int size );
+      Node ( const Mesh &mesh, const unsigned int size );
       ~Node ();
 
-      Partition partition ( const int overlap = 0 ) const;
-      Partition partition ( const unsigned int rank, const int overlap = 0 ) const;
-      void partitions ( std::vector< Partition > &partitions, const int overlap = 0 ) const;
+      const Mesh &mesh () const;
+      const Mesh &subMesh ( const unsigned int rank ) const;
+      void subMeshes ( std::vector< Mesh > &meshes ) const;
 
       unsigned int size () const;
 
     private:
-      Partition partition_;
+      Mesh mesh_;
       unsigned int size_;
       Node *left_, *right_;
     };
 
   public:
-    SPDecomposition ( const MultiIndex &width, const unsigned int size,
-                      const unsigned int periodic = 0 )
-    : root_( Partition( width ), size ),
-      periodic_( periodic )
+    SPDecomposition ( const Mesh &mesh, const unsigned int size )
+    : root_( mesh, size )
     {}
 
-    Partition partition ( const unsigned int rank, const int overlap = 0 ) const;
-    std::vector< Partition > partitions ( const int overlap = 0 ) const;
+    const Mesh &mesh () const
+    {
+      return root_.mesh();
+    }
+
+    const Mesh &subMesh ( const unsigned int rank ) const
+    {
+      return root_.subMesh( rank );
+    }
+
+    std::vector< Mesh > subMeshes () const;
 
     unsigned int size () const
     {
@@ -56,7 +63,6 @@ namespace Dune
 
   private:
     Node root_;
-    unsigned int periodic_;
   };
 
 
@@ -65,8 +71,8 @@ namespace Dune
   // ---------------------------------------
 
   template< int dim >
-  inline SPDecomposition< dim >::Node::Node ( const Partition &partition, const unsigned int size )
-  : partition_( partition ),
+  inline SPDecomposition< dim >::Node::Node ( const Mesh &mesh, const unsigned int size )
+  : mesh_( mesh ),
     size_( size ),
     left_( 0 ),
     right_( 0 )
@@ -76,9 +82,9 @@ namespace Dune
       const int leftWeight = size_/2;
       const int rightWeight = size_ - leftWeight;
 
-      const MultiIndex &width = partition_.width();
-      const std::pair< Partition, Partition > split
-        = partition_.split( argmax( width ), leftWeight, rightWeight );
+      const MultiIndex &width = mesh.width();
+      const std::pair< Mesh, Mesh > split
+        = mesh_.split( argmax( width ), leftWeight, rightWeight );
       left_ = new Node( split.first, leftWeight );
       right_ = new Node( split.second, rightWeight );
     }
@@ -94,43 +100,43 @@ namespace Dune
 
 
   template< int dim >
-  inline typename SPDecomposition< dim >::Partition
-  SPDecomposition< dim >::Node::partition ( const int overlap ) const
+  inline const typename SPDecomposition< dim >::Mesh &
+  SPDecomposition< dim >::Node::mesh () const
   {
-    return partition_.grow( overlap );
+    return mesh_;
   }
 
 
   template< int dim >
-  inline typename SPDecomposition< dim >::Partition
-  SPDecomposition< dim >::Node::partition ( const unsigned int rank, const int overlap ) const
+  inline const typename SPDecomposition< dim >::Mesh &
+  SPDecomposition< dim >::Node::subMesh ( const unsigned int rank ) const
   {
     assert( rank < size_ );
     if( size_ > 1 )
     {
       assert( (left_ != 0) && (right_ != 0) );
       if( rank < size_/2 )
-        return left_->partition( rank, overlap );
+        return left_->subMesh( rank );
       else
-        return right_->partition( rank - size_/2, overlap );
+        return right_->subMesh( rank - size_/2 );
     }
     else
-      return partition( overlap );
+      return mesh();
   }
 
 
   template< int dim >
   inline void
-  SPDecomposition< dim >::Node::partitions ( std::vector< Partition > &partitions, const int overlap ) const
+  SPDecomposition< dim >::Node::subMeshes ( std::vector< Mesh > &meshes ) const
   {
     if( size_ > 1 )
     {
       assert( (left_ != 0) && (right_ != 0) );
-      left_->partitions( partitions, overlap );
-      right_->partitions( partitions, overlap );
+      left_->subMeshes( meshes );
+      right_->subMeshes( meshes );
     }
     else
-      partitions.push_back( partition( overlap ) );
+      meshes.push_back( mesh() );
   }
 
 
@@ -146,30 +152,13 @@ namespace Dune
   // ---------------------------------
 
   template< int dim >
-  inline typename SPDecomposition< dim >::Partition
-  SPDecomposition< dim >::partition ( const unsigned int rank, const int overlap ) const
+  inline std::vector< typename SPDecomposition< dim >::Mesh >
+  SPDecomposition< dim >::subMeshes () const
   {
-    const Partition partition = root_.partition( rank, overlap );
-    const Partition allPartition = root_.partition().grow( overlap, periodic_ );
-    return partition.intersect( allPartition );
-  }
-
-
-  template< int dim >
-  inline std::vector< typename SPDecomposition< dim >::Partition >
-  SPDecomposition< dim >::partitions ( const int overlap ) const
-  {
-    typedef typename std::vector< Partition >::iterator Iterator;
-
-    std::vector< Partition > partitions;
-    partitions.reserve( root_.size() );
-    root_.partitions( partitions, overlap );
-
-    const Partition allPartition = root_.partition().grow( overlap, periodic_ );
-    const Iterator end = partitions.end();
-    for( Iterator it = partitions.begin(); it != end; ++it )
-      *it = it->intersect( allPartition );
-    return partitions;
+    std::vector< Mesh > meshes;
+    meshes.reserve( root_.size() );
+    root_.subMeshes( meshes );
+    return meshes;
   }
 
 }

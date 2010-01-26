@@ -10,6 +10,7 @@
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
+#include <dune/grid/spgrid/mesh.hh>
 #include <dune/grid/spgrid/partitionlist.hh>
 #include <dune/grid/spgrid/decomposition.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
@@ -50,6 +51,8 @@ namespace Dune
 
     typedef SPDecomposition< dimension > Decomposition;
     typedef SPPartitionList< dimension > PartitionList;
+
+    typedef typename Decomposition::Mesh Mesh;
 
     static const unsigned int numDirections = Cube::numCorners;
 
@@ -100,6 +103,16 @@ namespace Dune
     const Domain &domain () const
     {
       return domain_;
+    }
+
+    const Mesh &globalMesh () const
+    {
+      return globalMesh_;
+    }
+
+    const Mesh &localMesh () const
+    {
+      return localMesh_;
     }
 
     const PartitionList &allPartition () const
@@ -207,6 +220,8 @@ namespace Dune
     const Refinement refinement_;
     unsigned int macroFactor_[ dimension ];
     Domain domain_;
+    Mesh globalMesh_;
+    Mesh localMesh_;
     PartitionList allPartition_;
     GlobalVector h_;
 
@@ -225,7 +240,9 @@ namespace Dune
     level_( 0 ),
     refinement_(),
     domain_( grid.domain() ),
-    allPartition_( decomposition.partition( grid.comm().rank() ) ),
+    globalMesh_( decomposition.mesh() ),
+    localMesh_( decomposition.subMesh( grid.comm().rank() ) ),
+    allPartition_( localMesh_ ),
     h_( domain().h() ),
     geometryInFather_( 0 )
   {
@@ -244,7 +261,9 @@ namespace Dune
     level_( father.level_ + 1 ),
     refinement_( refinement ),
     domain_( father.domain(), refinement ),
-    allPartition_( father.allPartition(), refinement ),
+    globalMesh_( father.globalMesh().refine( refinement ) ),
+    localMesh_( father.localMesh().refine( refinement ) ),
+    allPartition_( localMesh_ ),
     h_( domain().h() )
   {
     assert( father.child_ == 0 );

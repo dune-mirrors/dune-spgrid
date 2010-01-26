@@ -2,10 +2,9 @@
 #define DUNE_SPGRID_PARTITION_HH
 
 #include <dune/common/iostream.hh>
-#include <dune/common/smallobject.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
-#include <dune/grid/spgrid/refinement.hh>
+#include <dune/grid/spgrid/mesh.hh>
 
 namespace Dune
 {
@@ -22,14 +21,12 @@ namespace Dune
     static const int dimension = dim;
 
     typedef SPMultiIndex< dimension > MultiIndex;
+    typedef SPMesh< dimension > Mesh;
 
-    SPPartition ( const MultiIndex &width )
-    : begin_( MultiIndex::zero() ),
-      end_( width )
+    SPPartition ( const Mesh &mesh )
+    : begin_( mesh.begin() ),
+      end_( mesh.end() )
     {}
-
-    template< SPRefinementStrategy strategy >
-    SPPartition ( const This &other, const SPRefinement< dimension, strategy > &refinement );
 
   private:
     SPPartition ( const MultiIndex &begin, const MultiIndex &end )
@@ -53,8 +50,6 @@ namespace Dune
     This grow ( const int amount, const unsigned int dir = ((1 << dimension)-1) ) const;
     This intersect ( const This &other ) const;
 
-    std::pair< This, This > split ( const int dir, const int leftWeight, const int rightWeight ) const;
-
     int volume () const;
     MultiIndex width () const;
 
@@ -66,19 +61,6 @@ namespace Dune
 
   // Implementation of SPPartition
   // -----------------------------
-
-  template< int dim >
-  template< SPRefinementStrategy strategy >
-  inline SPPartition< dim >::SPPartition ( const This &other, const SPRefinement< dimension, strategy > &refinement )
-  {
-    for( int i = 0; i < dimension; ++i )
-    {
-      const int factor = refinement.factor( i );
-      begin_[ i ] = factor * other.begin_[ i ];
-      end_[ i ] = factor * other.end_[ i ];
-    }
-  }
-
 
   template< int dim >
   inline bool SPPartition< dim >::empty () const
@@ -116,25 +98,6 @@ namespace Dune
       e[ i ] = std::min( end()[ i ], other.end()[ i ] );
     }
     return This( b, e );
-  }
-
-
-  template< int dim >
-  inline std::pair< SPPartition< dim >, SPPartition< dim > >
-  SPPartition< dim >::split ( const int dir, const int leftWeight, const int rightWeight ) const
-  {
-    const MultiIndex &lbegin = begin();
-    const MultiIndex &rend = end();
-
-    assert( (dir >= 0) && (dir < dimension) );
-    const int width = (rend[ dir ] - lbegin[ dir ]);
-    const int leftWidth = (leftWeight * width) / (leftWeight + rightWeight);
-
-    MultiIndex lend = rend;
-    MultiIndex rbegin = lbegin;
-    rbegin[ dir ] = lend[ dir ] = lbegin[ dir ] + leftWidth;
-
-    return std::make_pair( This( lbegin, lend ), This( rbegin, rend ) );
   }
 
 

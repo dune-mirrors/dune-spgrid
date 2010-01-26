@@ -17,16 +17,19 @@ static const int dimGrid = DIMGRID;
 void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const int overlap )
 {
   const unsigned int size = decomposition.size();
+  SPPartition< dimGrid > globalPartition( decomposition.mesh() );
 
   int maxload = std::numeric_limits< int >::min();
   int minload = std::numeric_limits< int >::max();
   for( unsigned int rank = 0; rank < size; ++rank )
   {
-    SPPartition< dimGrid > partition = decomposition.partition( rank, overlap );
-    const int load = partition.volume();
+    SPPartition< dimGrid > localPartition( decomposition.subMesh( rank ) );
+    localPartition = globalPartition.intersect( localPartition.grow( overlap ) );
+
+    const int load = localPartition.volume();
     minload = std::min( minload, load );
     maxload = std::max( maxload, load );
-    std::cout << "rank " << rank << ": " << partition;
+    std::cout << "rank " << rank << ": " << localPartition;
     std::cout << " (load: " << load << ")" << std::endl;
   }
   std::cout << std::endl;
@@ -38,7 +41,8 @@ int main ( int argc, char **argv )
 {
   if( argc < 3 )
   {
-    std::cerr << "Usage: " << argv[ 0 ] << " <width> <size> [periodic]" << std::endl;
+    //std::cerr << "Usage: " << argv[ 0 ] << " <width> <size> [periodic]" << std::endl;
+    std::cerr << "Usage: " << argv[ 0 ] << " <width> <size>" << std::endl;
     return 1;
   }
 
@@ -50,6 +54,7 @@ int main ( int argc, char **argv )
   std::istringstream sizeStream( argv[ 2 ] );
   sizeStream >> size;
 
+#if 0
   unsigned int periodic = 0;
   for( int i = 3; i < argc; ++i )
   {
@@ -58,9 +63,11 @@ int main ( int argc, char **argv )
     periodicStream >> dir;
     periodic |= (1 << dir);
   }
+#endif
 
-  std::cout << "width = " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
-  SPDecomposition< dimGrid > decomposition( width, size, periodic );
+  //std::cout << "width = " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
+  std::cout << "width = " << width << ", size = " << size << std::endl;
+  SPDecomposition< dimGrid > decomposition( width, size );
 
   std::cout << std::endl;
   std::cout << "Interior Partitions:" << std::endl;
@@ -80,9 +87,9 @@ int main ( int argc, char **argv )
   std::vector< double > data( grid.size( 0 ) );
   for( unsigned int rank = 0; rank < size; ++rank )
   {
-    SPPartition< dimGrid > partition = decomposition.partition( rank, 0 );
-    SPMultiIndex< dimGrid > pos = partition.begin();
-    SPMultiIndex< dimGrid > end = partition.end();
+    const SPMesh< dimGrid > &mesh = decomposition.subMesh( rank );
+    SPMultiIndex< dimGrid > pos = mesh.begin();
+    SPMultiIndex< dimGrid > end = mesh.end();
     for( int d = 0; d < dimGrid; )
     {
       unsigned int index = 0;
@@ -98,7 +105,7 @@ int main ( int argc, char **argv )
       {
         if( ++pos[ d ] < end[ d ] )
           break;
-        pos[ d ] = partition.begin()[ 0 ];
+        pos[ d ] = mesh.begin()[ 0 ];
       }
     }
   }

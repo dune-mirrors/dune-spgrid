@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_PARTITIONLIST_HH
 #define DUNE_SPGRID_PARTITIONLIST_HH
 
+#include <dune/common/smallobject.hh>
+
 #include <dune/grid/spgrid/partition.hh>
 
 namespace Dune
