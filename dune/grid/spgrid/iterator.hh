@@ -125,11 +125,11 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::begin ( const int i, const unsigned int dir ) const
   {
-    const MultiIndex &begin = partition_->begin();
-    const MultiIndex &end = partition_->end();
-    const unsigned int sweep = (sweepDirection_ >> i) & 1;
-    const unsigned int d = (dir >> i) & 1;
-    return (1-sweep)*(begin[ i ] + d) + sweep*(end[ i ] - d);
+    const unsigned int b = partition_->begin()[ i ];
+    const unsigned int e = partition_->end()[ i ];
+    const unsigned int s = (sweepDirection_ >> i) & 1;
+    const unsigned int d = (dir >> i);
+    return (1-s)*int( b + ((b^d)&1) ) + s*int( e - ((e^d)&1) );
   }
 
 
@@ -137,11 +137,11 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::end ( const int i, const unsigned int dir ) const
   {
-    const MultiIndex &begin = partition_->begin();
-    const MultiIndex &end = partition_->end();
-    const unsigned int sweep = (sweepDirection_ >> i) & 1;
-    const unsigned int d = (dir >> i) & 1;
-    return (1-sweep)*(end[ i ] - (d-2)) + sweep*(begin[ i ] + (d-2));
+    const unsigned int b = partition_->begin()[ i ];
+    const unsigned int e = partition_->end()[ i ];
+    const unsigned int s = (sweepDirection_ >> i) & 1;
+    const unsigned int d = (dir >> i);
+    return (1-s)*int( e+2 - ((b^d)&1) ) + s*int( b-2 + ((e^d)&1) );
   }
 
 
