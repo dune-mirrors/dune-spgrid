@@ -31,11 +31,6 @@ namespace Dune
     : head_( other.head_ != 0 ? new Node( *other.head_ ) : 0 )
     {}
 
-    template< SPRefinementStrategy strategy >
-    SPPartitionList ( const This &other, const SPRefinement< dim, strategy > &refinement )
-    : head_( other.head_ != 0 ? new Node( *other.head_, refinement ) : 0 )
-    {}
-
     ~SPPartitionList ()
     {
       delete head_;
@@ -77,12 +72,6 @@ namespace Dune
     Node ( const Node &other )
     : partition_( other.partition_ ),
       next_( other.next_ != 0 ? new Node( *other.next_ ) : 0 )
-    {}
-
-    template< SPRefinementStrategy strategy >
-    Node ( const Node &other, const SPRefinement< dim, strategy > &refinement )
-    : partition_( other.partition_, refinement ),
-      next_( other.next_ != 0 ? new Node( *other.next_, refinement ) : 0 )
     {}
 
     ~Node ()
