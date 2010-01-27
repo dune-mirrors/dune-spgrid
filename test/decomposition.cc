@@ -24,7 +24,7 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const int
   for( unsigned int rank = 0; rank < size; ++rank )
   {
     SPPartition< dimGrid > localPartition( decomposition.subMesh( rank ) );
-    localPartition = globalPartition.intersect( localPartition.grow( overlap ) );
+    //localPartition = globalPartition.intersect( localPartition.grow( overlap ) );
 
     const int load = localPartition.volume();
     minload = std::min( minload, load );
