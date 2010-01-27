@@ -24,8 +24,8 @@ namespace Dune
     typedef SPMesh< dimension > Mesh;
 
     SPPartition ( const Mesh &mesh )
-    : begin_( mesh.begin() ),
-      end_( mesh.end() )
+    : begin_( 2*mesh.begin() ),
+      end_( 2*mesh.end() )
     {}
 
   private:
@@ -45,13 +45,14 @@ namespace Dune
       return end_;
     }
 
-    bool empty () const;
-
-    This grow ( const int amount, const unsigned int dir = ((1 << dimension)-1) ) const;
-    This intersect ( const This &other ) const;
-
     int volume () const;
     MultiIndex width () const;
+
+    template< class char_type, class traits >
+    void print ( std::basic_ostream< char_type, traits > &out ) const;
+
+    template< class char_type, class traits >
+    void print ( std::basic_ostream< char_type, traits > &out, const int i ) const;
 
   private:
     MultiIndex begin_, end_;
@@ -61,45 +62,6 @@ namespace Dune
 
   // Implementation of SPPartition
   // -----------------------------
-
-  template< int dim >
-  inline bool SPPartition< dim >::empty () const
-  {
-    bool empty = false;
-    for( int i = 0; i < dimension; ++i )
-      empty |= (end[ i ] < begin[ i ]);
-    return empty;
-  }
-
-
-  template< int dim >
-  inline SPPartition< dim >
-  SPPartition< dim >::grow ( const int amount, const unsigned int dir ) const
-  {
-    MultiIndex b, e;
-    for( int i = 0; i < dimension; ++i )
-    {
-      const int s = ((dir >> i) & 1) * amount;
-      b[ i ] = begin()[ i ] - s;
-      e[ i ] = end()[ i ] + s;
-    }
-    return This( b, e );
-  }
-
-
-  template< int dim >
-  inline SPPartition< dim >
-  SPPartition< dim >::intersect ( const This &other ) const
-  {
-    MultiIndex b, e;
-    for( int i = 0; i < dimension; ++i )
-    {
-      b[ i ] = std::max( begin()[ i ], other.begin()[ i ] );
-      e[ i ] = std::min( end()[ i ], other.end()[ i ] );
-    }
-    return This( b, e );
-  }
-
 
   template< int dim >
   inline int SPPartition< dim >::volume () const
@@ -117,8 +79,37 @@ namespace Dune
   {
     MultiIndex width;
     for( int i = 0; i < dimension; ++i )
-      width[ i ] = std::max( end()[ i ] - begin()[ i ], 0 );
+      width[ i ] = std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 );
     return width;
+  }
+
+
+  template< int dim >
+  template< class char_type, class traits >
+  inline void SPPartition< dim >
+    ::print ( std::basic_ostream< char_type, traits > &out ) const
+  {
+    print( out, 0 );
+    for( int i = 1; i < dim; ++i )
+    {
+      out << " x ";
+      print( out, i );
+    }
+  }
+
+
+  template< int dim >
+  template< class char_type, class traits >
+  inline void SPPartition< dim >
+    ::print ( std::basic_ostream< char_type, traits > &out, const int i ) const
+  {
+    const int b = begin()[ i ];
+    const int e= end()[ i ];
+
+    const char left = '[' + (b & 1)*(']'-'[');
+    const char right = ']' + (e & 1)*('['-']');
+
+    out << left << ' ' << (b/2) << ", " << ((e+1)/2) << ' ' << right;
   }
 
 
@@ -130,7 +121,8 @@ namespace Dune
   inline std::basic_ostream< char_type, traits > &
   operator<< ( std::basic_ostream< char_type, traits > &out, const SPPartition< dim > &partition )
   {
-    return out << "[ " << partition.begin() << ", " << partition.end() << " [";
+    partition.print( out );
+    return out;
   }
 
 }

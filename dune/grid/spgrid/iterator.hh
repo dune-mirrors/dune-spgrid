@@ -125,13 +125,11 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::begin ( const int i, const unsigned int dir ) const
   {
-    //const MultiIndex &cells = gridLevel().cells();
     const MultiIndex &begin = partition_->begin();
     const MultiIndex &end = partition_->end();
     const unsigned int sweep = (sweepDirection_ >> i) & 1;
     const unsigned int d = (dir >> i) & 1;
-    //return d + sweep*2*(cells[ i ]-d);
-    return (1-sweep)*(2*begin[ i ] + d) + sweep*(2*end[ i ] - d);
+    return (1-sweep)*(begin[ i ] + d) + sweep*(end[ i ] - d);
   }
 
 
@@ -139,13 +137,11 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::end ( const int i, const unsigned int dir ) const
   {
-    //const MultiIndex &cells = gridLevel().cells();
     const MultiIndex &begin = partition_->begin();
     const MultiIndex &end = partition_->end();
     const unsigned int sweep = (sweepDirection_ >> i) & 1;
     const unsigned int d = (dir >> i) & 1;
-    //return (d-2) + (1-sweep)*2*(cells[ i ]-(d-2));
-    return (1-sweep)*(2*end[ i ] - (d-2)) + sweep*(2*begin[ i ] + (d-2));
+    return (1-sweep)*(end[ i ] - (d-2)) + sweep*(begin[ i ] + (d-2));
   }
 
 
