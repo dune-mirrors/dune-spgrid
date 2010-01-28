@@ -115,6 +115,7 @@ namespace Dune
 
     EntityPointer outside () const
     {
+      assert( neighbor() );
       MultiIndex id = inside_->entityInfo().id();
       const int i = face_ >> 1;
       const int bound = 1 + (face_ & 1)*(2*gridLevel().cells()[ i ] - 2);

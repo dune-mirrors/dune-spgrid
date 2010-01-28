@@ -33,15 +33,10 @@ namespace Dune
       end_( end )
     {}
 
-    const MultiIndex &begin () const
-    {
-      return begin_;
-    }
+    const MultiIndex &begin () const;
+    const MultiIndex &end () const;
 
-    const MultiIndex &end () const
-    {
-      return end_;
-    }
+    bool contains ( const MultiIndex &id ) const;
 
     int volume () const;
     MultiIndex width () const;
@@ -60,6 +55,34 @@ namespace Dune
 
   // Implementation of SPPartition
   // -----------------------------
+
+  template< int dim >
+  inline const typename SPPartition< dim >::MultiIndex &
+  SPPartition< dim >::begin () const
+  {
+    return begin_;
+  }
+
+
+  template< int dim >
+  inline const typename SPPartition< dim >::MultiIndex &
+  SPPartition< dim >::end () const
+  {
+    return end_;
+  }
+
+
+  template< int dim >
+  inline bool SPPartition< dim >::contains ( const MultiIndex &id ) const
+  {
+    bool contains = true;
+    std::cout << "Checking whether " << *this << " contains " << id << ": ";
+    for( int i = 0; i < dim; ++i )
+      contains &= (id[ i ] >= begin()[ i ]) && (id[ i ] <= end()[ i ]);
+    std::cout << (contains ? "Yes" : "No") << std::endl;
+    return contains;
+  }
+
 
   template< int dim >
   inline int SPPartition< dim >::volume () const

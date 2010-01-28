@@ -123,6 +123,12 @@ namespace Dune
       return partitionPool_.template get< pitype >();
     }
 
+    template< int codim >
+    PartitionType partitionType ( const MultiIndex &id ) const
+    {
+      return partitionPool_.template partitionType< codim >( id );
+    }
+
     const GridLevel &fatherLevel () const
     {
       assert( !isMacro() );

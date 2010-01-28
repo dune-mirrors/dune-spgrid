@@ -248,7 +248,7 @@ namespace Dune
 
     PartitionType partitionType () const
     {
-      return InteriorEntity;
+      return gridLevel().template partitionType< codim >( id() );
     }
 
     GlobalVector origin () const

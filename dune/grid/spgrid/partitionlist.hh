@@ -67,6 +67,16 @@ namespace Dune
       return Iterator( 0 );
     }
 
+    bool contains ( const MultiIndex &id ) const
+    {
+      for( const Node *it = head_; it != 0; it = it->next() )
+      {
+        if( it->partition().contains( id ) )
+          return true;
+      }
+      return false;
+    }
+
   private:
     Node *head_;
   };
@@ -191,6 +201,9 @@ namespace Dune
     template< PartitionIteratorType pitype >
     const PartitionList &get () const;
 
+    template< int codim >
+    PartitionType partitionType ( const MultiIndex &id ) const;
+
   private:
     static Partition
     removeBorder ( const Mesh &localMesh, const Mesh &globalMesh );
@@ -269,6 +282,22 @@ namespace Dune
     default:
       DUNE_THROW( GridError, "No such PartitionIteratorType." );
     }
+  }
+
+
+  template< int dim >
+  template< int codim >
+  inline PartitionType
+  SPPartitionPool< dim >::partitionType ( const MultiIndex &id ) const
+  {
+    assert( all_.contains( id ) );
+    // both, interior_ and interiorBorder_ contain exactly one partition, so use this information
+    if( interiorBorder_.begin()->contains( id ) )
+      return ((codim == 0) || interior_.begin()->contains( id )) ? InteriorEntity : BorderEntity;
+    else if( overlapFront_.contains( id ) )
+      return ((codim == 0) || overlap_.contains( id )) ? OverlapEntity : FrontEntity;
+    else
+      return GhostEntity;
   }
 
 
