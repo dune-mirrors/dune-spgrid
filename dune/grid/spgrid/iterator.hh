@@ -151,7 +151,7 @@ namespace Dune
   {
     EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
     MultiIndex &id = entityInfo.id();
-    if( !!partition_ )
+    if( partition_ )
     {
       unsigned int dir = 0;
       const unsigned int mydim = mydimension;

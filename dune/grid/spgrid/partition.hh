@@ -28,13 +28,11 @@ namespace Dune
       end_( 2*mesh.end() )
     {}
 
-  private:
     SPPartition ( const MultiIndex &begin, const MultiIndex &end )
     : begin_( begin ),
       end_( end )
     {}
 
-  public:
     const MultiIndex &begin () const
     {
       return begin_;

@@ -22,9 +22,14 @@ namespace Dune
 
   public:
     typedef SPPartition< dim > Partition;
+    typedef typename Partition::MultiIndex MultiIndex;
     typedef typename Partition::Mesh Mesh;
     
     struct Iterator;
+
+    SPPartitionList ()
+    : head_( 0 )
+    {}
 
     SPPartitionList ( const Mesh &mesh )
     : head_( new Node( Partition( mesh ) ) )
@@ -42,7 +47,7 @@ namespace Dune
     This &operator= ( const This &other )
     {
       delete head_;
-      head_ = new Node( other.head_ );
+      head_ = (other.head_ != 0 ? new Node( other.head_ ) : 0);
     }
 
     Iterator begin () const
@@ -56,20 +61,30 @@ namespace Dune
     }
 
     template< PartitionIteratorType pitype >
-    static This create ( const Mesh &localMesh, const Mesh &globalMesh );
+    static This
+    create ( const Mesh &localMesh, const Mesh &globalMesh, const int overlap = 0 );
 
   private:
+    void append ( const Partition &partition )
+    {
+      if( head_ != 0 )
+        head_->append( new Node( partition ) );
+      else
+        head_ = new Node( partition );
+    }
+
     Node *head_;
   };
 
 
+
+  // SPPartitionList::Node
+  // ---------------------
+
   template< int dim >
-  class SPPartitionList< dim >::Node
+  struct SPPartitionList< dim >::Node
   : public SmallObject
   {
-    friend struct SPPartitionList< dim >::Iterator;
-
-  public:
     explicit Node ( const Partition &partition )
     : partition_( partition ),
       next_( 0 )
@@ -85,11 +100,33 @@ namespace Dune
       delete next_;
     }
 
+    void append ( const This &other )
+    {
+      if( next_ != 0 )
+        next_->append( other );
+      else
+        next_ = other;
+    }
+
+    const Partition &partition () const
+    {
+      return partition_;
+    }
+
+    const Node *next () const
+    {
+      return next_;
+    }
+
   private:
     Partition partition_;
     Node *next_;
   };
 
+
+
+  // SPPartitionList::Iterator
+  // -------------------------
 
   template< int dim >
   struct SPPartitionList< dim >::Iterator
@@ -100,9 +137,14 @@ namespace Dune
 
     Iterator &operator++ ()
     {
-      assert( !!(*this) );
-      node_ = node_->next_;
+      assert( node_ != 0 );
+      node_ = node_->next();
       return *this;
+    }
+
+    operator bool () const
+    {
+      return (node_ != 0);
     }
 
     bool operator== ( const Iterator &other ) const
@@ -115,21 +157,16 @@ namespace Dune
       return (node_ != other.node_);
     }
 
-    bool operator! () const
-    {
-      return (node_ == 0 );
-    }
-
     const Partition &operator* () const
     {
-      assert( !!(*this) );
-      return node_->partition_;
+      assert( node_ != 0 );
+      return node_->partition();
     }
 
     const Partition *operator-> () const
     {
-      assert( !!(*this) );
-      return &(node_->partition_);
+      assert( node_ != 0 );
+      return &(node_->partition());
     }
 
   private:
@@ -143,10 +180,42 @@ namespace Dune
 
   template< int dim >
   template< PartitionIteratorType pitype >
-  inline typename SPPartitionList< dim >::This
-  SPPartitionList< dim >::create ( const Mesh &localMesh, const Mesh &globalMesh )
+  inline typename SPPartitionList< dim >::This SPPartitionList< dim >
+    ::create ( const Mesh &localMesh, const Mesh &globalMesh, const int overlap )
   {
-    return This( localMesh );
+    const MultiIndex &lbegin = localMesh.begin();
+    const MultiIndex &lend = localMesh.end();
+    const MultiIndex &gbegin = globalMesh.begin();
+    const MultiIndex &gend = globalMesh.end();
+
+    This list;
+
+    if( pitype == Interior_Partition )
+    {
+      MultiIndex begin, end;
+      for( int i = 0; i < dim; ++i )
+      {
+        begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
+        end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
+      }
+      list.append( Partition( begin, end ) );
+    }
+    else if( pitype == InteriorBorder_Partition )
+      list.append( Partition( 2*lbegin, 2*lend ) );
+    else if( pitype == Overlap_Partition )
+    {
+      MultiIndex begin, end;
+      for( int i = 0; i < dim; ++i )
+      {
+        begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
+        end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
+      }
+      list.append( Partition( begin, end ) );
+    }
+    else
+      list.append( Partition( 2*lbegin, 2*lend ) );
+
+    return list;
   }
 
 }
