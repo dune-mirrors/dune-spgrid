@@ -20,11 +20,12 @@ namespace Dune
 
   public:
     typedef SPPartition< dim > Partition;
+    typedef typename Partition::Mesh Mesh;
     
     struct Iterator;
 
-    SPPartitionList ( const Partition &partition )
-    : head_( new Node( partition ) )
+    SPPartitionList ( const Mesh &mesh )
+    : head_( new Node( Partition( mesh ) ) )
     {}
 
     SPPartitionList ( const This &other )

@@ -23,7 +23,7 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
     typedef SPMesh< dimension > Mesh;
 
-    SPPartition ( const Mesh &mesh )
+    explicit SPPartition ( const Mesh &mesh )
     : begin_( 2*mesh.begin() ),
       end_( 2*mesh.end() )
     {}
