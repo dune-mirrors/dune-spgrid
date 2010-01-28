@@ -141,7 +141,7 @@ namespace Dune
     const unsigned int e = partition_->end()[ i ];
     const unsigned int s = (sweepDirection_ >> i) & 1;
     const unsigned int d = (dir >> i);
-    return (1-s)*int( e+2 - ((b^d)&1) ) + s*int( b-2 + ((e^d)&1) );
+    return (1-s)*int( e+2 - ((e^d)&1) ) + s*int( b-2 + ((b^d)&1) );
   }
 
 
