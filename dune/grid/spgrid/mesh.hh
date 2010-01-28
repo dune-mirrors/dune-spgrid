@@ -28,6 +28,9 @@ namespace Dune
     SPMesh ( const MultiIndex &begin, const MultiIndex &end );
 
   public:
+    This &operator+= ( const MultiIndex &shift );
+    This &operator-= ( const MultiIndex &shift );
+
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
 
@@ -68,6 +71,26 @@ namespace Dune
   : begin_( begin ),
     end_( end )
   {}
+
+
+  template< int dim >
+  inline typename SPMesh< dim >::This &
+  SPMesh< dim >::operator+= ( const MultiIndex &shift )
+  {
+    begin_ += shift;
+    end_ += shift;
+    return *this;
+  }
+
+
+  template< int dim >
+  inline typename SPMesh< dim >::This &
+  SPMesh< dim >::operator-= ( const MultiIndex &shift )
+  {
+    begin_ -= shift;
+    end_ -= shift;
+    return *this;
+  }
 
 
   template< int dim >
@@ -191,6 +214,24 @@ namespace Dune
   operator<< ( std::basic_ostream< char_type, traits > &out, const SPMesh< dim > &mesh )
   {
     return out << "[ " << mesh.begin() << ", " << mesh.end() << " [";
+  }
+
+
+  template< int dim >
+  inline SPMesh< dim >
+  operator+ ( const SPMesh< dim > &mesh, const SPMultiIndex< dim > &shift )
+  {
+    SPMesh< dim > copy( mesh );
+    return copy += shift;
+  }
+
+
+  template< int dim >
+  inline SPMesh< dim >
+  operator- ( const SPMesh< dim > &mesh, const SPMultiIndex< dim > &shift )
+  {
+    SPMesh< dim > copy( mesh );
+    return copy -= shift;
   }
 
 }
