@@ -7,6 +7,58 @@
 namespace Dune
 {
 
+  namespace dgf
+  {
+
+    template< int dim >
+    struct SPGridParameterBlock
+    : public GridParameterBlock
+    {
+      typedef int MultiIndex[ dim ];
+
+      SPGridParameterBlock( std::istream &in )
+      : GridParameterBlock( in )
+      {
+        for( int i = 0; i < dim; ++i )
+          overlap_[ i ] = 0;
+
+        if( findtoken( "overlap" ) )
+        {
+          int i = 0;
+          for( int x; getnextentry( x ); ++i )
+          {
+            if( x < 0 )
+              DUNE_THROW( DGFException, "Negative overlap specified." );
+            if( i < dim )
+              overlap_[ i ] = x;
+          }
+
+          if( i < 1 )
+            dwarn << "GridParameterBlock: Found keyword 'overlap' without valid value, defaulting to no overlap." << std::endl;
+          else if( i == 1 )
+          {
+            for( int i = 1; i < dim; ++i )
+              overlap_[ i ] = overlap_[ 0 ];
+          }
+          else if( i != dim )
+            DUNE_THROW( DGFException, "Invalid argument for parameter 'overlap' specified." );
+        }
+        else
+          dwarn << "GridParameterBlock: Parameter 'overlap' not specified, defaulting to no overlap." << std::endl;
+      }
+
+      const MultiIndex &overlap () const
+      {
+        return overlap_;
+      }
+
+    private:
+      MultiIndex overlap_;
+    };
+
+  }
+
+
   // DGFGridFactory< SPGrid >
   // ------------------------
 
@@ -123,10 +175,10 @@ namespace Dune
         periodic |= (1 << dir);
     }
 
-    dgf::GridParameterBlock parameter( file );
+    dgf::SPGridParameterBlock< dim > parameter( file );
     const std::string gridName = parameter.name( "SPGrid" );
 
-    grid_ = new Grid( a, b, cells, periodic, gridName );
+    grid_ = new Grid( a, b, cells, parameter.overlap(), periodic, gridName );
   }
 
 

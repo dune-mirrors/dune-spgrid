@@ -29,6 +29,7 @@ namespace Dune
     Vector origin;
     Vector width;
     MultiIndex cells;
+    MultiIndex overlap;
     unsigned int periodic;
     int maxLevel;
     std::vector< Refinement > refinements;
@@ -58,6 +59,7 @@ namespace Dune
     fileOut << "width " << width << std::endl;
 
     fileOut << "cells " << cells << std::endl;
+    fileOut << "overlap " << overlap << std::endl;
 
     fileOut << "periodic";
     for( int i = 0; i < dim; ++i )
@@ -96,6 +98,7 @@ namespace Dune
       DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: 'SPGrid " << dim << "' expected." );
 
     name = "SPGrid";
+    overlap = MultiIndex::zero();
     time = ctype( 0 );
 
     const unsigned int flagOrigin = 1;
@@ -122,19 +125,26 @@ namespace Dune
       else if( cmd == "origin" )
       {
         lineIn >> origin;
-        if( !!lineIn )
+        if( lineIn )
           flags |= flagOrigin;
       }
       else if( cmd == "width" )
       {
         lineIn >> width;
-        if( !!lineIn )
+        if( lineIn )
           flags |= flagWidth;
       }
       else if( cmd == "cells" )
       {
         lineIn >> cells;
-        flags |= flagCells;
+        if( lineIn )
+          flags |= flagCells;
+      }
+      else if( cmd == "overlap" )
+      {
+        lineIn >> overlap;
+        if( lineIn.fail() )
+          DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Cannot parse value for overlap." );
       }
       else if( cmd == "periodic" )
       {
@@ -150,7 +160,8 @@ namespace Dune
       else if( cmd == "maxLevel" )
       {
         lineIn >> maxLevel;
-        flags |= flagMaxLevel;
+        if( lineIn )
+          flags |= flagMaxLevel;
       }
       else if( cmd == "refinement" )
       {
@@ -161,7 +172,6 @@ namespace Dune
       }
       else if( cmd == "refinements" )
       {
-        //while( !lineIn.eof() )
         while( lineIn.good() )
         {
           Refinement refinement;

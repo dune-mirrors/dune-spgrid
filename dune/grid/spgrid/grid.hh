@@ -170,7 +170,8 @@ namespace Dune
 
   public:
     SPGrid ( const CollectiveCommunication &comm = defaultCommunication() )
-    : name_( "SPGrid" ),
+    : overlap_( MultiIndex::zero() ),
+      name_( "SPGrid" ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
@@ -183,7 +184,8 @@ namespace Dune
     SPGrid ( const Domain &domain,
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = defaultCommunication() )
-    : name_( name ),
+    : overlap_( MultiIndex::zero() ),
+      name_( name ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
@@ -197,7 +199,24 @@ namespace Dune
              const int (&cells)[ dimension ],
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = defaultCommunication() )
-    : name_( name ),
+    : overlap_( MultiIndex::zero() ),
+      name_( name ),
+      leafLevel_( 0 ),
+      leafView_( LeafGridViewImpl() ),
+      hierarchicIndexSet_( *this ),
+      comm_( comm )
+    {
+      createLocalGeometries();
+      setupMacroGrid( Domain( a, b, cells ) );
+    }
+
+    SPGrid ( const GlobalVector &a, const GlobalVector &b,
+             const int (&cells)[ dimension ],
+             const int (&overlap)[ dimension ],
+             const std::string &name = "SPGrid",
+             const CollectiveCommunication &comm = defaultCommunication() )
+    : overlap_( overlap ),
+      name_( name ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
@@ -212,7 +231,25 @@ namespace Dune
              const unsigned int periodic,
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = defaultCommunication() )
-    : name_( name ),
+    : overlap_( MultiIndex::zero() ),
+      name_( name ),
+      leafLevel_( 0 ),
+      leafView_( LeafGridViewImpl() ),
+      hierarchicIndexSet_( *this ),
+      comm_( comm )
+    {
+      createLocalGeometries();
+      setupMacroGrid( Domain( a, b, cells, periodic ) );
+    }
+
+    SPGrid ( const GlobalVector &a, const GlobalVector &b,
+             const int (&cells)[ dimension ],
+             const int (&overlap)[ dimension ],
+             const unsigned int periodic,
+             const std::string &name = "SPGrid",
+             const CollectiveCommunication &comm = defaultCommunication() )
+    : overlap_( overlap ),
+      name_( name ),
       leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
@@ -244,6 +281,11 @@ namespace Dune
     const Domain &domain () const
     {
       return domain_;
+    }
+
+    const MultiIndex &overlap () const
+    {
+      return overlap_;
     }
 
     const std::string &name () const
@@ -487,6 +529,7 @@ namespace Dune
       ioData.origin = domain().origin();
       ioData.width = domain().width();
       ioData.cells = domain().cells();
+      ioData.overlap = overlap_;
       ioData.periodic = domain().periodic();
       ioData.maxLevel = maxLevel();
       ioData.refinements.resize( maxLevel() );
@@ -498,7 +541,7 @@ namespace Dune
       else if( format == ascii )
         ioData.writeAscii( filename );
       else
-        DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
+        DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
 
       return true;
     }
@@ -513,9 +556,10 @@ namespace Dune
       else if( format == ascii )
         ioData.readAscii( filename );
       else
-        DUNE_THROW( NotImplemented, "SPGrid: Unknwon output format: " << format << "." );
+        DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
 
       clear();
+      overlap_ = ioData.overlap;
       name_ = ioData.name;
       time = ioData.time;
       setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
@@ -629,6 +673,7 @@ namespace Dune
     {};
   
     Domain domain_;
+    MultiIndex overlap_;
     std::string name_;
     GenericGeometry::CodimTable< TheCube, dimension > cubes_;
     GridLevel *leafLevel_;

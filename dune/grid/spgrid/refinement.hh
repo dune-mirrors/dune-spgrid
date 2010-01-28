@@ -262,6 +262,22 @@ namespace Dune
     unsigned int refDir_;
   };
 
+
+
+  // Auxilliary Functions for SPRefinement
+  // -------------------------------------
+
+  template< int dim, SPRefinementStrategy strategy >
+  inline SPMultiIndex< dim >
+  operator* ( const SPMultiIndex< dim > &width,
+              const SPRefinement< dim, strategy > &refinement )
+  {
+    SPMultiIndex< dim > result;
+    for( int i = 0; i < dim; ++i )
+      result[ i ] = width[ i ] * refinement.factor( i );
+    return result;
+  }
+
 }
 
 #endif // #ifndef DUNE_SPGRID_REFINEMENT_HH

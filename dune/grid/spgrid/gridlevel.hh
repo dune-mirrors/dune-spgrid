@@ -222,18 +222,22 @@ namespace Dune
   private:
     void buildGeometry ();
 
+    static MultiIndex coarseMacroFactor ();
+
+    MultiIndex overlap () const;
+
     const Grid *grid_;
     GridLevel *father_, *child_;
 
     unsigned int level_;
     const Refinement refinement_;
-    unsigned int macroFactor_[ dimension ];
+    MultiIndex macroFactor_;
     Domain domain_;
     Mesh globalMesh_;
     Mesh localMesh_;
     PartitionPool partitionPool_;
-    GlobalVector h_;
 
+    GlobalVector h_;
     void *geometryCache_[ numDirections ];
     LocalGeometry **geometryInFather_;
     GlobalVector normal_[ Cube::numFaces ];
@@ -248,15 +252,14 @@ namespace Dune
     child_( 0 ),
     level_( 0 ),
     refinement_(),
+    macroFactor_( coarseMacroFactor() ),
     domain_( grid.domain() ),
     globalMesh_( decomposition.mesh() ),
     localMesh_( decomposition.subMesh( grid.comm().rank() ) ),
-    partitionPool_( localMesh_, globalMesh_, MultiIndex::zero() ),
+    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() ),
     h_( domain().h() ),
     geometryInFather_( 0 )
   {
-    for( int i = 0; i < dimension; ++i )
-      macroFactor_[ i ] = 1;
     buildGeometry();
   }
 
@@ -269,17 +272,15 @@ namespace Dune
     child_( 0 ),
     level_( father.level_ + 1 ),
     refinement_( refinement ),
+    macroFactor_( father.macroFactor_ * refinement ),
     domain_( father.domain(), refinement ),
     globalMesh_( father.globalMesh().refine( refinement ) ),
     localMesh_( father.localMesh().refine( refinement ) ),
-    partitionPool_( localMesh_, globalMesh_, MultiIndex::zero() ),
+    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() ),
     h_( domain().h() )
   {
     assert( father.child_ == 0 );
     father.child_ = this;
-
-    for( int i = 0; i < dimension; ++i )
-      macroFactor_[ i ] = father.macroFactor_[ i ] * refinement.factor( i );
 
     const unsigned int numChildren = refinement.numChildren();
     geometryInFather_ = new LocalGeometry *[ numChildren ];
@@ -328,6 +329,28 @@ namespace Dune
       const ctype hn = std::abs( normal_[ face ] * h_ );
       normal_[ face ] *= volume / hn;
     }
+  }
+
+
+  template< class Grid >
+  inline typename SPGridLevel< Grid >::MultiIndex
+  SPGridLevel< Grid >::coarseMacroFactor ()
+  {
+    MultiIndex macroFactor;
+    for( int i = 0; i < dimension; ++i )
+      macroFactor[ i ] = 1;
+    return macroFactor;
+  }
+
+
+  template< class Grid >
+  inline typename SPGridLevel< Grid >::MultiIndex
+  SPGridLevel< Grid >::overlap () const
+  {
+    MultiIndex overlap;
+    for( int i = 0; i < dimension; ++i )
+      overlap[ i ] = macroFactor_[ i ] * grid().overlap()[ i ];
+    return overlap;
   }
 
 

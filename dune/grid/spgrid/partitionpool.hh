@@ -55,15 +55,38 @@ namespace Dune
     ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
                         const MultiIndex &overlap, unsigned int periodic )
   {
-    interior_ += removeBorder( localMesh, globalMesh );
     interiorBorder_ += Partition( localMesh );
+    interior_ += removeBorder( localMesh, globalMesh );
 
-    Mesh overlapMesh = localMesh.grow( overlap );
-    overlap_ += removeBorder( globalMesh.intersect( overlapMesh ), globalMesh );
-    overlapFront_ += Partition( globalMesh.intersect( overlapMesh ) );
-    
-    Mesh allMesh = localMesh.grow( overlap ).grow( 1 );
-    all_ += Partition( globalMesh.intersect( allMesh ) );
+    MultiIndex globalWidth = globalMesh.width();
+    std::vector< Mesh > overlapMesh( 1, localMesh.grow( overlap ) );
+    for( int i = 0; i < dim; ++i )
+    {
+      if( (periodic & (1 << i)) == 0 )
+        continue;
+
+      MultiIndex shift = MultiIndex::zero();
+      if( overlapMesh[ 0 ].begin()[ i ] < globalMesh.begin()[ i ] )
+        shift[ i ] += globalWidth[ i ];
+      if( overlapMesh[ 0 ].end()[ i ] > globalMesh.end()[ i ] )
+        shift[ i ] -= globalWidth[ i ];
+      if( shift[ i ] == 0 )
+        continue;
+
+      const size_t size = overlapMesh.size();
+      overlapMesh.reserve( 2*size );
+      for( size_t i = 0; i < size; ++i )
+        overlapMesh.push_back( overlapMesh[ i ] + shift );
+    }
+
+    const size_t size = overlapMesh.size();
+    for( size_t i = 0; i < size; ++i )
+    {
+      overlapFront_ += Partition( globalMesh.intersect( overlapMesh[ i ] ) );
+      overlap_ += removeBorder( globalMesh.intersect( overlapMesh[ i ] ), globalMesh );
+    }
+
+    all_ = overlapFront_;
   }
 
 
