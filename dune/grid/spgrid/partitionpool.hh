@@ -63,7 +63,7 @@ namespace Dune
     overlapFront_ += Partition( globalMesh.intersect( overlapMesh ) );
     
     Mesh allMesh = localMesh.grow( overlap ).grow( 1 );
-    all_ += Partition( globalMesh.intersect( overlapMesh ) );
+    all_ += Partition( globalMesh.intersect( allMesh ) );
   }
 
 
