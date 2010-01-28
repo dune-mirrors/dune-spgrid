@@ -255,6 +255,32 @@ namespace Dune
 namespace std
 {
 
+  // Auxilliary functions for SPMultiIndex
+  // -------------------------------------
+
+  template< int dim >
+  inline Dune::SPMultiIndex< dim >
+  min ( const Dune::SPMultiIndex< dim > &a, SPMultiIndex< dim > &b )
+  {
+    SPMultiIndex< dim > c;
+    for( int i = 0; i < dim; ++i )
+      c[ i ] = min( a[ i ], b[ i ] );
+    return c;
+  }
+
+
+  template< int dim >
+  inline Dune::SPMultiIndex< dim >
+  max ( const Dune::SPMultiIndex< dim > &a, SPMultiIndex< dim > &b )
+  {
+    SPMultiIndex< dim > c;
+    for( int i = 0; i < dim; ++i )
+      c[ i ] = max( a[ i ], b[ i ] );
+    return c;
+  }
+
+
+
   // numeric_limits for SPMultiIndex
   // -------------------------------
 
