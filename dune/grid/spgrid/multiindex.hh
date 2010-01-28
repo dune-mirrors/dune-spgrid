@@ -260,7 +260,7 @@ namespace std
 
   template< int dim >
   inline Dune::SPMultiIndex< dim >
-  min ( const Dune::SPMultiIndex< dim > &a, Dune::SPMultiIndex< dim > &b )
+  min ( const Dune::SPMultiIndex< dim > &a, const Dune::SPMultiIndex< dim > &b )
   {
     Dune::SPMultiIndex< dim > c;
     for( int i = 0; i < dim; ++i )
@@ -271,7 +271,7 @@ namespace std
 
   template< int dim >
   inline Dune::SPMultiIndex< dim >
-  max ( const Dune::SPMultiIndex< dim > &a, Dune::SPMultiIndex< dim > &b )
+  max ( const Dune::SPMultiIndex< dim > &a, const Dune::SPMultiIndex< dim > &b )
   {
     Dune::SPMultiIndex< dim > c;
     for( int i = 0; i < dim; ++i )
