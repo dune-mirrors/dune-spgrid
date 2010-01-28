@@ -130,7 +130,7 @@ namespace Dune
   inline typename SPMesh< dim >::This
   SPMesh< dim >::grow ( const MultiIndex &size ) const
   {
-    return This( begin - size, end + size );
+    return This( begin_ - size, end_ + size );
   }
 
 
