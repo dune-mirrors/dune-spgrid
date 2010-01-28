@@ -3,6 +3,8 @@
 
 #include <dune/common/smallobject.hh>
 
+#include <dune/grid/common/gridenums.hh>
+
 #include <dune/grid/spgrid/partition.hh>
 
 namespace Dune
@@ -52,6 +54,9 @@ namespace Dune
     {
       return Iterator( 0 );
     }
+
+    template< PartitionIteratorType pitype >
+    static This create ( const Mesh &localMesh, const Mesh &globalMesh );
 
   private:
     Node *head_;
@@ -130,6 +135,19 @@ namespace Dune
   private:
     const Node *node_;
   };
+
+
+
+  // Implementation of SPPartitionList
+  // ---------------------------------
+
+  template< int dim >
+  template< PartitionIteratorType pitype >
+  inline typename SPPartitionList< dim >::This
+  SPPartitionList< dim >::create ( const Mesh &localMesh, const Mesh &globalMesh )
+  {
+    return This( localMesh );
+  }
 
 }
 
