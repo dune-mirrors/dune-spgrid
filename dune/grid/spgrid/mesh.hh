@@ -22,36 +22,29 @@ namespace Dune
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
-    SPMesh ( const MultiIndex &width )
-    : begin_( MultiIndex::zero() ),
-      end_( width )
-    {}
+    explicit SPMesh ( const MultiIndex &width );
 
   private:
-    SPMesh ( const MultiIndex &begin, const MultiIndex &end )
-    : begin_( begin ),
-      end_( end )
-    {}
+    SPMesh ( const MultiIndex &begin, const MultiIndex &end );
 
   public:
-    const MultiIndex &begin () const
-    {
-      return begin_;
-    }
-
-    const MultiIndex &end () const
-    {
-      return end_;
-    }
+    const MultiIndex &begin () const;
+    const MultiIndex &end () const;
 
     bool empty () const;
 
     template< SPRefinementStrategy strategy >
     This refine ( const SPRefinement< dimension, strategy > &refinement ) const;
 
+    This grow ( int size ) const;
+    This grow ( const MultiIndex &size ) const;
+
+    This intersect ( const This &other ) const;
+
     std::pair< This, This > split ( const int dir, const int leftWeight, const int rightWeight ) const;
 
     int volume () const;
+
     MultiIndex width () const;
 
   private:
@@ -62,6 +55,36 @@ namespace Dune
 
   // Implementation of SPMesh
   // ------------------------
+
+  template< int dim >
+  SPMesh< dim >::SPMesh ( const MultiIndex &width )
+  : begin_( MultiIndex::zero() ),
+    end_( width )
+  {}
+
+
+  template< int dim >
+  SPMesh< dim >::SPMesh ( const MultiIndex &begin, const MultiIndex &end )
+  : begin_( begin ),
+    end_( end )
+  {}
+
+
+  template< int dim >
+  inline const typename SPMesh< dim >::MultiIndex &
+  SPMesh< dim >::begin () const
+  {
+    return begin_;
+  }
+
+
+  template< int dim >
+  inline const typename SPMesh< dim >::MultiIndex &
+  SPMesh< dim >::end () const
+  {
+    return end_;
+  }
+
 
   template< int dim >
   inline bool SPMesh< dim >::empty () const
@@ -86,6 +109,36 @@ namespace Dune
       childEnd[ i ] = factor * end()[ i ];
     }
     return This( childBegin, childEnd );
+  }
+
+
+  template< int dim >
+  inline typename SPMesh< dim >::This
+  SPMesh< dim >::grow ( const int size ) const
+  {
+    MultiIndex begin, end;
+    for( int i = 0; i < dim; ++i )
+    {
+      begin[ i ] = begin_[ i ] - size;
+      end[ i ] = end_[ i ] + size;
+    }
+    return This( begin, end );
+  }
+
+
+  template< int dim >
+  inline typename SPMesh< dim >::This
+  SPMesh< dim >::grow ( const MultiIndex &size ) const
+  {
+    return This( begin - size, end + size );
+  }
+
+
+  template< int dim >
+  inline typename SPMesh< dim >::This
+  SPMesh< dim >::intersect ( const This &other ) const
+  {
+    return This( std::max( begin_, other.begin_ ), std::min( end_, other.end_ ) );
   }
 
 

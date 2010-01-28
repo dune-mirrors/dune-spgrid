@@ -44,6 +44,10 @@ namespace Dune
     : root_( mesh, size )
     {}
 
+    SPDecomposition ( const MultiIndex &width, const unsigned int size )
+    : root_( Mesh( width ), size )
+    {}
+
     const Mesh &mesh () const
     {
       return root_.mesh();
