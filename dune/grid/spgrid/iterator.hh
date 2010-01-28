@@ -184,7 +184,7 @@ namespace Dune
 
     template< class BeginEnd >
     SPIterator ( const GridLevel &gridLevel, const BeginEnd &be, const unsigned int sweepDir = 0 )
-    : Base( gridLevel, gridLevel.allPartition(), be, sweepDir )
+    : Base( gridLevel, gridLevel.template partition< pitype >(), be, sweepDir )
     {}
   };
 

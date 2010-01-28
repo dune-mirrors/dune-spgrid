@@ -4,6 +4,7 @@
 #include <dune/common/smallobject.hh>
 
 #include <dune/grid/common/gridenums.hh>
+#include <dune/grid/common/exceptions.hh>
 
 #include <dune/grid/spgrid/partition.hh>
 
@@ -22,6 +23,7 @@ namespace Dune
 
   public:
     typedef SPPartition< dim > Partition;
+
     typedef typename Partition::MultiIndex MultiIndex;
     typedef typename Partition::Mesh Mesh;
     
@@ -31,10 +33,12 @@ namespace Dune
     : head_( 0 )
     {}
 
+  private:
     SPPartitionList ( const Mesh &mesh )
     : head_( new Node( Partition( mesh ) ) )
     {}
 
+  public:
     SPPartitionList ( const This &other )
     : head_( other.head_ != 0 ? new Node( *other.head_ ) : 0 )
     {}
@@ -47,8 +51,11 @@ namespace Dune
     This &operator= ( const This &other )
     {
       delete head_;
-      head_ = (other.head_ != 0 ? new Node( other.head_ ) : 0);
+      head_ = (other.head_ != 0 ? new Node( *other.head_ ) : 0);
+      return *this;
     }
+
+    This &operator += ( const Partition &partition );
 
     Iterator begin () const
     {
@@ -60,19 +67,7 @@ namespace Dune
       return Iterator( 0 );
     }
 
-    template< PartitionIteratorType pitype >
-    static This
-    create ( const Mesh &localMesh, const Mesh &globalMesh, const int overlap = 0 );
-
   private:
-    void append ( const Partition &partition )
-    {
-      if( head_ != 0 )
-        head_->append( new Node( partition ) );
-      else
-        head_ = new Node( partition );
-    }
-
     Node *head_;
   };
 
@@ -100,7 +95,7 @@ namespace Dune
       delete next_;
     }
 
-    void append ( const This &other )
+    void append ( Node *other )
     {
       if( next_ != 0 )
         next_->append( other );
@@ -175,47 +170,124 @@ namespace Dune
 
 
 
+  // SPPartitionPool
+  // ---------------
+
+  template< int dim >
+  class SPPartitionPool
+  {
+    typedef SPPartitionPool< dim > This;
+
+  public:
+    typedef SPPartitionList< dim > PartitionList;
+
+    typedef typename PartitionList::Partition Partition;
+    typedef typename PartitionList::MultiIndex MultiIndex;
+    typedef typename PartitionList::Mesh Mesh;
+    
+    SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
+                      const MultiIndex &overlap, unsigned int periodic = 0 );
+
+    template< PartitionIteratorType pitype >
+    const PartitionList &get () const;
+
+  private:
+    static Partition
+    removeBorder ( const Mesh &localMesh, const Mesh &globalMesh );
+
+    PartitionList interior_;
+    PartitionList interiorBorder_;
+    PartitionList overlap_;
+    PartitionList overlapFront_;
+    PartitionList all_;
+    PartitionList ghost_;
+  };
+
+
+
   // Implementation of SPPartitionList
   // ---------------------------------
 
   template< int dim >
+  inline typename SPPartitionList< dim >::This &
+  SPPartitionList< dim >::operator+= ( const Partition &partition )
+  {
+    if( head_ != 0 )
+      head_->append( new Node( partition ) );
+    else
+      head_ = new Node( partition );
+    return *this;
+  }
+
+
+
+  // Implementation of SPPartitionPool
+  // ---------------------------------
+
+  template< int dim >
+  inline SPPartitionPool< dim >
+    ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
+                        const MultiIndex &overlap, unsigned int periodic )
+  {
+    interior_ += removeBorder( localMesh, globalMesh );
+    interiorBorder_ += Partition( localMesh );
+
+    Mesh overlapMesh = localMesh.grow( overlap );
+    overlap_ += removeBorder( globalMesh.intersect( overlapMesh ), globalMesh );
+    overlapFront_ += Partition( globalMesh.intersect( overlapMesh ) );
+    
+    Mesh allMesh = localMesh.grow( overlap ).grow( 1 );
+    all_ += Partition( globalMesh.intersect( overlapMesh ) );
+  }
+
+
+  template< int dim >
   template< PartitionIteratorType pitype >
-  inline typename SPPartitionList< dim >::This SPPartitionList< dim >
-    ::create ( const Mesh &localMesh, const Mesh &globalMesh, const int overlap )
+  inline const typename SPPartitionPool< dim >::PartitionList &
+  SPPartitionPool< dim >::get () const
+  {
+    switch( pitype )
+    {
+    case Interior_Partition:
+      return interior_;
+
+    case InteriorBorder_Partition:
+      return interiorBorder_;
+
+    case Overlap_Partition:
+      return overlap_;
+
+    case OverlapFront_Partition:
+      return overlapFront_;
+
+    case All_Partition:
+      return all_;
+
+    case Ghost_Partition:
+      return ghost_;
+
+    default:
+      DUNE_THROW( GridError, "No such PartitionIteratorType." );
+    }
+  }
+
+
+  template< int dim >
+  inline typename SPPartitionPool< dim >::Partition
+  SPPartitionPool< dim >::removeBorder ( const Mesh &localMesh, const Mesh &globalMesh )
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
     const MultiIndex &gbegin = globalMesh.begin();
     const MultiIndex &gend = globalMesh.end();
 
-    This list;
-
-    if( pitype == Interior_Partition )
+    MultiIndex begin, end;
+    for( int i = 0; i < dim; ++i )
     {
-      MultiIndex begin, end;
-      for( int i = 0; i < dim; ++i )
-      {
-        begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
-        end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
-      }
-      list.append( Partition( begin, end ) );
+      begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
+      end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
     }
-    else if( pitype == InteriorBorder_Partition )
-      list.append( Partition( 2*lbegin, 2*lend ) );
-    else if( pitype == Overlap_Partition )
-    {
-      MultiIndex begin, end;
-      for( int i = 0; i < dim; ++i )
-      {
-        begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
-        end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
-      }
-      list.append( Partition( begin, end ) );
-    }
-    else
-      list.append( Partition( 2*lbegin, 2*lend ) );
-
-    return list;
+    return Partition( begin, end );
   }
 
 }

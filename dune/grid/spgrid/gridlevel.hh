@@ -50,9 +50,11 @@ namespace Dune
     typedef typename Cube::MultiIndex MultiIndex;
 
     typedef SPDecomposition< dimension > Decomposition;
-    typedef SPPartitionList< dimension > PartitionList;
+    typedef SPPartitionPool< dimension > PartitionPool;
 
     typedef typename Decomposition::Mesh Mesh;
+
+    typedef typename PartitionPool::PartitionList PartitionList;
 
     static const unsigned int numDirections = Cube::numCorners;
 
@@ -115,9 +117,10 @@ namespace Dune
       return localMesh_;
     }
 
-    const PartitionList &allPartition () const
+    template< PartitionIteratorType pitype >
+    const PartitionList &partition () const
     {
-      return allPartition_;
+      return partitionPool_.template get< pitype >();
     }
 
     const GridLevel &fatherLevel () const
@@ -222,7 +225,7 @@ namespace Dune
     Domain domain_;
     Mesh globalMesh_;
     Mesh localMesh_;
-    PartitionList allPartition_;
+    PartitionPool partitionPool_;
     GlobalVector h_;
 
     void *geometryCache_[ numDirections ];
@@ -242,7 +245,7 @@ namespace Dune
     domain_( grid.domain() ),
     globalMesh_( decomposition.mesh() ),
     localMesh_( decomposition.subMesh( grid.comm().rank() ) ),
-    allPartition_( localMesh_ ),
+    partitionPool_( localMesh_, globalMesh_, MultiIndex::zero() ),
     h_( domain().h() ),
     geometryInFather_( 0 )
   {
@@ -263,7 +266,7 @@ namespace Dune
     domain_( father.domain(), refinement ),
     globalMesh_( father.globalMesh().refine( refinement ) ),
     localMesh_( father.localMesh().refine( refinement ) ),
-    allPartition_( localMesh_ ),
+    partitionPool_( localMesh_, globalMesh_, MultiIndex::zero() ),
     h_( domain().h() )
   {
     assert( father.child_ == 0 );
