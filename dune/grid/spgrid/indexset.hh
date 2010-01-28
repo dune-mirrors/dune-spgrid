@@ -130,8 +130,8 @@ namespace Dune
     gridLevel_ = &gridLevel;
     //origin_ = gridLevel.allPartition().begin()->begin();
     //cells_ = gridLevel.allPartition().begin()->width();
-    origin_ = gridLevel.localMesh().begin();
-    cells_ = gridLevel.localMesh().end() - origin_;
+    origin_ = gridLevel.globalMesh().begin();
+    cells_ = gridLevel.globalMesh().end() - origin_;
 
     for( int codim = 0; codim <= dimension; ++codim )
       size_[ codim ] = 0;
