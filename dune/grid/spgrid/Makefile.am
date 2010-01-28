@@ -5,6 +5,7 @@ spgrid_HEADERS = capabilities.hh  communication.hh  cube.hh  decomposition.hh \
                  grid.hh  gridlevel.hh  gridview.hh  hierarchiciterator.hh \
                  idset.hh  indexset.hh  intersection.hh  intersectioniterator.hh \
                  iterator.hh  mesh.hh  misc.hh  multiindex.hh  partition.hh  \
-                 partitionlist.hh  refinement.hh  superentityiterator.hh
+                 partitionlist.hh  partitionpool.hh  refinement.hh \
+                 superentityiterator.hh
 
 include $(top_srcdir)/am/global-rules

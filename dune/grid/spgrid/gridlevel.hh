@@ -11,7 +11,7 @@
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
 #include <dune/grid/spgrid/mesh.hh>
-#include <dune/grid/spgrid/partitionlist.hh>
+#include <dune/grid/spgrid/partitionpool.hh>
 #include <dune/grid/spgrid/decomposition.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
 
