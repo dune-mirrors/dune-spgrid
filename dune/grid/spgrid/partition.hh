@@ -76,10 +76,8 @@ namespace Dune
   inline bool SPPartition< dim >::contains ( const MultiIndex &id ) const
   {
     bool contains = true;
-    std::cout << "Checking whether " << *this << " contains " << id << ": ";
     for( int i = 0; i < dim; ++i )
       contains &= (id[ i ] >= begin()[ i ]) && (id[ i ] <= end()[ i ]);
-    std::cout << (contains ? "Yes" : "No") << std::endl;
     return contains;
   }
 
