@@ -16,6 +16,7 @@ namespace Dune
   {
     typedef SPPartitionList< dim > This;
 
+  protected:
     class Node;
 
   public:
@@ -61,7 +62,7 @@ namespace Dune
     bool contains ( const MultiIndex &id ) const;
     unsigned int size () const;
 
-  private:
+  protected:
     Node *head_;
   };
 
