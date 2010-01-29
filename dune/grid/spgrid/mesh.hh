@@ -24,10 +24,8 @@ namespace Dune
 
     explicit SPMesh ( const MultiIndex &width );
 
-  private:
     SPMesh ( const MultiIndex &begin, const MultiIndex &end );
 
-  public:
     This &operator+= ( const MultiIndex &shift );
     This &operator-= ( const MultiIndex &shift );
 

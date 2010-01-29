@@ -72,23 +72,34 @@ namespace Dune
     interiorBorder_.updateCache();
 
     // detect which directions have to be split in the overlap partition
-    MultiIndex globalWidth = globalMesh.width();
+    const MultiIndex globalWidth = globalMesh.width();
     Mesh overlapMesh = localMesh.grow( overlap );
+    const MultiIndex overlapWidth = overlapMesh.width();
     int n = 0;
     int shift[ dimension ];
     int dir[ dimension ];
     for( int i = 0; i < dimension; ++i )
     {
-      if( (periodic & (1 << i)) != 0 )
+      if( (periodic & (1 << i)) == 0 )
+        continue;
+
+      if( overlapWidth[ i ] >= globalWidth[ i ] )
       {
-        shift[ n ] = 0;
-        if( overlapMesh.begin()[ i ] < globalMesh.begin()[ i ] )
-          shift[ n ] += globalWidth[ i ];
-        if( overlapMesh.end()[ i ] > globalMesh.end()[ i ] )
-          shift[ n ] -= globalWidth[ i ];
-        if( shift[ n ] != 0 )
-          dir[ n++ ] = i;
+        MultiIndex begin = overlapMesh.begin();
+        MultiIndex end = overlapMesh.end();
+        begin[ i ] = globalMesh.begin()[ i ];
+        end[ i ] = globalMesh.end()[ i ];
+        overlapMesh = Mesh( begin, end );
+        continue;
       }
+
+      shift[ n ] = 0;
+      if( overlapMesh.begin()[ i ] < globalMesh.begin()[ i ] )
+        shift[ n ] += globalWidth[ i ];
+      if( overlapMesh.end()[ i ] > globalMesh.end()[ i ] )
+        shift[ n ] -= globalWidth[ i ];
+      if( shift[ n ] != 0 )
+        dir[ n++ ] = i;
     }
 
     // generate Overlap and OverlapFront
@@ -154,14 +165,7 @@ namespace Dune
   SPPartitionPool< dim >
     ::partitionType ( const MultiIndex &id, const unsigned int number ) const
   {
-#ifndef NDEBUG
-    if( !all_.contains( id, number ) )
-    {
-      std::cerr << "All partition does not contain " << id << " in block " << number << "!" << std::endl;
-      std::cerr << "All partition: " << all_ << std::endl;
-      abort();
-    }
-#endif
+    assert( all_.contains( id, number ) );
     if( interiorBorder_.contains( id, number ) )
       return ((codim == 0) || interior_.contains( id, number )) ? InteriorEntity : BorderEntity;
     else if( overlapFront_.contains( id, number ) )
