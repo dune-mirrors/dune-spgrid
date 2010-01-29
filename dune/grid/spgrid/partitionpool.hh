@@ -154,7 +154,14 @@ namespace Dune
   SPPartitionPool< dim >
     ::partitionType ( const MultiIndex &id, const unsigned int number ) const
   {
-    assert( all_.contains( id, number ) );
+#ifndef NDEBUG
+    if( !all_.contains( id, number ) )
+    {
+      std::cerr << "All partition does not contain " << id << " in block " << number << "!" << std::endl;
+      std::cerr << "All partition: " << all_ << std::endl;
+      abort();
+    }
+#endif
     if( interiorBorder_.contains( id, number ) )
       return ((codim == 0) || interior_.contains( id, number )) ? InteriorEntity : BorderEntity;
     else if( overlapFront_.contains( id, number ) )

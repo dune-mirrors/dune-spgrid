@@ -207,6 +207,26 @@ namespace Dune
     return size;
   }
 
+
+
+  // Auxilliary Functions for SPPartitionList
+  // ----------------------------------------
+
+  template< class char_type, class traits, int dim >
+  inline std::basic_ostream< char_type, traits > &
+  operator<< ( std::basic_ostream< char_type, traits > &out,
+               const SPPartitionList< dim > &partition )
+  {
+    typedef typename SPPartitionList< dim >::Iterator Iterator;
+    std::string separator = "";
+    for( Iterator it = partition.begin(); it; ++it )
+    {
+      out << separator << *it;
+      separator = "; ";
+    }
+    return out;
+  }
+
 }
 
 #endif // #ifndef DUNE_SPGRID_PARTITIONLIST_HH

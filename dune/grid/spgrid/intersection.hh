@@ -59,6 +59,9 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
     typedef typename GridLevel::Domain Domain;
 
+    typedef typename GridLevel::PartitionList PartitionList;
+    typedef typename PartitionList::Partition Partition;
+
   public:
     SPIntersection ( const EntityImpl &entityImpl, const int face )
     : inside_( &entityImpl ),
@@ -100,32 +103,14 @@ namespace Dune
       return gridLevel().boundaryIndex( inside_->entityInfo().id(), face_ );
     }
 
-    bool neighbor () const
-    {
-      const MultiIndex &id = inside_->entityInfo().id();
-      const int i = face_ >> 1;
-      const int bound = 1 + (face_ & 1) * (2*gridLevel().cells()[ i ] - 2);
-      return (id[ i ] != bound) || gridLevel().domain().periodic( i );
-    }
+    bool neighbor () const;
 
     EntityPointer inside () const
     {
       return EntityPointer( *inside_ );
     }
 
-    EntityPointer outside () const
-    {
-      assert( neighbor() );
-      const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
-      MultiIndex id = inside_->entityInfo().id();
-      const int i = face_ >> 1;
-      const int bound = 1 + (face_ & 1)*(2*gridLevel().cells()[ i ] - 2);
-      if( id[ i ] == bound )
-        id[ i ] = 1 + (1 - (face_ & 1)) * (2*gridLevel().cells()[ i ] - 2);
-      else
-        id[ i ] += 4*(face_ & 1) - 2;
-      return EntityPointerImpl( gridLevel(), id, partitionNumber );
-    }
+    EntityPointer outside () const;
 
     bool conforming () const
     {
@@ -210,6 +195,44 @@ namespace Dune
     int face_;
     Geometry geometry_;
   };
+
+
+
+  // Implementation of SPIntersection
+  // --------------------------------
+
+  template< class Grid >
+  inline bool SPIntersection< Grid >::neighbor () const
+  {
+    const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
+    const Partition &partition = allPartition.partition( inside_->entityInfo().partitionNumber() );
+
+    const MultiIndex &id = inside_->entityInfo().id();
+    const int i = face_ >> 1;
+    const int j = 2*(face_ & 1) - 1;
+    return (partition.hasNeighbor( face_ ) || (j*id[ i ] + 2 <= j*partition.bound( face_ & 1 )[ i ]));
+  }
+
+
+  template< class Grid >
+  inline typename SPIntersection< Grid >::EntityPointer
+  SPIntersection< Grid >::outside () const
+  {
+    const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
+    const Partition &partition = allPartition.partition( inside_->entityInfo().partitionNumber() );
+
+    MultiIndex id = inside_->entityInfo().id();
+    const int i = face_ >> 1;
+    const int j = 2*(face_ & 1) - 1;
+    id[ i ] += 2*j;
+    if( (j*id[ i ] <= j*partition.bound( face_ & 1 )[ i ]) )
+      return EntityPointerImpl( gridLevel(), id, partition.number() );
+
+    assert( partition.hasNeighbor( face_ ) );
+    const int bound = allPartition.partition( partition.neighbor( face_ ) ).bound( 1 - (face_ & 1) )[ i ];
+    id[ i ] = bound + j*(1-(bound & 1));
+    return EntityPointerImpl( gridLevel(), id, partition.neighbor( face_ ) );
+  }
 
 }
 

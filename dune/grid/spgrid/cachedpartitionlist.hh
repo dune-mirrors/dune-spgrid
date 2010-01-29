@@ -23,6 +23,7 @@ namespace Dune
 
   public:
     typedef typename Base::MultiIndex MultiIndex;
+    typedef typename Base::Partition Partition;
 
     SPCachedPartitionList ()
     : first_( std::numeric_limits< unsigned int >::max() ),
@@ -45,6 +46,7 @@ namespace Dune
     }
 
     bool contains ( const MultiIndex &id, const unsigned int number ) const;
+    const Partition &partition ( const unsigned int number ) const;
 
     void updateCache ();
 
@@ -67,6 +69,15 @@ namespace Dune
       return cache_[ number - first_ ]->partition().contains( id );
     else
       return false;
+  }
+
+
+  template< int dim >
+  inline const typename SPCachedPartitionList< dim >::Partition &
+  SPCachedPartitionList< dim >::partition ( const unsigned int number ) const
+  {
+    assert( (number >= first_) && (number <= last_) && (cache_[ number - first_ ] != 0) );
+    return cache_[ number - first_ ]->partition();
   }
 
 

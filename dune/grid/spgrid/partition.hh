@@ -25,22 +25,19 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
     typedef SPMesh< dimension > Mesh;
 
-    SPPartition ( const MultiIndex &begin, const MultiIndex &end, const unsigned int number )
-    : begin_( begin ),
-      end_( end ),
-      number_( number )
-    {
-      for( int face = 0; face < 2*dimension; ++face )
-        neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
-    }
+    SPPartition ( const MultiIndex &begin, const MultiIndex &end,
+                  const unsigned int number );
 
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
+
+    const MultiIndex &bound ( const int i ) const;
 
     unsigned int number () const;
     const unsigned int &neighbor ( const int face ) const;
     unsigned int &neighbor ( const int face );
 
+    bool hasNeighbor ( const int face ) const;
     bool contains ( const MultiIndex &id ) const;
 
     int volume () const;
@@ -53,7 +50,7 @@ namespace Dune
     void print ( std::basic_ostream< char_type, traits > &out, const int i ) const;
 
   private:
-    MultiIndex begin_, end_;
+    MultiIndex bound_[ 2 ];
     unsigned int number_;
     unsigned int neighbor_[ 2*dimension ];
   };
@@ -64,10 +61,24 @@ namespace Dune
   // -----------------------------
 
   template< int dim >
+  SPPartition< dim >
+   ::SPPartition ( const MultiIndex &begin, const MultiIndex &end,
+                   const unsigned int number )
+  : number_( number )
+  {
+    bound_[ 0 ] = begin;
+    bound_[ 1 ] = end;
+
+    for( int face = 0; face < 2*dimension; ++face )
+      neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
+  }
+
+
+  template< int dim >
   inline const typename SPPartition< dim >::MultiIndex &
   SPPartition< dim >::begin () const
   {
-    return begin_;
+    return bound_[ 0 ];
   }
 
 
@@ -75,7 +86,16 @@ namespace Dune
   inline const typename SPPartition< dim >::MultiIndex &
   SPPartition< dim >::end () const
   {
-    return end_;
+    return bound_[ 1 ];
+  }
+
+
+  template< int dim >
+  inline const typename SPPartition< dim >::MultiIndex &
+  SPPartition< dim >::bound ( const int i ) const
+  {
+    assert( (i == 0) || (i == 1) );
+    return bound_[ i ];
   }
 
 
@@ -101,6 +121,13 @@ namespace Dune
   {
     assert( (face >= 0) && (face < 2*dimension) );
     return neighbor_[ face ];
+  }
+
+
+  template< int dim >
+  inline bool SPPartition< dim >::hasNeighbor ( const int face ) const
+  {
+    return (neighbor( face ) < std::numeric_limits< unsigned int >::max());
   }
 
 
