@@ -88,7 +88,7 @@ namespace Dune
   inline bool SPPartition< dim >::contains ( const MultiIndex &id ) const
   {
     bool contains = true;
-    for( int i = 0; i < dim; ++i )
+    for( int i = 0; i < dimension; ++i )
       contains &= (id[ i ] >= begin()[ i ]) && (id[ i ] <= end()[ i ]);
     return contains;
   }
@@ -121,7 +121,7 @@ namespace Dune
     ::print ( std::basic_ostream< char_type, traits > &out ) const
   {
     print( out, 0 );
-    for( int i = 1; i < dim; ++i )
+    for( int i = 1; i < dimension; ++i )
     {
       out << " x ";
       print( out, i );
