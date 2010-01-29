@@ -30,15 +30,6 @@ namespace Dune
     : head_( 0 )
     {}
 
-#if 0
-  private:
-    SPPartitionList ( const Mesh &mesh )
-    : head_( new Node( Partition( mesh ) ) )
-    {}
-
-  public:
-#endif
-
     SPPartitionList ( const This &other )
     : head_( other.head_ != 0 ? new Node( *other.head_ ) : 0 )
     {}
@@ -67,15 +58,8 @@ namespace Dune
       return Iterator( 0 );
     }
 
-    bool contains ( const MultiIndex &id ) const
-    {
-      for( const Node *it = head_; it != 0; it = it->next() )
-      {
-        if( it->partition().contains( id ) )
-          return true;
-      }
-      return false;
-    }
+    bool contains ( const MultiIndex &id ) const;
+    unsigned int size () const;
 
   private:
     Node *head_;
@@ -192,6 +176,28 @@ namespace Dune
     else
       head_ = new Node( partition );
     return *this;
+  }
+
+
+  template< int dim >
+  inline bool SPPartitionList< dim >::contains ( const MultiIndex &id ) const
+  {
+    for( const Node *it = head_; it != 0; it = it->next() )
+    {
+      if( it->partition().contains( id ) )
+        return true;
+    }
+    return false;
+  }
+
+
+  template< int dim >
+  inline unsigned int SPPartitionList< dim >::size () const
+  {
+    unsigned int size = 0;
+    for( const Node *it = head_; it != 0; it = it->next() )
+      ++size;
+    return size;
   }
 
 }
