@@ -187,13 +187,25 @@ namespace Dune
     const MultiIndex &gbegin = globalMesh_.begin();
     const MultiIndex &gend = globalMesh_.end();
 
+    // create partition
     MultiIndex begin, end;
     for( int i = 0; i < dimension; ++i )
     {
       begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
       end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
     }
-    return Partition( begin, end, number );
+    Partition partition( begin, end, number );
+    
+    // deal with self-neighborship (periodicity)
+    for( int i = 0; i < dimension; ++i )
+    {
+      if( (periodic_ & (1 << i)) == 0 )
+        continue;
+      if( (lbegin[ i ] == gbegin[ i ]) && (lend[ i ] == gend[ i ]) )
+        partition.neighbor( 2*i ) = partition.neighbor( 2*i+1 ) = number;
+    }
+
+    return partition;
   }
 
 }
