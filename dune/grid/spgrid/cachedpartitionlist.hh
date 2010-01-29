@@ -19,9 +19,11 @@ namespace Dune
     typedef SPPartitionList< dim > Base;
 
   protected:
-    using Base::Node;
+    typedef typename Base::Node Node;
 
   public:
+    typedef typename Base::MultiIndex MultiIndex;
+
     SPCachedPartitionList ()
     : first_( std::numeric_limits< unsigned int >::max() ),
       last_( std::numeric_limits< unsigned int >::min() ),
@@ -29,11 +31,20 @@ namespace Dune
     {}
 
     SPCachedPartitionList ( const This &other )
-    : Base( other )
+    : Base( other ),
       cache_( 0 )
     {
       updateCache();
     }
+
+    This &operator= ( const This &other )
+    {
+      *(Base *)this = other;
+      updateCache();
+      return *this;
+    }
+
+    bool contains ( const MultiIndex &id, const unsigned int number ) const;
 
     void updateCache ();
 
@@ -49,7 +60,7 @@ namespace Dune
 
   template< int dim >
   inline bool
-  SPPartitionList< dim >
+  SPCachedPartitionList< dim >
     ::contains ( const MultiIndex &id, const unsigned int number ) const
   {
     if( (number >= first_) && (number <= last_) )
@@ -82,7 +93,7 @@ namespace Dune
     for( const Node *it = Base::head_; it; it = it->next() )
     {
       const unsigned int number = it->partition().number();
-      if( cache_[ number - first ] != 0 )
+      if( cache_[ number - first_ ] != 0 )
         DUNE_THROW( GridError, "Partition number " << number << " is not unique." );
       cache_[ number - first_ ] = it;
     }

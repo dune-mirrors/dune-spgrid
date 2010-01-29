@@ -4,7 +4,7 @@
 #include <dune/grid/common/gridenums.hh>
 #include <dune/grid/common/exceptions.hh>
 
-#include <dune/grid/spgrid/partitionlist.hh>
+#include <dune/grid/spgrid/cachedpartitionlist.hh>
 
 namespace Dune
 {
@@ -18,7 +18,7 @@ namespace Dune
     typedef SPPartitionPool< dim > This;
 
   public:
-    typedef SPPartitionList< dim > PartitionList;
+    typedef SPCachedPartitionList< dim > PartitionList;
 
     typedef typename PartitionList::Partition Partition;
     typedef typename PartitionList::MultiIndex MultiIndex;
@@ -59,6 +59,8 @@ namespace Dune
   {
     interiorBorder_ += Partition( localMesh, 0 );
     interior_ += removeBorder( localMesh, globalMesh, 0 );
+    interiorBorder_.updateCache();
+    interior_.updateCache();
 
     MultiIndex globalWidth = globalMesh.width();
     std::vector< Mesh > overlapMesh( 1, localMesh.grow( overlap ) );
@@ -87,6 +89,8 @@ namespace Dune
       overlapFront_ += Partition( globalMesh.intersect( overlapMesh[ i ] ), i );
       overlap_ += removeBorder( globalMesh.intersect( overlapMesh[ i ] ), globalMesh, i );
     }
+    overlapFront_.updateCache();
+    overlap_.updateCache();
 
     all_ = overlapFront_;
   }
