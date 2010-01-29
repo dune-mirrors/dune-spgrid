@@ -41,6 +41,18 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
     }
     std::cout << " (load: " << load << ")" << std::endl;
 
+    for( typename PartitionList::Iterator it = partition.begin(); it; ++it )
+    {
+      std::cout << "        - " << it->number();
+      separator = ':';
+      for( int i = 0; i < 2*dimGrid; ++i )
+      {
+        std::cout << separator << " " << int( it->neighbor( i ) );
+        separator = ',';
+      }
+      std::cout << std::endl;
+    }
+
     minload = std::min( minload, load );
     maxload = std::max( maxload, load );
   }
