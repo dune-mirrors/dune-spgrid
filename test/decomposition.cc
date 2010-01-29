@@ -14,23 +14,33 @@ using namespace Dune;
 
 static const int dimGrid = DIMGRID;
 
-void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const int overlap )
+typedef SPMultiIndex< dimGrid > MultiIndex;
+typedef SPPartitionPool< dimGrid > PartitionPool;
+typedef SPPartitionList< dimGrid > PartitionList;
+
+template< PartitionIteratorType pitype >
+void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, unsigned int periodic )
 {
   const unsigned int size = decomposition.size();
-  SPPartition< dimGrid > globalPartition( decomposition.mesh() );
 
   int maxload = std::numeric_limits< int >::min();
   int minload = std::numeric_limits< int >::max();
   for( unsigned int rank = 0; rank < size; ++rank )
   {
-    SPPartition< dimGrid > localPartition( decomposition.subMesh( rank ) );
-    //localPartition = globalPartition.intersect( localPartition.grow( overlap ) );
+    PartitionPool partitionPool( decomposition.subMesh( rank ), decomposition.mesh(), overlap, periodic );
+    const PartitionList &partition = partitionPool.template get< pitype >();
 
-    const int load = localPartition.volume();
+    int load = 0;
+    std::cout << "rank " << rank << ": ";
+    for( typename PartitionList::Iterator it = partition.begin(); it; ++it )
+    {
+      load += it->volume();
+      std::cout << *it << "   ";
+    }
+    std::cout << " (load: " << load << ")" << std::endl;
+
     minload = std::min( minload, load );
     maxload = std::max( maxload, load );
-    std::cout << "rank " << rank << ": " << localPartition;
-    std::cout << " (load: " << load << ")" << std::endl;
   }
   std::cout << std::endl;
   std::cout << "maximal load: " << maxload << ", minimal load: " << minload
@@ -41,12 +51,11 @@ int main ( int argc, char **argv )
 {
   if( argc < 3 )
   {
-    //std::cerr << "Usage: " << argv[ 0 ] << " <width> <size> [periodic]" << std::endl;
-    std::cerr << "Usage: " << argv[ 0 ] << " <width> <size>" << std::endl;
+    std::cerr << "Usage: " << argv[ 0 ] << " <width> <size> [overlap] [periodic]" << std::endl;
     return 1;
   }
 
-  SPMultiIndex< dimGrid > width;
+  MultiIndex width;
   std::istringstream widthStream( argv[ 1 ] );
   widthStream >> width;
 
@@ -54,31 +63,50 @@ int main ( int argc, char **argv )
   std::istringstream sizeStream( argv[ 2 ] );
   sizeStream >> size;
 
-#if 0
+  MultiIndex overlap = MultiIndex::zero();
+  if( argc > 3 )
+  {
+    std::istringstream overlapStream( argv[ 3 ] );
+    overlapStream >> overlap;
+  }
+
   unsigned int periodic = 0;
-  for( int i = 3; i < argc; ++i )
+  for( int i = 4; i < argc; ++i )
   {
     unsigned int dir;
     std::istringstream periodicStream( argv[ i ] );
     periodicStream >> dir;
     periodic |= (1 << dir);
   }
-#endif
 
-  //std::cout << "width = " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
-  std::cout << "width = " << width << ", size = " << size << std::endl;
+  std::cout << "width = " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
   SPDecomposition< dimGrid > decomposition( width, size );
 
   std::cout << std::endl;
   std::cout << "Interior Partitions:" << std::endl;
   std::cout << "--------------------" << std::endl;
-  listPartitions( decomposition, 0 );
+  listPartitions< Interior_Partition >( decomposition, overlap, periodic );
 
   std::cout << std::endl;
-  std::cout << "Overlap Partitions (1 level of overlap):" << std::endl;
-  std::cout << "----------------------------------------" << std::endl;
-  listPartitions( decomposition, 1 );
+  std::cout << "InteriorBorder Partitions:" << std::endl;
+  std::cout << "--------------------------" << std::endl;
+  listPartitions< InteriorBorder_Partition >( decomposition, overlap, periodic );
 
+  std::cout << std::endl;
+  std::cout << "Overlap Partitions:" << std::endl;
+  std::cout << "-------------------" << std::endl;
+  listPartitions< Overlap_Partition >( decomposition, overlap, periodic );
+
+  std::cout << std::endl;
+  std::cout << "OverlapFront Partitions:" << std::endl;
+  std::cout << "------------------------" << std::endl;
+  listPartitions< OverlapFront_Partition >( decomposition, overlap, periodic );
+
+  std::cout << std::endl;
+  std::cout << "All Partitions:" << std::endl;
+  std::cout << "---------------" << std::endl;
+  listPartitions< All_Partition >( decomposition, overlap, periodic );
+  
   typedef SPGrid< double, dimGrid > Grid;
   FieldVector< double, dimGrid > a( 0.0 ), b( 1.0 );
   SPDomain< double, dimGrid > domain( a, b, width );
@@ -88,8 +116,8 @@ int main ( int argc, char **argv )
   for( unsigned int rank = 0; rank < size; ++rank )
   {
     const SPMesh< dimGrid > &mesh = decomposition.subMesh( rank );
-    SPMultiIndex< dimGrid > pos = mesh.begin();
-    SPMultiIndex< dimGrid > end = mesh.end();
+    MultiIndex pos = mesh.begin();
+    MultiIndex end = mesh.end();
     for( int d = 0; d < dimGrid; )
     {
       unsigned int index = 0;
