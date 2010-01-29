@@ -18,7 +18,9 @@ namespace Dune
     typedef SPPartitionPool< dim > This;
 
   public:
-    typedef SPCachedPartitionList< dim > PartitionList;
+    static const int dimension = dim;
+
+    typedef SPCachedPartitionList< dimension > PartitionList;
 
     typedef typename PartitionList::Partition Partition;
     typedef typename PartitionList::MultiIndex MultiIndex;
@@ -41,6 +43,7 @@ namespace Dune
     openPartition ( const Mesh &localMesh, const unsigned int number ) const;
 
     Mesh globalMesh_;
+    unsigned int periodic_;
 
     PartitionList interior_;
     PartitionList interiorBorder_;
@@ -59,7 +62,8 @@ namespace Dune
   inline SPPartitionPool< dim >
     ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
                         const MultiIndex &overlap, unsigned int periodic )
-  : globalMesh_( globalMesh )
+  : globalMesh_( globalMesh ),
+    periodic_( periodic )
   {
     interiorBorder_ += closedPartition( localMesh, 0 );
     interior_ += openPartition( localMesh, 0 );
@@ -68,7 +72,7 @@ namespace Dune
 
     MultiIndex globalWidth = globalMesh.width();
     std::vector< Mesh > overlapMesh( 1, localMesh.grow( overlap ) );
-    for( int i = 0; i < dim; ++i )
+    for( int i = 0; i < dimension; ++i )
     {
       if( (periodic & (1 << i)) == 0 )
         continue;
@@ -154,10 +158,22 @@ namespace Dune
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
+    const MultiIndex &gbegin = globalMesh_.begin();
+    const MultiIndex &gend = globalMesh_.end();
 
-    MultiIndex begin = 2*lbegin;
-    MultiIndex end = 2*lend;
-    return Partition( begin, end, number );
+    // create partition
+    Partition partition( 2*lbegin, 2*lend, number );
+    
+    // deal with self-neighborship (periodicity)
+    for( int i = 0; i < dimension; ++i )
+    {
+      if( (periodic_ & (1 << i)) == 0 )
+        continue;
+      if( (lbegin[ i ] == gbegin[ i ]) && (lend[ i ] == gend[ i ]) )
+        partition.neighbor( 2*i ) = partition.neighbor( 2*i+1 ) = number;
+    }
+
+    return partition;
   }
 
 
@@ -172,7 +188,7 @@ namespace Dune
     const MultiIndex &gend = globalMesh_.end();
 
     MultiIndex begin, end;
-    for( int i = 0; i < dim; ++i )
+    for( int i = 0; i < dimension; ++i )
     {
       begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
       end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
