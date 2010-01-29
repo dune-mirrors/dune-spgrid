@@ -59,7 +59,7 @@ namespace Dune
       return Iterator( 0 );
     }
 
-    bool contains ( const MultiIndex &id ) const;
+    bool contains ( const MultiIndex &id, const unsigned int number ) const;
     unsigned int size () const;
 
   protected:
@@ -181,12 +181,14 @@ namespace Dune
 
 
   template< int dim >
-  inline bool SPPartitionList< dim >::contains ( const MultiIndex &id ) const
+  inline bool
+  SPPartitionList< dim >
+    ::contains ( const MultiIndex &id, const unsigned int number ) const
   {
     for( const Node *it = head_; it != 0; it = it->next() )
     {
-      if( it->partition().contains( id ) )
-        return true;
+      if( it->partition().number() == number )
+        return it->partition().contains( id );
     }
     return false;
   }

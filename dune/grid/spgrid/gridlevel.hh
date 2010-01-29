@@ -124,9 +124,10 @@ namespace Dune
     }
 
     template< int codim >
-    PartitionType partitionType ( const MultiIndex &id ) const
+    PartitionType partitionType ( const MultiIndex &id,
+                                  const unsigned int partitionNumber ) const
     {
-      return partitionPool_.template partitionType< codim >( id );
+      return partitionPool_.template partitionType< codim >( id, partitionNumber );
     }
 
     const GridLevel &fatherLevel () const

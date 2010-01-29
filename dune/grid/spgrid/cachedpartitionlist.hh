@@ -48,6 +48,18 @@ namespace Dune
   // ---------------------------------------
 
   template< int dim >
+  inline bool
+  SPPartitionList< dim >
+    ::contains ( const MultiIndex &id, const unsigned int number ) const
+  {
+    if( (number >= first_) && (number <= last_) )
+      return cache_[ number - first_ ]->partition().contains( id );
+    else
+      return false;
+  }
+
+
+  template< int dim >
   inline void SPCachedPartitionList< dim >::updateCache ()
   {
     // find new cache size

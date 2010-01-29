@@ -31,11 +31,13 @@ namespace Dune
     const PartitionList &get () const;
 
     template< int codim >
-    PartitionType partitionType ( const MultiIndex &id ) const;
+    PartitionType
+    partitionType ( const MultiIndex &id, const unsigned int number ) const;
 
   private:
     static Partition
-    removeBorder ( const Mesh &localMesh, const Mesh &globalMesh, const unsigned int number );
+    removeBorder ( const Mesh &localMesh, const Mesh &globalMesh,
+                   const unsigned int number );
 
     PartitionList interior_;
     PartitionList interiorBorder_;
@@ -124,14 +126,14 @@ namespace Dune
   template< int dim >
   template< int codim >
   inline PartitionType
-  SPPartitionPool< dim >::partitionType ( const MultiIndex &id ) const
+  SPPartitionPool< dim >
+    ::partitionType ( const MultiIndex &id, const unsigned int number ) const
   {
-    assert( all_.contains( id ) );
-    // both, interior_ and interiorBorder_ contain exactly one partition, so use this information
-    if( interiorBorder_.begin()->contains( id ) )
-      return ((codim == 0) || interior_.begin()->contains( id )) ? InteriorEntity : BorderEntity;
-    else if( overlapFront_.contains( id ) )
-      return ((codim == 0) || overlap_.contains( id )) ? OverlapEntity : FrontEntity;
+    assert( all_.contains( id, number ) );
+    if( interiorBorder_.contains( id, number ) )
+      return ((codim == 0) || interior_.contains( id, number )) ? InteriorEntity : BorderEntity;
+    else if( overlapFront_.contains( id, number ) )
+      return ((codim == 0) || overlap_.contains( id, number )) ? OverlapEntity : FrontEntity;
     else
       return GhostEntity;
   }
