@@ -63,7 +63,7 @@ namespace Dune
   SPCachedPartitionList< dim >
     ::contains ( const MultiIndex &id, const unsigned int number ) const
   {
-    if( (number >= first_) && (number <= last_) )
+    if( (number >= first_) && (number <= last_) && (cache_[ number - first_ ] != 0) )
       return cache_[ number - first_ ]->partition().contains( id );
     else
       return false;

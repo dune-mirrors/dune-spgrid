@@ -185,10 +185,14 @@ namespace Dune
   SPPartitionList< dim >
     ::contains ( const MultiIndex &id, const unsigned int number ) const
   {
+    std::cout << "contains( " << id << ", " << number << " )" << std::endl;
     for( const Node *it = head_; it != 0; it = it->next() )
     {
-      if( it->partition().number() == number )
-        return it->partition().contains( id );
+      if( it->partition().contains( id ) )
+      {
+        assert( it->partition().number() == number );
+        return true;
+      }
     }
     return false;
   }
