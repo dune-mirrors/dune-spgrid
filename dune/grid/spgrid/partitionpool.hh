@@ -65,41 +65,54 @@ namespace Dune
   : globalMesh_( globalMesh ),
     periodic_( periodic )
   {
-    interiorBorder_ += closedPartition( localMesh, 0 );
+    // generate Interior and InteriorBorder
     interior_ += openPartition( localMesh, 0 );
-    interiorBorder_.updateCache();
+    interiorBorder_ += closedPartition( localMesh, 0 );
     interior_.updateCache();
+    interiorBorder_.updateCache();
 
+    // detect which directions have to be split in the overlap partition
     MultiIndex globalWidth = globalMesh.width();
-    std::vector< Mesh > overlapMesh( 1, localMesh.grow( overlap ) );
+    Mesh overlapMesh = localMesh.grow( overlap );
+    int n = 0;
+    int shift[ dimension ];
+    int dir[ dimension ];
     for( int i = 0; i < dimension; ++i )
     {
-      if( (periodic & (1 << i)) == 0 )
-        continue;
-
-      MultiIndex shift = MultiIndex::zero();
-      if( overlapMesh[ 0 ].begin()[ i ] < globalMesh.begin()[ i ] )
-        shift[ i ] += globalWidth[ i ];
-      if( overlapMesh[ 0 ].end()[ i ] > globalMesh.end()[ i ] )
-        shift[ i ] -= globalWidth[ i ];
-      if( shift[ i ] == 0 )
-        continue;
-
-      const size_t size = overlapMesh.size();
-      overlapMesh.reserve( 2*size );
-      for( size_t i = 0; i < size; ++i )
-        overlapMesh.push_back( overlapMesh[ i ] + shift );
+      if( (periodic & (1 << i)) != 0 )
+      {
+        shift[ n ] = 0;
+        if( overlapMesh.begin()[ i ] < globalMesh.begin()[ i ] )
+          shift[ n ] += globalWidth[ i ];
+        if( overlapMesh.end()[ i ] > globalMesh.end()[ i ] )
+          shift[ n ] -= globalWidth[ i ];
+        if( shift[ n ] != 0 )
+          dir[ n++ ] = i;
+      }
     }
 
-    const size_t size = overlapMesh.size();
-    for( size_t i = 0; i < size; ++i )
+    // generate Overlap and OverlapFront
+    const unsigned int size = 1 << n;
+    for( unsigned int d = 0; d < size; ++d )
     {
-      overlapFront_ += closedPartition( globalMesh.intersect( overlapMesh[ i ] ), i );
-      overlap_ += openPartition( globalMesh.intersect( overlapMesh[ i ] ), i );
+      MultiIndex s = MultiIndex::zero();
+      for( int i = 0; i < n; ++i )
+        s[ dir[ i ] ] = ((d >> i)&1)*shift[ i ];
+      Partition open = openPartition( globalMesh.intersect( overlapMesh + s ), d );
+      Partition closed = closedPartition( globalMesh.intersect( overlapMesh + s ), d );
+      for( int i = 0; i < n; ++i )
+      {
+        const int j = (shift[ i ] < 0) ^ ((d >> i)&1);
+        open.neighbor( 2*i + j ) = d ^ (1 << i);
+        closed.neighbor( 2*i + j ) = d ^ (1 << i);
+      }
+      overlap_ += open;
+      overlapFront_ += closed;
     }
-    overlapFront_.updateCache();
     overlap_.updateCache();
+    overlapFront_.updateCache();
 
+    // generate All
     all_ = overlapFront_;
   }
 
