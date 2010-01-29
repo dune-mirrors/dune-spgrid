@@ -116,7 +116,8 @@ namespace Dune
 
     void update ()
     {
-      assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
+      assert( (id_.direction() == direction()) );
+      //assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
     }
 
     void down ()
@@ -190,7 +191,8 @@ namespace Dune
 
     void update ()
     {
-      assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
+      assert( (id_.direction() == direction()) );
+      //assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
     }
 
   private:
@@ -232,8 +234,10 @@ namespace Dune
     : Base( gridLevel )
     {}
 
-    SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
+    SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id,
+                   const unsigned int partitionNumber )
     : Base( gridLevel, id ),
+      partitionNumber_( partitionNumber ),
       origin_( computeOrigin() )
     {}
 
@@ -244,6 +248,11 @@ namespace Dune
     bool equals ( const This &other ) const
     {
       return (&gridLevel() == &other.gridLevel()) && (id() == other.id());
+    }
+
+    unsigned int partitionNumber () const
+    {
+      return partitionNumber_;
     }
 
     PartitionType partitionType () const
@@ -263,8 +272,15 @@ namespace Dune
 
     void update ()
     {
+      assert( id() != std::numeric_limits< MultiIndex >::max() );
       Base::update();
       origin_ = computeOrigin();
+    }
+
+    void update ( const unsigned int partitionNumber )
+    {
+      partitionNumber_ = partitionNumber;
+      update();
     }
 
   private:
@@ -277,6 +293,7 @@ namespace Dune
       return origin;
     }
 
+    unsigned int partitionNumber_;
     GlobalVector origin_;
   };
 

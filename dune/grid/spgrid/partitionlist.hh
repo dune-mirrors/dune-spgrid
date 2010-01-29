@@ -30,12 +30,15 @@ namespace Dune
     : head_( 0 )
     {}
 
+#if 0
   private:
     SPPartitionList ( const Mesh &mesh )
     : head_( new Node( Partition( mesh ) ) )
     {}
 
   public:
+#endif
+
     SPPartitionList ( const This &other )
     : head_( other.head_ != 0 ? new Node( *other.head_ ) : 0 )
     {}
@@ -52,7 +55,7 @@ namespace Dune
       return *this;
     }
 
-    This &operator += ( const Partition &partition );
+    This &operator+= ( const Partition &partition );
 
     Iterator begin () const
     {

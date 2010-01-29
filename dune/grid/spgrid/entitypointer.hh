@@ -49,8 +49,9 @@ namespace Dune
     : entity_( EntityImpl( entityInfo ) )
     {}
 
-    SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id )
-    : entity_( EntityImpl( EntityInfo( gridLevel, id ) ) )
+    SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id,
+                      const unsigned int partitionNumber )
+    : entity_( EntityImpl( EntityInfo( gridLevel, id, partitionNumber ) ) )
     {}
 
     SPEntityPointer ( const EntityImpl &entityImpl )

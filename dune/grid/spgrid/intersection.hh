@@ -116,6 +116,7 @@ namespace Dune
     EntityPointer outside () const
     {
       assert( neighbor() );
+      const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
       MultiIndex id = inside_->entityInfo().id();
       const int i = face_ >> 1;
       const int bound = 1 + (face_ & 1)*(2*gridLevel().cells()[ i ] - 2);
@@ -123,7 +124,7 @@ namespace Dune
         id[ i ] = 1 + (1 - (face_ & 1)) * (2*gridLevel().cells()[ i ] - 2);
       else
         id[ i ] += 4*(face_ & 1) - 2;
-      return EntityPointerImpl( gridLevel(), id );
+      return EntityPointerImpl( gridLevel(), id, partitionNumber );
     }
 
     bool conforming () const

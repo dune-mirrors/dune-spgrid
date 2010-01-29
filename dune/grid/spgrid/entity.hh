@@ -200,9 +200,11 @@ namespace Dune
     template< int codim >
     typename Codim< codim >::EntityPointer subEntity ( const int i ) const
     {
+      // warning: this is only true for closed partitions
+      const unsigned int partitionNumber = entityInfo().partitionNumber();
       MultiIndex id = entityInfo().id();
       id += gridLevel().cube().subId( codim, i );
-      return SPEntityPointer< codim, Grid >( gridLevel(), id );
+      return SPEntityPointer< codim, Grid >( gridLevel(), id, partitionNumber );
     }
 
     LeafIntersectionIterator ileafbegin () const
@@ -243,9 +245,10 @@ namespace Dune
 
     EntityPointer father () const
     {
+      const unsigned int partitionNumber = entityInfo().partitionNumber();
       MultiIndex fatherId( entityInfo().id() );
       gridLevel().refinement().father( fatherId );
-      return EntityPointer( EntityInfo( gridLevel().fatherLevel(), fatherId ) );
+      return EntityPointer( EntityInfo( gridLevel().fatherLevel(), fatherId, partitionNumber ) );
     }
 
     const LocalGeometry &geometryInFather () const

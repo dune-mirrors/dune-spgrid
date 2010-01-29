@@ -35,7 +35,7 @@ namespace Dune
 
   private:
     static Partition
-    removeBorder ( const Mesh &localMesh, const Mesh &globalMesh );
+    removeBorder ( const Mesh &localMesh, const Mesh &globalMesh, const unsigned int number );
 
     PartitionList interior_;
     PartitionList interiorBorder_;
@@ -55,8 +55,8 @@ namespace Dune
     ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
                         const MultiIndex &overlap, unsigned int periodic )
   {
-    interiorBorder_ += Partition( localMesh );
-    interior_ += removeBorder( localMesh, globalMesh );
+    interiorBorder_ += Partition( localMesh, 0 );
+    interior_ += removeBorder( localMesh, globalMesh, 0 );
 
     MultiIndex globalWidth = globalMesh.width();
     std::vector< Mesh > overlapMesh( 1, localMesh.grow( overlap ) );
@@ -82,8 +82,8 @@ namespace Dune
     const size_t size = overlapMesh.size();
     for( size_t i = 0; i < size; ++i )
     {
-      overlapFront_ += Partition( globalMesh.intersect( overlapMesh[ i ] ) );
-      overlap_ += removeBorder( globalMesh.intersect( overlapMesh[ i ] ), globalMesh );
+      overlapFront_ += Partition( globalMesh.intersect( overlapMesh[ i ] ), i );
+      overlap_ += removeBorder( globalMesh.intersect( overlapMesh[ i ] ), globalMesh, i );
     }
 
     all_ = overlapFront_;
@@ -139,7 +139,9 @@ namespace Dune
 
   template< int dim >
   inline typename SPPartitionPool< dim >::Partition
-  SPPartitionPool< dim >::removeBorder ( const Mesh &localMesh, const Mesh &globalMesh )
+  SPPartitionPool< dim >
+    ::removeBorder ( const Mesh &localMesh, const Mesh &globalMesh,
+                     const unsigned int number )
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
@@ -152,7 +154,7 @@ namespace Dune
       begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
       end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
     }
-    return Partition( begin, end );
+    return Partition( begin, end, number );
   }
 
 }

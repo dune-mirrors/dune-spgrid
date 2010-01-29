@@ -160,11 +160,11 @@ namespace Dune
 
       for( int i = 0; i < dimension; ++i )
         id[ i ] = begin( i, dir );
+
+      entityInfo.update( partition_->number() );
     }
     else
       id = std::numeric_limits< MultiIndex >::max();
-
-    entityInfo.update();
   }
 
 

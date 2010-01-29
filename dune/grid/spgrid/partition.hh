@@ -23,18 +23,22 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
     typedef SPMesh< dimension > Mesh;
 
-    explicit SPPartition ( const Mesh &mesh )
+    explicit SPPartition ( const Mesh &mesh, const unsigned int number )
     : begin_( 2*mesh.begin() ),
-      end_( 2*mesh.end() )
+      end_( 2*mesh.end() ),
+      number_( number )
     {}
 
-    SPPartition ( const MultiIndex &begin, const MultiIndex &end )
+    SPPartition ( const MultiIndex &begin, const MultiIndex &end, const unsigned int number )
     : begin_( begin ),
-      end_( end )
+      end_( end ),
+      number_( number )
     {}
 
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
+
+    unsigned int number () const;
 
     bool contains ( const MultiIndex &id ) const;
 
@@ -49,6 +53,7 @@ namespace Dune
 
   private:
     MultiIndex begin_, end_;
+    unsigned int number_;
   };
 
 
@@ -69,6 +74,13 @@ namespace Dune
   SPPartition< dim >::end () const
   {
     return end_;
+  }
+
+
+  template< int dim >
+  inline unsigned int SPPartition< dim >::number () const
+  {
+    return number_;
   }
 
 
