@@ -31,11 +31,13 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
     const PartitionList &partition = partitionPool.template get< pitype >();
 
     int load = 0;
-    std::cout << "rank " << rank << ": ";
+    std::cout << "rank " << rank;
+    char separator = ':';
     for( typename PartitionList::Iterator it = partition.begin(); it; ++it )
     {
       load += it->volume();
-      std::cout << *it << "   ";
+      std::cout << separator << " " << *it;
+      separator = ';';
     }
     std::cout << " (load: " << load << ")" << std::endl;
 
