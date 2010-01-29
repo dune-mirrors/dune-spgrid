@@ -40,8 +40,6 @@ namespace Dune
     Partition
     openPartition ( const Mesh &localMesh, const unsigned int number ) const;
 
-    void finalize ( PartitionList &partition ) const;
-
     Mesh globalMesh_;
 
     PartitionList interior_;
@@ -65,8 +63,8 @@ namespace Dune
   {
     interiorBorder_ += closedPartition( localMesh, 0 );
     interior_ += openPartition( localMesh, 0 );
-    finalize( interiorBorder_ );
-    finalize( interior_ );
+    interiorBorder_.updateCache();
+    interior_.updateCache();
 
     MultiIndex globalWidth = globalMesh.width();
     std::vector< Mesh > overlapMesh( 1, localMesh.grow( overlap ) );
@@ -95,8 +93,8 @@ namespace Dune
       overlapFront_ += closedPartition( globalMesh.intersect( overlapMesh[ i ] ), i );
       overlap_ += openPartition( globalMesh.intersect( overlapMesh[ i ] ), i );
     }
-    finalize( overlapFront_ );
-    finalize( overlap_ );
+    overlapFront_.updateCache();
+    overlap_.updateCache();
 
     all_ = overlapFront_;
   }
@@ -180,13 +178,6 @@ namespace Dune
       end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
     }
     return Partition( begin, end, number );
-  }
-
-
-  template< int dim >
-  inline void SPPartitionPool< dim >::finalize ( PartitionList &partition ) const
-  {
-    partition.updateCache();
   }
 
 }
