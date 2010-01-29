@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_PARTITION_HH
 #define DUNE_SPGRID_PARTITION_HH
 
+#include <limits>
+
 #include <dune/common/iostream.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
@@ -23,22 +25,21 @@ namespace Dune
     typedef SPMultiIndex< dimension > MultiIndex;
     typedef SPMesh< dimension > Mesh;
 
-    explicit SPPartition ( const Mesh &mesh, const unsigned int number )
-    : begin_( 2*mesh.begin() ),
-      end_( 2*mesh.end() ),
-      number_( number )
-    {}
-
     SPPartition ( const MultiIndex &begin, const MultiIndex &end, const unsigned int number )
     : begin_( begin ),
       end_( end ),
       number_( number )
-    {}
+    {
+      for( int face = 0; face < 2*dimension; ++face )
+        neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
+    }
 
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
 
     unsigned int number () const;
+    const unsigned int &neighbor ( const int face ) const;
+    unsigned int &neighbor ( const int face );
 
     bool contains ( const MultiIndex &id ) const;
 
@@ -54,6 +55,7 @@ namespace Dune
   private:
     MultiIndex begin_, end_;
     unsigned int number_;
+    unsigned int neighbor_[ 2*dimension ];
   };
 
 
@@ -81,6 +83,24 @@ namespace Dune
   inline unsigned int SPPartition< dim >::number () const
   {
     return number_;
+  }
+
+
+  template< int dim >
+  inline const unsigned int &
+  SPPartition< dim >::neighbor ( const int face ) const
+  {
+    assert( (face >= 0) && (face < 2*dimension) );
+    return neighbor_[ face ];
+  }
+
+
+  template< int dim >
+  inline unsigned int &
+  SPPartition< dim >::neighbor ( const int face )
+  {
+    assert( (face >= 0) && (face < 2*dimension) );
+    return neighbor_[ face ];
   }
 
 

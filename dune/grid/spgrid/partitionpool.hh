@@ -35,9 +35,12 @@ namespace Dune
     partitionType ( const MultiIndex &id, const unsigned int number ) const;
 
   private:
-    static Partition
-    removeBorder ( const Mesh &localMesh, const Mesh &globalMesh,
-                   const unsigned int number );
+    Partition
+    closedPartition ( const Mesh &localMesh, const unsigned int number ) const;
+    Partition
+    openPartition ( const Mesh &localMesh, const unsigned int number ) const;
+
+    Mesh globalMesh_;
 
     PartitionList interior_;
     PartitionList interiorBorder_;
@@ -56,9 +59,10 @@ namespace Dune
   inline SPPartitionPool< dim >
     ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
                         const MultiIndex &overlap, unsigned int periodic )
+  : globalMesh_( globalMesh )
   {
-    interiorBorder_ += Partition( localMesh, 0 );
-    interior_ += removeBorder( localMesh, globalMesh, 0 );
+    interiorBorder_ += closedPartition( localMesh, 0 );
+    interior_ += openPartition( localMesh, 0 );
     interiorBorder_.updateCache();
     interior_.updateCache();
 
@@ -86,8 +90,8 @@ namespace Dune
     const size_t size = overlapMesh.size();
     for( size_t i = 0; i < size; ++i )
     {
-      overlapFront_ += Partition( globalMesh.intersect( overlapMesh[ i ] ), i );
-      overlap_ += removeBorder( globalMesh.intersect( overlapMesh[ i ] ), globalMesh, i );
+      overlapFront_ += closedPartition( globalMesh.intersect( overlapMesh[ i ] ), i );
+      overlap_ += openPartition( globalMesh.intersect( overlapMesh[ i ] ), i );
     }
     overlapFront_.updateCache();
     overlap_.updateCache();
@@ -146,13 +150,26 @@ namespace Dune
   template< int dim >
   inline typename SPPartitionPool< dim >::Partition
   SPPartitionPool< dim >
-    ::removeBorder ( const Mesh &localMesh, const Mesh &globalMesh,
-                     const unsigned int number )
+    ::closedPartition ( const Mesh &localMesh, const unsigned int number ) const
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
-    const MultiIndex &gbegin = globalMesh.begin();
-    const MultiIndex &gend = globalMesh.end();
+
+    MultiIndex begin = 2*lbegin;
+    MultiIndex end = 2*lend;
+    return Partition( begin, end, number );
+  }
+
+
+  template< int dim >
+  inline typename SPPartitionPool< dim >::Partition
+  SPPartitionPool< dim >
+    ::openPartition ( const Mesh &localMesh, const unsigned int number ) const
+  {
+    const MultiIndex &lbegin = localMesh.begin();
+    const MultiIndex &lend = localMesh.end();
+    const MultiIndex &gbegin = globalMesh_.begin();
+    const MultiIndex &gend = globalMesh_.end();
 
     MultiIndex begin, end;
     for( int i = 0; i < dim; ++i )
