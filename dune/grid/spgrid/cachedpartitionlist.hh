@@ -45,8 +45,12 @@ namespace Dune
       return *this;
     }
 
+    bool contains ( const unsigned int number ) const;
     bool contains ( const MultiIndex &id, const unsigned int number ) const;
     const Partition &partition ( const unsigned int number ) const;
+
+    unsigned int minNumber () const;
+    unsigned int maxNumber () const;
 
     void updateCache ();
 
@@ -62,11 +66,20 @@ namespace Dune
 
   template< int dim >
   inline bool
+  SPCachedPartitionList< dim >::contains ( const unsigned int number ) const
+  {
+    const bool inRange = (number >= minNumber()) && (number <= maxNumber());
+    return inRange && (cache_[ number - minNumber() ] != 0);
+  }
+
+
+  template< int dim >
+  inline bool
   SPCachedPartitionList< dim >
     ::contains ( const MultiIndex &id, const unsigned int number ) const
   {
-    if( (number >= first_) && (number <= last_) && (cache_[ number - first_ ] != 0) )
-      return cache_[ number - first_ ]->partition().contains( id );
+    if( contains( number ) )
+      return cache_[ number - minNumber() ]->partition().contains( id );
     else
       return false;
   }
@@ -76,8 +89,22 @@ namespace Dune
   inline const typename SPCachedPartitionList< dim >::Partition &
   SPCachedPartitionList< dim >::partition ( const unsigned int number ) const
   {
-    assert( (number >= first_) && (number <= last_) && (cache_[ number - first_ ] != 0) );
-    return cache_[ number - first_ ]->partition();
+    assert( contains( number ) );
+    return cache_[ number - minNumber() ]->partition();
+  }
+
+
+  template< int dim >
+  inline unsigned int SPCachedPartitionList< dim >::minNumber () const
+  {
+    return first_;
+  }
+
+
+  template< int dim >
+  inline unsigned int SPCachedPartitionList< dim >::maxNumber () const
+  {
+    return last_;
   }
 
 
