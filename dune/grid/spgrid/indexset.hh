@@ -36,20 +36,11 @@ namespace Dune
 
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
+    typedef IndexType OffsetArray[ 1 << dimension ];
 
   public:
-    SPIndexSet ()
-    : gridLevel_( 0 )
-    {
-      makeGeomTypes();
-    }
-
-    explicit SPIndexSet ( const GridLevel &gridLevel )
-    : gridLevel_( 0 )
-    {
-      makeGeomTypes();
-      update( gridLevel );
-    }
+    SPIndexSet ();
+    explicit SPIndexSet ( const GridLevel &gridLevel );
 
     void update ( const GridLevel &gridLevel );
 
@@ -57,18 +48,11 @@ namespace Dune
     IndexType index ( const MultiIndex &id,
                       const unsigned int number ) const;
 
-    void makeGeomTypes ()
-    {
-      for( int codim = 0; codim <= dimension; ++codim )
-        geomTypes_[ codim ].push_back( GeometryType( GeometryType::cube, dimension-codim ) );
-    }
+    void makeGeomTypes ();
 
   public:
     template< class Entity >
-    IndexType index ( const Entity &entity ) const
-    {
-      return index< Entity::codimension >( entity );
-    }
+    IndexType index ( const Entity &entity ) const;
 
     template< int codim >
     IndexType index ( const typename Codim< codim >::Entity &entity ) const;
@@ -76,129 +60,26 @@ namespace Dune
     IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
                          const int i, const unsigned int codim ) const;
 
-    const std::vector< GeometryType > &geomTypes ( const int codim ) const
-    {
-      assert( (codim >= 0) && (codim <= dimension) );
-      return geomTypes_[ codim ];
-    }
+    const std::vector< GeometryType > &geomTypes ( const int codim ) const;
 
-    IndexType size ( const GeometryType &type ) const
-    {
-      return (type.isCube() ? size( dimension - type.dim() ) : 0);
-    }
-
-    IndexType size ( const int codim ) const
-    {
-      assert( (codim >= 0) && (codim <= dimension) );
-      return size_[ codim ];
-    }
+    IndexType size ( const GeometryType &type ) const;
+    IndexType size ( const int codim ) const;
 
     template< class Entity >
-    bool contains ( const Entity &entity ) const
-    {
-      return contains< Entity::codimension >( entity );
-    }
+    bool contains ( const Entity &entity ) const;
 
     template< int codim >
-    bool contains ( const typename Codim< codim >::Entity &entity ) const
-    {
-      const typename Codim< codim >::EntityInfo &entityInfo
-        = Grid::getRealImplementation( entity ).entityInfo();
-      return (&entityInfo.gridLevel() == &gridLevel());
-    }
+    bool contains ( const typename Codim< codim >::Entity &entity ) const;
 
-    const GridLevel &gridLevel () const
-    {
-      return *gridLevel_;
-    }
+    const GridLevel &gridLevel () const;
 
   private:
     const GridLevel *gridLevel_;
     MultiIndex origin_, cells_;
-    IndexType offsets_[ 1 << dimension ];
+    OffsetArray offsets_;
     IndexType size_[ dimension+1 ];
     std::vector< GeometryType > geomTypes_[ dimension+1 ];
   };
-
-
-
-  // Implementation of SPIndexSet
-  // ----------------------------
-
-  template< class Grid >
-  void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
-  {
-    gridLevel_ = &gridLevel;
-    //origin_ = gridLevel.allPartition().begin()->begin();
-    //cells_ = gridLevel.allPartition().begin()->width();
-    origin_ = gridLevel.globalMesh().begin();
-    cells_ = gridLevel.globalMesh().end() - origin_;
-
-    for( int codim = 0; codim <= dimension; ++codim )
-      size_[ codim ] = 0;
-
-    for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-    {
-      IndexType factor = 1;
-      unsigned int codim = dimension;
-      for( int j = 0; j < dimension; ++j )
-      {
-        const unsigned int d = (dir >> j) & 1;
-        factor *= cells_[ j ] + (1-d);
-        codim -= d;
-      }
-      offsets_[ dir ] = size_[ codim ];
-      size_[ codim ] += factor;
-    }
-  }
-
-
-  template< class Grid >
-  inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::index ( const MultiIndex &id,
-                              const unsigned int number ) const
-  {
-    IndexType index = 0;
-    IndexType factor = 1;
-    unsigned int dir = 0;
-    for( int j = 0; j < dimension; ++j )
-    {
-      const unsigned int d = id[ j ] & 1;
-      const IndexType idLocal = (id[ j ] >> 1) - origin_[ j ];
-      const IndexType width = cells_[ j ] + (1-d);
-      assert( (idLocal >= 0) && (idLocal < width) );
-      index += idLocal * factor;
-      factor *= width;
-      dir |= (d << j);
-    }
-    return offsets_[ dir ] + index;
-  }
-
-
-  template< class Grid >
-  template< int codim >
-  inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::index ( const typename Codim< codim >::Entity &entity ) const
-  {
-    assert( contains( entity ) );
-    const typename Codim< codim >::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
-    return index( entityInfo.id(), entityInfo.partitionNumber() );
-  }
-
-  template< class Grid >
-  inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::subIndex ( const typename Codim< 0 >::Entity &entity,
-                                 const int i, const unsigned int codim ) const
-  {
-    assert( contains( entity ) );
-    const typename Codim< 0 >::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
-    MultiIndex sid = entityInfo.id();
-    sid += gridLevel().cube().subId( codim, i );
-    // for the ghost approach, the partition number has to be corrected
-    return index( sid, entityInfo.partitionNumber() );
-  }
 
 
 
@@ -336,6 +217,174 @@ namespace Dune
     std::vector< CodimIndexArray > offsets_;
     CodimIndexArray size_;
   };
+
+
+
+  // Implementation of SPIndexSet
+  // ----------------------------
+
+  template< class Grid >
+  inline SPIndexSet< Grid >::SPIndexSet ()
+  : gridLevel_( 0 )
+  {
+    makeGeomTypes();
+  }
+
+
+  template< class Grid >
+  inline SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
+  : gridLevel_( 0 )
+  {
+    makeGeomTypes();
+    update( gridLevel );
+  }
+
+
+  template< class Grid >
+  void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
+  {
+    gridLevel_ = &gridLevel;
+    //origin_ = gridLevel.allPartition().begin()->begin();
+    //cells_ = gridLevel.allPartition().begin()->width();
+    origin_ = gridLevel.globalMesh().begin();
+    cells_ = gridLevel.globalMesh().end() - origin_;
+
+    for( int codim = 0; codim <= dimension; ++codim )
+      size_[ codim ] = 0;
+
+    for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+    {
+      IndexType factor = 1;
+      unsigned int codim = dimension;
+      for( int j = 0; j < dimension; ++j )
+      {
+        const unsigned int d = (dir >> j) & 1;
+        factor *= cells_[ j ] + (1-d);
+        codim -= d;
+      }
+      offsets_[ dir ] = size_[ codim ];
+      size_[ codim ] += factor;
+    }
+  }
+
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::index ( const MultiIndex &id,
+                              const unsigned int number ) const
+  {
+    IndexType index = 0;
+    IndexType factor = 1;
+    unsigned int dir = 0;
+    for( int j = 0; j < dimension; ++j )
+    {
+      const unsigned int d = id[ j ] & 1;
+      const IndexType idLocal = (id[ j ] >> 1) - origin_[ j ];
+      const IndexType width = cells_[ j ] + (1-d);
+      assert( (idLocal >= 0) && (idLocal < width) );
+      index += idLocal * factor;
+      factor *= width;
+      dir |= (d << j);
+    }
+    return offsets_[ dir ] + index;
+  }
+
+
+  template< class Grid >
+  inline void SPIndexSet< Grid >::makeGeomTypes ()
+  {
+    for( int codim = 0; codim <= dimension; ++codim )
+      geomTypes_[ codim ].push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+  }
+
+
+  template< class Grid >
+  template< class Entity >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::index ( const Entity &entity ) const
+  {
+    return index< Entity::codimension >( entity );
+  }
+
+
+  template< class Grid >
+  template< int codim >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::index ( const typename Codim< codim >::Entity &entity ) const
+  {
+    assert( contains( entity ) );
+    const typename Codim< codim >::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+    return index( entityInfo.id(), entityInfo.partitionNumber() );
+  }
+
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::subIndex ( const typename Codim< 0 >::Entity &entity,
+                                 const int i, const unsigned int codim ) const
+  {
+    assert( contains( entity ) );
+    const typename Codim< 0 >::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+    MultiIndex sid = entityInfo.id();
+    sid += gridLevel().cube().subId( codim, i );
+    // for the ghost approach, the partition number has to be corrected
+    return index( sid, entityInfo.partitionNumber() );
+  }
+
+
+  template< class Grid >
+  inline const std::vector< GeometryType > &
+  SPIndexSet< Grid >::geomTypes ( const int codim ) const
+  {
+    assert( (codim >= 0) && (codim <= dimension) );
+    return geomTypes_[ codim ];
+  }
+
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::size ( const GeometryType &type ) const
+  {
+    return (type.isCube() ? size( dimension - type.dim() ) : 0);
+  }
+
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::size ( const int codim ) const
+  {
+    assert( (codim >= 0) && (codim <= dimension) );
+    return size_[ codim ];
+  }
+
+
+  template< class Grid >
+  template< class Entity >
+  inline bool SPIndexSet< Grid >::contains ( const Entity &entity ) const
+  {
+    return contains< Entity::codimension >( entity );
+  }
+
+
+  template< class Grid >
+  template< int codim >
+  inline bool SPIndexSet< Grid >
+    ::contains ( const typename Codim< codim >::Entity &entity ) const
+  {
+    const typename Codim< codim >::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+    return (&entityInfo.gridLevel() == &gridLevel());
+  }
+
+
+  template< class Grid >
+  inline const typename SPIndexSet< Grid >::GridLevel &
+  SPIndexSet< Grid >::gridLevel () const
+  {
+    return *gridLevel_;
+  }
 
 }
 
