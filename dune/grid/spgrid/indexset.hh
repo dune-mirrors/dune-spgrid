@@ -54,7 +54,8 @@ namespace Dune
     void update ( const GridLevel &gridLevel );
 
   private:
-    IndexType index ( const MultiIndex &id ) const;
+    IndexType index ( const MultiIndex &id,
+                      const unsigned int number ) const;
 
     void makeGeomTypes ()
     {
@@ -154,7 +155,8 @@ namespace Dune
 
   template< class Grid >
   inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::index ( const MultiIndex &id ) const
+  SPIndexSet< Grid >::index ( const MultiIndex &id,
+                              const unsigned int number ) const
   {
     IndexType index = 0;
     IndexType factor = 1;
@@ -181,7 +183,7 @@ namespace Dune
     assert( contains( entity ) );
     const typename Codim< codim >::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
-    return index( entityInfo.id() );
+    return index( entityInfo.id(), entityInfo.partitionNumber() );
   }
 
   template< class Grid >
@@ -194,7 +196,8 @@ namespace Dune
       = Grid::getRealImplementation( entity ).entityInfo();
     MultiIndex sid = entityInfo.id();
     sid += gridLevel().cube().subId( codim, i );
-    return index( sid );
+    // for the ghost approach, the partition number has to be corrected
+    return index( sid, entityInfo.partitionNumber() );
   }
 
 
