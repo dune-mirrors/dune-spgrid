@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_INDEXSET_HH
 #define DUNE_SPGRID_INDEXSET_HH
 
+#include <vector>
+
 #include <dune/common/array.hh>
 
 #include <dune/grid/common/indexidset.hh>
@@ -33,10 +35,11 @@ namespace Dune
     };
 
     typedef SPGridLevel< Grid > GridLevel;
+    typedef typename GridLevel::PartitionList PartitionList;
 
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
-    typedef IndexType OffsetArray[ 1 << dimension ];
+    typedef typename PartitionList::Partition Partition;
 
   public:
     SPIndexSet ();
@@ -73,10 +76,13 @@ namespace Dune
 
     const GridLevel &gridLevel () const;
 
+    const PartitionList &partitions () const;
+
   private:
     const GridLevel *gridLevel_;
-    MultiIndex origin_, cells_;
-    OffsetArray offsets_;
+    const PartitionList *partitions_;
+    //MultiIndex origin_, cells_;
+    std::vector< array< IndexType, 1 << dimension > > offsets_;
     IndexType size_[ dimension+1 ];
     std::vector< GeometryType > geomTypes_[ dimension+1 ];
   };
@@ -225,7 +231,8 @@ namespace Dune
 
   template< class Grid >
   inline SPIndexSet< Grid >::SPIndexSet ()
-  : gridLevel_( 0 )
+  : gridLevel_( 0 ),
+    partitions_( 0 )
   {
     makeGeomTypes();
   }
@@ -233,7 +240,8 @@ namespace Dune
 
   template< class Grid >
   inline SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
-  : gridLevel_( 0 )
+  : gridLevel_( 0 ),
+    partitions_( 0 )
   {
     makeGeomTypes();
     update( gridLevel );
@@ -244,14 +252,35 @@ namespace Dune
   void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
   {
     gridLevel_ = &gridLevel;
-    //origin_ = gridLevel.allPartition().begin()->begin();
-    //cells_ = gridLevel.allPartition().begin()->width();
-    origin_ = gridLevel.globalMesh().begin();
-    cells_ = gridLevel.globalMesh().end() - origin_;
+    partitions_ = &gridLevel.template partition< All_Partition >();
+
+    //origin_ = gridLevel.globalMesh().begin();
+    //cells_ = gridLevel.globalMesh().end() - origin_;
 
     for( int codim = 0; codim <= dimension; ++codim )
       size_[ codim ] = 0;
 
+    offsets_.resize( partitions().maxNumber() - partitions().minNumber() + 1 );
+    for( typename PartitionList::Iterator pit = partitions().begin(); pit; ++pit )
+    {
+      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+      {
+        IndexType factor = 1;
+        unsigned int codim = dimension;
+        for( int j = 0; j < dimension; ++j )
+        {
+          const unsigned int d = (dir >> j) & 1;
+          const int w = pit->bound( 1, j, d ) - pit->bound( 0, j, d );
+          assert( w % 2 == 0 );
+          factor *= (w / 2 + 1);
+          codim -= d;
+        }
+        offsets_[ pit->number() - partitions().minNumber() ][ dir ] = size_[ codim ];
+        size_[ codim ] += factor;
+      }
+    }
+
+#if 0
     for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
     {
       IndexType factor = 1;
@@ -265,6 +294,7 @@ namespace Dune
       offsets_[ dir ] = size_[ codim ];
       size_[ codim ] += factor;
     }
+#endif
   }
 
 
@@ -273,6 +303,29 @@ namespace Dune
   SPIndexSet< Grid >::index ( const MultiIndex &id,
                               const unsigned int number ) const
   {
+    const Partition &partition = partitions().partition( number );
+
+    IndexType index = 0;
+    IndexType factor = 1;
+    unsigned int dir = 0;
+    for( int j = 0; j < dimension; ++j )
+    {
+      const unsigned int d = id[ j ] & 1;
+      dir |= (d << j);
+
+      const int begin = partition.bound( 0, j, d );
+      const int end = partition.bound( 1, j, d );
+
+      const IndexType idLocal = (id[ j ] - begin) >> 1;
+      const IndexType width = ((end - begin) >> 1) + 1;
+      assert( (idLocal >= 0) && (idLocal < width) );
+      index += idLocal * factor;
+
+      factor *= width;
+    }
+    return offsets_[ number - partitions().minNumber() ][ dir ] + index;
+
+#if 0
     IndexType index = 0;
     IndexType factor = 1;
     unsigned int dir = 0;
@@ -287,6 +340,7 @@ namespace Dune
       dir |= (d << j);
     }
     return offsets_[ dir ] + index;
+#endif
   }
 
 
@@ -375,6 +429,7 @@ namespace Dune
   {
     const typename Codim< codim >::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
+    assert( partitions().contains( entityInfo.partitionNumber() ) );
     return (&entityInfo.gridLevel() == &gridLevel());
   }
 
@@ -384,6 +439,15 @@ namespace Dune
   SPIndexSet< Grid >::gridLevel () const
   {
     return *gridLevel_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPIndexSet< Grid >::PartitionList &
+  SPIndexSet< Grid >::partitions () const
+  {
+    assert( partitions_ != 0 );
+    return *partitions_;
   }
 
 }
