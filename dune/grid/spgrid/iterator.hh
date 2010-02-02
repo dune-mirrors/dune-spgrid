@@ -126,7 +126,8 @@ namespace Dune
   SPPartitionIterator< codim, Grid >::begin ( const int i, const unsigned int dir ) const
   {
     const unsigned int s = (sweepDirection_ >> i) & 1;
-    return partition_->bound( s, i, dir );
+    const unsigned int d = (dir >> i) & 1;
+    return partition_->bound( s, i, d );
   }
 
 
@@ -135,7 +136,8 @@ namespace Dune
   SPPartitionIterator< codim, Grid >::end ( const int i, const unsigned int dir ) const
   {
     const unsigned int s = (sweepDirection_ >> i) & 1;
-    const int bnd = partition_->bound( 1-s, i, dir );
+    const unsigned int d = (dir >> i) & 1;
+    const int bnd = partition_->bound( 1-s, i, d );
     return bnd + 2*(2*(1-s) - 1);
   }
 

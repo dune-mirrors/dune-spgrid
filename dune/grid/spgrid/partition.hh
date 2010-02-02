@@ -33,7 +33,7 @@ namespace Dune
 
     const MultiIndex &bound ( const unsigned int b ) const;
     int bound ( const unsigned int b, const int i,
-                const unsigned int dir ) const;
+                const unsigned int d ) const;
 
     unsigned int number () const;
     const unsigned int &neighbor ( const int face ) const;
@@ -104,9 +104,10 @@ namespace Dune
   template< int dim >
   inline int
   SPPartition< dim >::bound ( const unsigned int b, const int i,
-                              const unsigned int dir ) const
+                              const unsigned int d ) const
   {
-    return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ (dir >> i)) & 1);
+    assert( d == (d & 1) );
+    return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ d) & 1);
   }
 
 
