@@ -4,7 +4,6 @@ dune-spgrid's To-Do-List
 
 Parallelization:
  * implement communication
- * adapt index sets to support lists of partitions
  * adapt local / global id set to partitioning
 
 Refinement techniques:
