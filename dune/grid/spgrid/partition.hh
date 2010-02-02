@@ -31,7 +31,9 @@ namespace Dune
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
 
-    const MultiIndex &bound ( const int i ) const;
+    const MultiIndex &bound ( const unsigned int b ) const;
+    int bound ( const unsigned int b, const int i,
+                const unsigned int dir ) const;
 
     unsigned int number () const;
     const unsigned int &neighbor ( const int face ) const;
@@ -92,10 +94,19 @@ namespace Dune
 
   template< int dim >
   inline const typename SPPartition< dim >::MultiIndex &
-  SPPartition< dim >::bound ( const int i ) const
+  SPPartition< dim >::bound ( const unsigned int b ) const
   {
-    assert( (i == 0) || (i == 1) );
-    return bound_[ i ];
+    assert( b == (b & 1) );
+    return bound_[ b ];
+  }
+
+
+  template< int dim >
+  inline int
+  SPPartition< dim >::bound ( const unsigned int b, const int i,
+                              const unsigned int dir ) const
+  {
+    return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ (dir >> i)) & 1);
   }
 
 

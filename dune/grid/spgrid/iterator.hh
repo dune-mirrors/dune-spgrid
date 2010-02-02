@@ -125,14 +125,8 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::begin ( const int i, const unsigned int dir ) const
   {
-    //const unsigned int b = partition_->begin()[ i ];
-    //const unsigned int e = partition_->end()[ i ];
     const unsigned int s = (sweepDirection_ >> i) & 1;
-    const unsigned int d = (dir >> i);
-    //return (1-s)*int( b + ((b^d)&1) ) + s*int( e - ((e^d)&1) );
-    const int bnd = partition_->bound( s )[ i ];
-    const int sgn = (2*s - 1);
-    return bnd - sgn*((bnd^d)&1);
+    return partition_->bound( s, i, dir );
   }
 
 
@@ -140,14 +134,9 @@ namespace Dune
   inline int
   SPPartitionIterator< codim, Grid >::end ( const int i, const unsigned int dir ) const
   {
-    //const unsigned int b = partition_->begin()[ i ];
-    //const unsigned int e = partition_->end()[ i ];
     const unsigned int s = (sweepDirection_ >> i) & 1;
-    const unsigned int d = (dir >> i);
-    //return (1-s)*int( e - ((e^d)&1) ) + s*int( b + ((b^d)&1) ) - (4*s - 2);
-    const int bnd = partition_->bound( 1-s )[ i ];
-    const int sgn = (2*s - 1);
-    return bnd + sgn*(((bnd^d)&1) - 2);
+    const int bnd = partition_->bound( 1-s, i, dir );
+    return bnd + 2*(2*(1-s) - 1);
   }
 
 
