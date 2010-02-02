@@ -519,60 +519,70 @@ namespace Dune
     template< GrapeIOFileFormatType format >
     bool writeGrid ( const std::string &filename, const ctype &time ) const
     {
-      if( comm().rank() != 0 )
-        return true;
-
-      SPGridIOData< ctype, dimension, strategy > ioData;
-
-      ioData.name = name();
-      ioData.time = time;
-      ioData.origin = domain().origin();
-      ioData.width = domain().width();
-      ioData.cells = domain().cells();
-      ioData.overlap = overlap_;
-      ioData.periodic = domain().periodic();
-      ioData.maxLevel = maxLevel();
-      ioData.refinements.resize( maxLevel() );
-      for( int level = 0; level < maxLevel(); ++level )
-        ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
-
-      if( format == xdr )
-        return false;
-      else if( format == ascii )
-        ioData.writeAscii( filename );
-      else
+      if( (format != ascii) && (format != xdr) )
         DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
 
-      return true;
+      int result = 0;
+      if( comm().rank() == 0 )
+      {
+        SPGridIOData< ctype, dimension, strategy > ioData;
+
+        ioData.name = name();
+        ioData.time = time;
+        ioData.origin = domain().origin();
+        ioData.width = domain().width();
+        ioData.cells = domain().cells();
+        ioData.overlap = overlap_;
+        ioData.periodic = domain().periodic();
+        ioData.maxLevel = maxLevel();
+        ioData.refinements.resize( maxLevel() );
+        for( int level = 0; level < maxLevel(); ++level )
+          ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
+
+        if( format == ascii )
+        {
+          ioData.writeAscii( filename );
+          result = 1;
+        }
+      }
+      comm().broadcast( &result, 1, 0 );
+      return (result != 0);
     }
 
     template< GrapeIOFileFormatType format >
     bool readGrid ( const std::string &filename, ctype &time )
     {
-      SPGridIOData< ctype, dimension, strategy > ioData;
-
-      if( format == xdr )
-        return false;
-      else if( format == ascii )
-        ioData.readAscii( filename );
-      else
+      if( (format != ascii) && (format != xdr) )
         DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
 
-      clear();
-      overlap_ = ioData.overlap;
-      name_ = ioData.name;
-      time = ioData.time;
-      setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
+      int result = 0;
+      SPGridIOData< ctype, dimension, strategy > ioData;
 
-      for( int level = 0; level <= ioData.maxLevel; ++level )
+      if( format == ascii )
       {
-        if( (size_t)level < ioData.refinements.size() )
-          globalRefine( 1, ioData.refinements[ level ] );
-        else
-          globalRefine( 1 );
+        ioData.readAscii( filename );
+        result = 1;
       }
 
-      return true;
+      if( result != 0 )
+      {
+        clear();
+        overlap_ = ioData.overlap;
+        name_ = ioData.name;
+        time = ioData.time;
+        setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
+
+        for( int level = 0; level <= ioData.maxLevel; ++level )
+        {
+          if( (size_t)level < ioData.refinements.size() )
+            globalRefine( 1, ioData.refinements[ level ] );
+          else
+            globalRefine( 1 );
+        }
+      }
+
+      result = comm().sum( result );
+      return (result == comm().size());
     }
 
     const GridLevel &gridLevel ( const int level ) const
