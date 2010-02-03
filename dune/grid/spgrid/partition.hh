@@ -50,6 +50,7 @@ namespace Dune
 
     int volume () const;
     MultiIndex width () const;
+    int width ( const int i ) const;
 
     template< class char_type, class traits >
     void print ( std::basic_ostream< char_type, traits > &out ) const;
@@ -73,14 +74,14 @@ namespace Dune
   SPPartition< dim >
    ::SPPartition ( const MultiIndex &begin, const MultiIndex &end,
                    const unsigned int number )
-  : number_( number )
+  : number_( number ),
+    boundary_( ((Flags( 1 ) << (2*dimension-1))-1) | (Flags( 1 ) << (2*dimension-1)) )
   {
     bound_[ 0 ] = begin;
     bound_[ 1 ] = end;
 
     for( int face = 0; face < 2*dimension; ++face )
       neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
-    boundary_ = ((Flags( 1 ) << (2*dimension-1))-1) | (Flags( 1 ) << (2*dimension-1));
   }
 
 
@@ -88,7 +89,8 @@ namespace Dune
   SPPartition< dim >
    ::SPPartition ( const MultiIndex &begin, const MultiIndex &end,
                    const Mesh &globalMesh, const unsigned int number )
-  : number_( number )
+  : number_( number ),
+    boundary_( 0 )
   {
     bound_[ 0 ] = begin;
     bound_[ 1 ] = end;
@@ -198,10 +200,9 @@ namespace Dune
   template< int dim >
   inline int SPPartition< dim >::volume () const
   {
-    const MultiIndex &w = width();
     int volume = 1;
     for( int i = 0; i < dimension; ++i )
-      volume *= w[ i ];
+      volume *= width( i );
     return volume;
   }
 
@@ -209,10 +210,17 @@ namespace Dune
   template< int dim >
   inline typename SPPartition< dim >::MultiIndex SPPartition< dim >::width () const
   {
-    MultiIndex width;
+    MultiIndex w;
     for( int i = 0; i < dimension; ++i )
-      width[ i ] = std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 );
-    return width;
+      w[ i ] = width( i );
+    return w;
+  }
+
+
+  template< int dim >
+  inline int SPPartition< dim >::width ( const int i ) const
+  {
+    return std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 );
   }
 
 

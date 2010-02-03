@@ -165,6 +165,8 @@ namespace Dune
     static const int numDirections = GridLevel::numDirections;
 
   private:
+    typedef typename GridLevel::PartitionList PartitionList;
+
     typedef typename LevelGridView::Traits::GridViewImp LevelGridViewImpl;
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
@@ -635,29 +637,8 @@ namespace Dune
       leafLevel_ = 0;
     }
 
-    void setupMacroGrid ( const Domain &domain )
-    {
-      domain_ = domain;
-
-      SPDecomposition< dimension > decomposition( domain_.cells(), comm().size() );
-
-      leafLevel_ = new GridLevel( *this, decomposition );
-      levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-      getRealImplementation( leafView_ ).update( *leafLevel_ );
-      hierarchicIndexSet_.update();
-
-      boundarySize_ = 0;
-      boundaryOffset_.resize( 1 );
-      for( int i = 0; i < dimension; ++i )
-      {
-        size_t size = 1;
-        for( int j = 0; j < dimension; ++j )
-          size *= (i == j ? 1 : domain_.cells()[ j ]);
-        boundaryOffset_[ 0 ][ 2*i ] = boundarySize_;
-        boundaryOffset_[ 0 ][ 2*i+1 ] = boundarySize_ + size;
-        boundarySize_ += 2*size;
-      }
-    }
+    void setupMacroGrid ( const Domain &domain );
+    void setupBoundaryIndices ();
 
     static CollectiveCommunication defaultCommunication ()
     {
@@ -702,17 +683,75 @@ namespace Dune
                       const int face ) const
   {
     assert( (face >= 0) && (face < 2*dimension) );
+
+    const LevelGridView &macroView = levelView( 0 );
+    const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
+    const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
+    const typename PartitionList::Partition &partition = partitions.partition( partitionNumber );
+
     size_t index = 0;
     size_t factor = 1;
     for( int i = 0; i < dimension; ++i )
     {
       if( i == face/2 )
         continue;
-      assert( (macroId[ i ] >> 1) < domain_.cells()[ i ] );
-      index += size_t( macroId[ i ] >> 1 ) * factor;
-      factor *= size_t( domain_.cells()[ i ] );
+      // note: the OverlapFront_Partition is closed, i.e.,
+      //       begin()[ i ] & 1 == end()[ i ] & 1 == 0.
+      const int k = (macroId[ i ] - partition.begin()[ i ]) >> 1;
+      const int w = (partition.end()[ i ] - partition.begin()[ i ]) >> 1;
+      assert( (k >= 0) && (k < w) );
+      index += size_t( k ) * factor;
+      factor *= size_t( w );
     }
-    return index + boundaryOffset_[ 0 ][ face ];
+    return index + boundaryOffset_[ partitionNumber - partitions.minNumber() ][ face ];
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void
+  SPGrid< ct, dim, strategy >::setupMacroGrid ( const Domain &domain )
+  {
+    domain_ = domain;
+
+    SPDecomposition< dimension > decomposition( domain_.cells(), comm().size() );
+
+    leafLevel_ = new GridLevel( *this, decomposition );
+    levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
+    getRealImplementation( leafView_ ).update( *leafLevel_ );
+    hierarchicIndexSet_.update();
+    setupBoundaryIndices();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void SPGrid< ct, dim, strategy >::setupBoundaryIndices ()
+  {
+    const LevelGridView &macroView = levelView( 0 );
+    const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
+    const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
+
+    boundarySize_ = 0;
+    boundaryOffset_.resize( partitions.maxNumber() - partitions.minNumber() + 1 );
+    for( typename PartitionList::Iterator it = partitions.begin(); it; ++it )
+    {
+      const int partitionIndex = it->number() - partitions.minNumber();
+      for( int i = 0; i < dimension; ++i )
+      {
+        // note: the OverlapFront_Partition is closed, i.e.,
+        //       begin()[ i ] & 1 == end()[ i ] & 1 == 0.
+        size_t size = 1;
+        for( int j = 0; j < dimension; ++j )
+          size *= (i == j ? 1 : size_t( (it->end()[ j ] - it->begin()[ j ]) >> 1 ));
+
+        // offset for lower boundary
+        boundaryOffset_[ partitionIndex ][ 2*i ] = boundarySize_;
+        boundarySize_ += (it->boundary( 2*i ) ? size : 0);
+
+        // offset for upper boundary
+        boundaryOffset_[ partitionIndex ][ 2*i+1 ] = boundarySize_;
+        boundarySize_ += (it->boundary( 2*i+1 ) ? size : 0);
+      }
+    }
   }
 
 }
