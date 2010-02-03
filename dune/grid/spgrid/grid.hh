@@ -593,7 +593,7 @@ namespace Dune
 
     size_t numBoundarySegments () const
     {
-      return boundaryOffset_[ dimension ];
+      return boundarySize_;
     }
 
   private:
@@ -611,7 +611,7 @@ namespace Dune
         index += size_t( macroId[ i ] >> 1 ) * factor;
         factor *= size_t( domain_.cells()[ i ] );
       }
-      return index + boundaryOffset_[ face/2 ] + size_t( face & 1 ) * factor;
+      return index + boundaryOffset_[ 0 ][ face ];
     }
 
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
@@ -658,13 +658,16 @@ namespace Dune
       getRealImplementation( leafView_ ).update( *leafLevel_ );
       hierarchicIndexSet_.update();
 
-      boundaryOffset_[ 0 ] = 0;
+      boundarySize_ = 0;
+      boundaryOffset_.resize( 1 );
       for( int i = 0; i < dimension; ++i )
       {
-        size_t size = 2;
+        size_t size = 1;
         for( int j = 0; j < dimension; ++j )
           size *= (i == j ? 1 : domain_.cells()[ j ]);
-        boundaryOffset_[ i+1 ] = boundaryOffset_[ i ] + size;
+        boundaryOffset_[ 0 ][ 2*i ] = boundarySize_;
+        boundaryOffset_[ 0 ][ 2*i+1 ] = boundarySize_ + size;
+        boundarySize_ += 2*size;
       }
     }
 
@@ -693,7 +696,8 @@ namespace Dune
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
-    size_t boundaryOffset_[ dimension+1 ];
+    size_t boundarySize_;
+    std::vector< array< size_t, 2*dimension > > boundaryOffset_;
     const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ Cube::numFaces ];
   };
 
