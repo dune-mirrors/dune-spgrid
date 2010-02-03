@@ -1,4 +1,4 @@
 Module: dune-spgrid
-Version: 0.4
+Version: 0.5
 Maintainer: nolte@mathematik.uni-freiburg.de
 Depends: dune-common (>= 2.0) dune-grid (>= 2.0)

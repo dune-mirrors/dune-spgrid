@@ -16,3 +16,11 @@ Id Sets:
 
 Extended Iterators:
  * simplify access
+
+Documentation:
+ * main page (introducing SPGrid and its features)
+ * design concepts
+ * superentity iterators
+ * split into modules (e.g., interface / implementation)
+ * document high-level interface classes
+ * document low-level implementation classes
