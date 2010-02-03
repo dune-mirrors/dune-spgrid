@@ -59,6 +59,7 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
     typedef typename GridLevel::Domain Domain;
 
+    typedef typename GridLevel::Mesh Mesh;
     typedef typename GridLevel::PartitionList PartitionList;
     typedef typename PartitionList::Partition Partition;
 
@@ -198,13 +199,11 @@ namespace Dune
   template< class Grid >
   inline bool SPIntersection< Grid >::boundary () const
   {
-    const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
-    const Partition &partition = allPartition.partition( inside_->entityInfo().partitionNumber() );
-
+    const Mesh &globalMesh = gridLevel().globalMesh();
     const MultiIndex &id = inside_->entityInfo().id();
     const int i = face_ >> 1;
     const int j = 2*(face_ & 1) - 1;
-    return partition.boundary( face_ ) && (id[ i ] + j == partition.bound( face_ & 1 )[ i ]);
+    return (id[ i ] + j == 2*globalMesh.bound( face_ & 1 )[ i ]);
   }
 
 
