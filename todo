@@ -4,6 +4,7 @@ dune-spgrid's To-Do-List
 
 Parallelization:
  * implement communication
+ * add ghosts
  * adapt local / global id set to partitioning
 
 Refinement techniques:
