@@ -598,21 +598,9 @@ namespace Dune
 
   private:
     // note: this method ignores the last bit of the macroId
-    size_t boundaryIndex ( const MultiIndex &macroId, const int face ) const
-    {
-      assert( (face >= 0) && (face < 2*dimension) );
-      size_t index = 0;
-      size_t factor = 1;
-      for( int i = 0; i < dimension; ++i )
-      {
-        if( i == face/2 )
-          continue;
-        assert( (macroId[ i ] >> 1) < domain_.cells()[ i ] );
-        index += size_t( macroId[ i ] >> 1 ) * factor;
-        factor *= size_t( domain_.cells()[ i ] );
-      }
-      return index + boundaryOffset_[ 0 ][ face ];
-    }
+    size_t boundaryIndex ( const MultiIndex &macroId,
+                           const unsigned int partitionNumber,
+                           const int face ) const;
 
     const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
     {
@@ -700,6 +688,32 @@ namespace Dune
     std::vector< array< size_t, 2*dimension > > boundaryOffset_;
     const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ Cube::numFaces ];
   };
+
+
+
+  // Implementation of SPGrid
+  // ------------------------
+
+  // note: this method ignores the last bit of the macroId
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline size_t SPGrid< ct, dim, strategy >
+    ::boundaryIndex ( const MultiIndex &macroId,
+                      const unsigned int partitionNumber,
+                      const int face ) const
+  {
+    assert( (face >= 0) && (face < 2*dimension) );
+    size_t index = 0;
+    size_t factor = 1;
+    for( int i = 0; i < dimension; ++i )
+    {
+      if( i == face/2 )
+        continue;
+      assert( (macroId[ i ] >> 1) < domain_.cells()[ i ] );
+      index += size_t( macroId[ i ] >> 1 ) * factor;
+      factor *= size_t( domain_.cells()[ i ] );
+    }
+    return index + boundaryOffset_[ 0 ][ face ];
+  }
 
 }
 

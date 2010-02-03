@@ -92,11 +92,7 @@ namespace Dune
       return 1;
     }
 
-    size_t boundarySegmentIndex () const
-    {
-      assert( boundary() );
-      return gridLevel().boundaryIndex( inside_->entityInfo().id(), face_ );
-    }
+    size_t boundarySegmentIndex () const;
 
     bool neighbor () const;
 
@@ -204,6 +200,16 @@ namespace Dune
     const int i = face_ >> 1;
     const int j = 2*(face_ & 1) - 1;
     return (id[ i ] + j == 2*globalMesh.bound( face_ & 1 )[ i ]);
+  }
+
+
+  template< class Grid >
+  inline size_t SPIntersection< Grid >::boundarySegmentIndex () const
+  {
+    assert( boundary() );
+    const MultiIndex &id = inside_->entityInfo().id();
+    const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
+    return gridLevel().boundaryIndex( id, partitionNumber, face_ );
   }
 
 

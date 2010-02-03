@@ -176,15 +176,9 @@ namespace Dune
       return macroId;
     }
 
-    size_t boundaryIndex ( const MultiIndex &id, const int face ) const
-    {
-      // note: boundaryIndex ignores the last bit of macroId,
-      //       hence we can use this fast computation
-      MultiIndex macroId;
-      for( int i = 0; i < dimension; ++i )
-        macroId[ i ] = id[ i ] / macroFactor_[ i ];
-      return grid().boundaryIndex( macroId, face );
-    }
+    size_t boundaryIndex ( const MultiIndex &id,
+                           const unsigned int partitionNumber,
+                           const int face ) const;
 
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
     {
@@ -236,6 +230,10 @@ namespace Dune
     GlobalVector normal_[ Cube::numFaces ];
   };
 
+
+
+  // Implementation of SPGridLevel
+  // -----------------------------
 
   template< class Grid >
   inline SPGridLevel< Grid >
@@ -307,6 +305,21 @@ namespace Dune
     }
 
     ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
+  }
+
+
+  template< class Grid >
+  inline size_t SPGridLevel< Grid >
+    ::boundaryIndex ( const MultiIndex &id,
+                      const unsigned int partitionNumber,
+                      const int face ) const
+  {
+    // note: boundaryIndex ignores the last bit of macroId,
+    //       hence we can use this fast computation
+    MultiIndex macroId;
+    for( int i = 0; i < dimension; ++i )
+      macroId[ i ] = id[ i ] / macroFactor_[ i ];
+    return grid().boundaryIndex( macroId, partitionNumber, face );
   }
 
 
