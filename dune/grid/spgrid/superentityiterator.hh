@@ -26,6 +26,7 @@ namespace Dune
 
     typedef typename Base::Entity Entity;
     typedef typename Base::EntityInfo EntityInfo;
+    typedef typename Base::GridLevel GridLevel;
 
     static const int dimension = Base::dimension;
 
@@ -59,10 +60,11 @@ namespace Dune
       MultiIndex &id = entityInfo.id();
 
       id = entityImpl.entityInfo().id();
+      const typename GridLevel::Mesh &globalMesh = entityInfo.gridLevel().globalMesh();
       for( int i = 0; i < dimension; ++i )
       {
-        const bool bndLow = (id[ i ] == 0);
-        const bool bndHigh = (id[ i ] == 2*entityInfo.gridLevel().cells()[ i ]);
+        const bool bndLow = (id[ i ] == 2*globalMesh.begin()[ i ]);
+        const bool bndHigh = (id[ i ] == 2*globalMesh.end()[ i ]);
         fBoundary_ |= (int( bndLow ) | 2*int( bndHigh )) << (2*i);
       }
 
