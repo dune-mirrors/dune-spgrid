@@ -19,6 +19,8 @@ namespace Dune
   {
     typedef SPPartition< dim > This;
 
+    typedef unsigned int Flags;
+
   public:
     static const int dimension = dim;
 
@@ -42,6 +44,7 @@ namespace Dune
     unsigned int &neighbor ( const int face );
 
     bool hasNeighbor ( const int face ) const;
+    Flags boundary () const;
     bool boundary ( const int face ) const;
     bool contains ( const MultiIndex &id ) const;
 
@@ -58,7 +61,7 @@ namespace Dune
     MultiIndex bound_[ 2 ];
     unsigned int number_;
     unsigned int neighbor_[ 2*dimension ];
-    bool boundary_[ 2*dimension ];
+    Flags boundary_;
   };
 
 
@@ -76,10 +79,8 @@ namespace Dune
     bound_[ 1 ] = end;
 
     for( int face = 0; face < 2*dimension; ++face )
-    {
       neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
-      boundary_[ face ] = true;
-    }
+    boundary_ = ((Flags( 1 ) << (2*dimension-1))-1) | (Flags( 1 ) << (2*dimension-1));
   }
 
 
@@ -95,8 +96,8 @@ namespace Dune
     for( int i = 0; i < dimension; ++i )
     {
       neighbor_[ 2*i ] = neighbor_[ 2*i+1 ] = std::numeric_limits< unsigned int >::max();
-      boundary_[ 2*i ] = (begin[ i ] == 2*globalMesh.begin()[ i ]);
-      boundary_[ 2*i+1 ] = (end[ i ] == 2*globalMesh.end()[ i ]);
+      boundary_ |= Flags( begin[ i ] == 2*globalMesh.begin()[ i ] ) << (2*i);
+      boundary_ |= Flags( end[ i ] == 2*globalMesh.end()[ i ] ) << (2*i+1);
     }
   }
 
@@ -169,10 +170,18 @@ namespace Dune
 
 
   template< int dim >
+  inline typename SPPartition< dim >::Flags
+  SPPartition< dim >::boundary () const
+  {
+    return boundary_;
+  }
+
+
+  template< int dim >
   inline bool SPPartition< dim >::boundary ( const int face ) const
   {
     assert( (face >= 0) && (face < 2*dimension) );
-    return boundary_[ face ];
+    return bool( (boundary_ >> face) & 1 );
   }
 
 
