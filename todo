@@ -6,6 +6,7 @@ Parallelization:
  * implement communication
  * add ghosts
  * adapt local / global id set to partitioning
+ * update superentity iterators to partitioning
 
 Refinement techniques:
  * implement bisection refinement
