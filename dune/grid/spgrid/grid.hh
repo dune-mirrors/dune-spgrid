@@ -44,7 +44,7 @@ namespace Dune
       typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
 #else
       typedef Dune::CollectiveCommunication< Grid > CollectiveCommunication;
-#endif
+#endif // #if HAVE_MPI
 
       typedef Dune::Intersection< const Grid, SPIntersection >
         LevelIntersection;
@@ -604,50 +604,15 @@ namespace Dune
                            const unsigned int partitionNumber,
                            const int face ) const;
 
-    const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const
-    {
-      assert( (face >= 0) && (face < Cube::numFaces) );
-      return *localFaceGeometry_[ face ];
-    }
+    const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const;
 
-    void createLocalGeometries ()
-    {
-      typedef typename Codim< 1 >::LocalGeometry LocalGeo;
-      typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
-      const GlobalVector unitH( ctype( 1 ) );
-      for( int face = 0; face < Cube::numFaces; ++face )
-      {
-        const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
-        GlobalVector origin( ctype( 0 ) );
-        origin[ face/2 ] = ctype( face & 1 );
-        const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-        localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
-      }
-    }
+    void clear ();
 
-    void clear ()
-    {
-      levelViews_.clear();
-      leafView_ = LeafGridView( LeafGridViewImpl() );
-
-      const GridLevel *macroLevel = leafLevel_;
-      while( !macroLevel->isMacro() )
-        macroLevel = &(macroLevel->fatherLevel());
-      delete macroLevel;
-      leafLevel_ = 0;
-    }
-
+    void createLocalGeometries ();
     void setupMacroGrid ( const Domain &domain );
     void setupBoundaryIndices ();
 
-    static CollectiveCommunication defaultCommunication ()
-    {
-#if HAVE_MPI
-      return CollectiveCommunication( MPI_COMM_WORLD );
-#else
-      return CollectiveCommunication();
-#endif
-    }
+    static CollectiveCommunication defaultCommunication ();
 
     template< int codim >
     struct TheCube
@@ -708,6 +673,46 @@ namespace Dune
 
 
   template< class ct, int dim, SPRefinementStrategy strategy >
+  inline const typename SPGrid< ct, dim, strategy >::template Codim< 1 >::LocalGeometry &
+  SPGrid< ct, dim, strategy >::localFaceGeometry ( const int face ) const
+  {
+    assert( (face >= 0) && (face < Cube::numFaces) );
+    return *localFaceGeometry_[ face ];
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void SPGrid< ct, dim, strategy >::clear ()
+  {
+    levelViews_.clear();
+    leafView_ = LeafGridView( LeafGridViewImpl() );
+
+    const GridLevel *macroLevel = leafLevel_;
+    while( !macroLevel->isMacro() )
+      macroLevel = &(macroLevel->fatherLevel());
+    delete macroLevel;
+    leafLevel_ = 0;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void SPGrid< ct, dim, strategy >::createLocalGeometries ()
+  {
+    typedef typename Codim< 1 >::LocalGeometry LocalGeo;
+    typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
+    const GlobalVector unitH( ctype( 1 ) );
+    for( int face = 0; face < Cube::numFaces; ++face )
+    {
+      const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
+      GlobalVector origin( ctype( 0 ) );
+      origin[ face/2 ] = ctype( face & 1 );
+      const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
+      localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
+    }
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
   inline void
   SPGrid< ct, dim, strategy >::setupMacroGrid ( const Domain &domain )
   {
@@ -752,6 +757,18 @@ namespace Dune
         boundarySize_ += (it->boundary( 2*i+1 ) ? size : 0);
       }
     }
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline typename SPGrid< ct, dim, strategy >::CollectiveCommunication
+  SPGrid< ct, dim, strategy >::defaultCommunication ()
+  {
+#if HAVE_MPI
+    return CollectiveCommunication( MPI_COMM_WORLD );
+#else
+    return CollectiveCommunication();
+#endif // #if HAVE_MPI
   }
 
 }
