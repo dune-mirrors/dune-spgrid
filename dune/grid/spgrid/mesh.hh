@@ -49,6 +49,7 @@ namespace Dune
     int volume () const;
 
     MultiIndex width () const;
+    int width ( const int i ) const;
 
   private:
     MultiIndex bound_[ 2 ];
@@ -211,8 +212,16 @@ namespace Dune
   {
     MultiIndex w;
     for( int i = 0; i < dimension; ++i )
-      w[ i ] = std::max( end()[ i ] - begin()[ i ], 0 );
+      w[ i ] = width( i );
     return w;
+  }
+
+
+  template< int dim >
+  inline int SPMesh< dim >::width ( const int i ) const
+  {
+    //return std::max( end()[ i ] - begin()[ i ], 0 );
+    return end()[ i ] - begin()[ i ];
   }
 
 

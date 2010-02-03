@@ -37,6 +37,7 @@ namespace Dune
 
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
+    typedef typename GridLevel::Mesh Mesh;
 
     IdType id ( const GridLevel &gridLevel, const MultiIndex &id ) const;
 
@@ -72,15 +73,15 @@ namespace Dune
   inline SPLocalIdSet< Grid >
     ::id ( const GridLevel &gridLevel, const MultiIndex &id ) const
   {
-    const MultiIndex &cells = gridLevel.cells();
+    const Mesh &globalMesh = gridLevel.globalMesh();
     const unsigned int level = gridLevel.level();
     
     IdType index = 0;
     IdType factor = 1;
-    for( int j = 0; j < dimension; ++j )
+    for( int i = 0; i < dimension; ++i )
     {
-      index += id[ j ] * factor;
-      factor *= 2*cells[ j ]+1;
+      index += id[ i ] * factor;
+      factor *= 2*globalMesh.width( i ) + 1;
     }
     return index | (level << 26);
   }

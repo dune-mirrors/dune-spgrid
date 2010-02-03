@@ -176,11 +176,6 @@ namespace Dune
       return macroId;
     }
 
-    const MultiIndex &cells () const
-    {
-      return domain().cells();
-    }
-
     size_t boundaryIndex ( const MultiIndex &id, const int face ) const
     {
       // note: boundaryIndex ignores the last bit of macroId,
@@ -214,10 +209,7 @@ namespace Dune
 
     const int size () const
     {
-      const int size = 1;
-      for( int i = 0; i < dimension; ++i )
-        size *= cells()[ i ];
-      return size;
+      return globalMesh().volume();
     }
 
   private:
