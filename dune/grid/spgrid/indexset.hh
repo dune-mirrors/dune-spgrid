@@ -279,22 +279,6 @@ namespace Dune
         size_[ codim ] += factor;
       }
     }
-
-#if 0
-    for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-    {
-      IndexType factor = 1;
-      unsigned int codim = dimension;
-      for( int j = 0; j < dimension; ++j )
-      {
-        const unsigned int d = (dir >> j) & 1;
-        factor *= cells_[ j ] + (1-d);
-        codim -= d;
-      }
-      offsets_[ dir ] = size_[ codim ];
-      size_[ codim ] += factor;
-    }
-#endif
   }
 
 
@@ -324,23 +308,6 @@ namespace Dune
       factor *= width;
     }
     return offsets_[ number - partitions().minNumber() ][ dir ] + index;
-
-#if 0
-    IndexType index = 0;
-    IndexType factor = 1;
-    unsigned int dir = 0;
-    for( int j = 0; j < dimension; ++j )
-    {
-      const unsigned int d = id[ j ] & 1;
-      const IndexType idLocal = (id[ j ] >> 1) - origin_[ j ];
-      const IndexType width = cells_[ j ] + (1-d);
-      assert( (idLocal >= 0) && (idLocal < width) );
-      index += idLocal * factor;
-      factor *= width;
-      dir |= (d << j);
-    }
-    return offsets_[ dir ] + index;
-#endif
   }
 
 
