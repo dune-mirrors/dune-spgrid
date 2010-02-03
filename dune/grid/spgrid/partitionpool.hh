@@ -186,7 +186,7 @@ namespace Dune
     const MultiIndex &gend = globalMesh_.end();
 
     // create partition
-    Partition partition( 2*lbegin, 2*lend, number );
+    Partition partition( 2*lbegin, 2*lend, globalMesh_, number );
     
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )
@@ -218,7 +218,7 @@ namespace Dune
       begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
       end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
     }
-    Partition partition( begin, end, number );
+    Partition partition( begin, end, globalMesh_, number );
     
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )

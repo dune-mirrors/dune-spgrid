@@ -27,6 +27,8 @@ namespace Dune
 
     SPPartition ( const MultiIndex &begin, const MultiIndex &end,
                   const unsigned int number );
+    SPPartition ( const MultiIndex &begin, const MultiIndex &end,
+                  const Mesh &globalMesh, const unsigned int number );
 
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
@@ -40,6 +42,7 @@ namespace Dune
     unsigned int &neighbor ( const int face );
 
     bool hasNeighbor ( const int face ) const;
+    bool boundary ( const int face ) const;
     bool contains ( const MultiIndex &id ) const;
 
     int volume () const;
@@ -55,6 +58,7 @@ namespace Dune
     MultiIndex bound_[ 2 ];
     unsigned int number_;
     unsigned int neighbor_[ 2*dimension ];
+    bool boundary_[ 2*dimension ];
   };
 
 
@@ -72,7 +76,28 @@ namespace Dune
     bound_[ 1 ] = end;
 
     for( int face = 0; face < 2*dimension; ++face )
+    {
       neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
+      boundary_[ face ] = true;
+    }
+  }
+
+
+  template< int dim >
+  SPPartition< dim >
+   ::SPPartition ( const MultiIndex &begin, const MultiIndex &end,
+                   const Mesh &globalMesh, const unsigned int number )
+  : number_( number )
+  {
+    bound_[ 0 ] = begin;
+    bound_[ 1 ] = end;
+
+    for( int i = 0; i < dimension; ++i )
+    {
+      neighbor_[ 2*i ] = neighbor_[ 2*i+1 ] = std::numeric_limits< unsigned int >::max();
+      boundary_[ 2*i ] = (begin[ i ] == 2*globalMesh.begin()[ i ]);
+      boundary_[ 2*i+1 ] = (end[ i ] == 2*globalMesh.end()[ i ]);
+    }
   }
 
 
@@ -140,6 +165,14 @@ namespace Dune
   inline bool SPPartition< dim >::hasNeighbor ( const int face ) const
   {
     return (neighbor( face ) < std::numeric_limits< unsigned int >::max());
+  }
+
+
+  template< int dim >
+  inline bool SPPartition< dim >::boundary ( const int face ) const
+  {
+    assert( (face >= 0) && (face < 2*dimension) );
+    return boundary_[ face ];
   }
 
 

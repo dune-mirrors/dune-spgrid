@@ -84,13 +84,7 @@ namespace Dune
       return *this;
     }
 
-    bool boundary () const
-    {
-      const MultiIndex &id = inside_->entityInfo().id();
-      const int i = face_ >> 1;
-      const int bound = 1 + (face_ & 1) * (2*gridLevel().cells()[ i ] - 2);
-      return (id[ i ] == bound);
-    }
+    bool boundary () const;
 
     int boundaryId () const
     {
@@ -200,6 +194,19 @@ namespace Dune
 
   // Implementation of SPIntersection
   // --------------------------------
+
+  template< class Grid >
+  inline bool SPIntersection< Grid >::boundary () const
+  {
+    const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
+    const Partition &partition = allPartition.partition( inside_->entityInfo().partitionNumber() );
+
+    const MultiIndex &id = inside_->entityInfo().id();
+    const int i = face_ >> 1;
+    const int j = 2*(face_ & 1) - 1;
+    return partition.boundary( face_ ) && (id[ i ] + j == partition.bound( face_ & 1 )[ i ]);
+  }
+
 
   template< class Grid >
   inline bool SPIntersection< Grid >::neighbor () const
