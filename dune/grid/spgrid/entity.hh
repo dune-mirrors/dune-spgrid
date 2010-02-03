@@ -176,6 +176,8 @@ namespace Dune
   protected:
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
+    typedef typename GridLevel::Mesh Mesh;
+
     static const int numFaces = GridLevel::Cube::numFaces;
 
     typedef SPHierarchicIterator< Grid > HierarchicIteratorImpl;
@@ -227,16 +229,7 @@ namespace Dune
       return IntersectionIteratorImpl( *this, numFaces );
     }
 
-    bool hasBoundaryIntersections () const
-    {
-      const MultiIndex &id = entityInfo().id();
-      const MultiIndex &cells = gridLevel().cells();
-
-      bool hasBoundaryIntersections = false;
-      for( int i = 0; i < dimension; ++i )
-        hasBoundaryIntersections |= ((id[ i ] == 1) || (id[ i ] == 2*cells[ i ]-1));
-      return hasBoundaryIntersections;
-    }
+    bool hasBoundaryIntersections () const;
 
     bool hasFather () const
     {
@@ -283,6 +276,26 @@ namespace Dune
       return false;
     }
   };
+
+
+
+  // Implementation of SPEntity (for codimension 0)
+  // ----------------------------------------------
+
+  template< int dim, class Grid >
+  inline bool SPEntity< 0, dim, Grid >::hasBoundaryIntersections () const
+  {
+    const Mesh &globalMesh = gridLevel().globalMesh();
+    const MultiIndex &id = entityInfo().id();
+
+    bool hasBoundaryIntersections = false;
+    for( int i = 0; i < dimension; ++i )
+    {
+      hasBoundaryIntersections |= (id[ i ] == 2*globalMesh.begin()[ i ] + 1);
+      hasBoundaryIntersections |= (id[ i ] == 2*globalMesh.end()[ i ] - 1);
+    }
+    return hasBoundaryIntersections;
+  }
 
 }
 
