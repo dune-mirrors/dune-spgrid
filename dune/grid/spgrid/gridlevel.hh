@@ -81,130 +81,54 @@ namespace Dune
     SPGridLevel ( GridLevel &father, const Refinement &refinement );
 
   private:
+    // prohibit copying
     SPGridLevel ( const This &other );
 
   public:
     ~SPGridLevel ();
 
-    const Grid &grid () const
-    {
-      return *grid_;
-    }
+    const Grid &grid () const;
 
-    const Cube &cube () const
-    {
-      return grid().cube();
-    }
+    const Cube &cube () const;
 
     template< int codim >
-    const typename Codim< codim >::Cube &cube () const
-    {
-      return grid().template cube< codim >();
-    }
+    const typename Codim< codim >::Cube &cube () const;
 
-    const Domain &domain () const
-    {
-      return domain_;
-    }
+    const Domain &domain () const;
 
-    const Mesh &globalMesh () const
-    {
-      return globalMesh_;
-    }
-
-    const Mesh &localMesh () const
-    {
-      return localMesh_;
-    }
+    const Mesh &globalMesh () const;
+    const Mesh &localMesh () const;
 
     template< PartitionIteratorType pitype >
-    const PartitionList &partition () const
-    {
-      return partitionPool_.template get< pitype >();
-    }
+    const PartitionList &partition () const;
 
     template< int codim >
-    PartitionType partitionType ( const MultiIndex &id,
-                                  const unsigned int partitionNumber ) const
-    {
-      return partitionPool_.template partitionType< codim >( id, partitionNumber );
-    }
+    PartitionType
+    partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const;
 
-    const GridLevel &fatherLevel () const
-    {
-      assert( !isMacro() );
-      return *father_;
-    }
+    const GridLevel &fatherLevel () const;
+    const GridLevel &childLevel () const;
+    bool isMacro () const;
+    bool isLeaf () const;
+    unsigned int level () const;
 
-    const GridLevel &childLevel () const
-    {
-      assert( !isLeaf() );
-      return *child_;
-    }
-
-    bool isMacro () const
-    {
-      return (father_ == 0 );
-    }
-
-    bool isLeaf () const
-    {
-      return (child_ == 0);
-    }
-
-    const GlobalVector &h () const
-    {
-      return h_;
-    }
-
-    unsigned int level () const
-    {
-      return level_;
-    }
-
-    const Refinement &refinement () const
-    {
-      assert( !isMacro() );
-      return refinement_;
-    }
-
-    MultiIndex macroId ( const MultiIndex &id ) const
-    {
-      MultiIndex macroId;
-      for( int i = 0; i < dimension; ++i )
-        macroId[ i ] = (((id[ i ] >> 1) / macroFactor_[ i ]) << 1) | (id[ i ] & 1);
-      return macroId;
-    }
+    const GlobalVector &h () const;
+    const Refinement &refinement () const;
+    MultiIndex macroId ( const MultiIndex &id ) const;
 
     size_t boundaryIndex ( const MultiIndex &id,
                            const unsigned int partitionNumber,
                            const int face ) const;
 
-    const LocalGeometry &geometryInFather ( const MultiIndex &id ) const
-    {
-      assert( !isMacro() && (geometryInFather_ != 0) );
-      return *(geometryInFather_[ refinement().childIndex( id ) ]);
-    }
+    const LocalGeometry &geometryInFather ( const MultiIndex &id ) const;
 
     template< int codim >
     const typename Codim< codim >::GeometryCache &
-    geometryCache ( const unsigned int dir ) const
-    {
-      typedef typename Codim< codim >::GeometryCache GeometryCache;
-      assert( bitCount( dir ) == dimension - codim );
-      return *((const GeometryCache *)geometryCache_[ dir ]);
-    }
+    geometryCache ( const unsigned int dir ) const;
 
-    const GlobalVector &volumeNormal ( const int i ) const
-    {
-      assert( (i >= 0) && (i < Cube::numFaces) );
-      return normal_[ i ];
-    }
+    int size () const;
 
-    const int size () const
-    {
-      return globalMesh().volume();
-    }
+    const GlobalVector &volumeNormal ( const int i ) const;
 
   private:
     void buildGeometry ();
@@ -309,6 +233,139 @@ namespace Dune
 
 
   template< class Grid >
+  inline const Grid &SPGridLevel< Grid >::grid () const
+  {
+    return *grid_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::Cube &
+  SPGridLevel< Grid >::cube () const
+  {
+    return grid().cube();
+  }
+
+
+  template< class Grid >
+  template< int codim >
+  inline const typename SPGridLevel< Grid >::template Codim< codim >::Cube &
+  SPGridLevel< Grid >::cube () const
+  {
+    return grid().template cube< codim >();
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::Domain &
+  SPGridLevel< Grid >::domain () const
+  {
+    return domain_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::Mesh &
+  SPGridLevel< Grid >::globalMesh () const
+  {
+    return globalMesh_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::Mesh &
+  SPGridLevel< Grid >::localMesh () const
+  {
+    return localMesh_;
+  }
+
+
+  template< class Grid >
+  template< PartitionIteratorType pitype >
+  inline const typename SPGridLevel< Grid >::PartitionList &
+  SPGridLevel< Grid >::partition () const
+  {
+    return partitionPool_.template get< pitype >();
+  }
+
+
+  template< class Grid >
+  template< int codim >
+  inline PartitionType SPGridLevel< Grid >
+    ::partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const
+  {
+    return partitionPool_.template partitionType< codim >( id, partitionNumber );
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::GridLevel &
+  SPGridLevel< Grid >::fatherLevel () const
+  {
+    assert( !isMacro() );
+    return *father_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::GridLevel &
+  SPGridLevel< Grid >::childLevel () const
+  {
+    assert( !isLeaf() );
+    return *child_;
+  }
+
+
+  template< class Grid >
+  inline bool SPGridLevel< Grid >::isMacro () const
+  {
+    return (father_ == 0 );
+  }
+
+
+  template< class Grid >
+  inline bool SPGridLevel< Grid >::isLeaf () const
+  {
+    return (child_ == 0);
+  }
+
+
+  template< class Grid >
+  inline unsigned int SPGridLevel< Grid >::level () const
+  {
+    return level_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::GlobalVector &
+  SPGridLevel< Grid >::h () const
+  {
+    return h_;
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::Refinement &
+  SPGridLevel< Grid >::refinement () const
+  {
+    assert( !isMacro() );
+    return refinement_;
+  }
+
+  
+  template< class Grid >
+  inline typename SPGridLevel< Grid >::MultiIndex
+  SPGridLevel< Grid >::macroId ( const MultiIndex &id ) const
+  {
+    MultiIndex macroId;
+    for( int i = 0; i < dimension; ++i )
+      macroId[ i ] = (((id[ i ] >> 1) / macroFactor_[ i ]) << 1) | (id[ i ] & 1);
+    return macroId;
+  }
+
+
+  template< class Grid >
   inline size_t SPGridLevel< Grid >
     ::boundaryIndex ( const MultiIndex &id,
                       const unsigned int partitionNumber,
@@ -320,6 +377,42 @@ namespace Dune
     for( int i = 0; i < dimension; ++i )
       macroId[ i ] = id[ i ] / macroFactor_[ i ];
     return grid().boundaryIndex( macroId, partitionNumber, face );
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::LocalGeometry &
+  SPGridLevel< Grid >::geometryInFather ( const MultiIndex &id ) const
+  {
+    assert( !isMacro() && (geometryInFather_ != 0) );
+    return *(geometryInFather_[ refinement().childIndex( id ) ]);
+  }
+
+
+  template< class Grid >
+  template< int codim >
+  inline const typename SPGridLevel< Grid >::template Codim< codim >::GeometryCache &
+  SPGridLevel< Grid >::geometryCache ( const unsigned int dir ) const
+  {
+    typedef typename Codim< codim >::GeometryCache GeometryCache;
+    assert( bitCount( dir ) == dimension - codim );
+    return *((const GeometryCache *)geometryCache_[ dir ]);
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::GlobalVector &
+  SPGridLevel< Grid >::volumeNormal ( const int i ) const
+  {
+    assert( (i >= 0) && (i < Cube::numFaces) );
+    return normal_[ i ];
+  }
+
+
+  template< class Grid >
+  inline int SPGridLevel< Grid >::size () const
+  {
+    return globalMesh().volume();
   }
 
 
