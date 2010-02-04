@@ -624,8 +624,6 @@ namespace Dune
   inline bool SPGrid< ct, dim, strategy >
     ::readGrid ( const std::string &filename, ctype &time )
   {
-    clear();
-
     if( (format != ascii) && (format != xdr) )
       DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
 
