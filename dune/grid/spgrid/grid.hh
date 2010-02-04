@@ -297,7 +297,7 @@ namespace Dune
 
     int maxLevel () const
     {
-      assert( levelViews_.size() == leafLevel_->level()+1 );
+      assert( int( levelViews_.size() ) == leafLevel_->level()+1 );
       return leafLevel_->level();
     }
 
@@ -616,6 +616,8 @@ namespace Dune
   inline bool SPGrid< ct, dim, strategy >
     ::readGrid ( const std::string &filename, ctype &time )
   {
+    clear();
+
     if( (format != ascii) && (format != xdr) )
       DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
 
@@ -630,15 +632,14 @@ namespace Dune
 
     if( result != 0 )
     {
-      clear();
       overlap_ = ioData.overlap;
       name_ = ioData.name;
       time = ioData.time;
       setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
 
-      for( int level = 0; level <= ioData.maxLevel; ++level )
+      for( int level = 0; level < ioData.maxLevel; ++level )
       {
-        if( (size_t)level < ioData.refinements.size() )
+        if( level < int( ioData.refinements.size() ) )
           globalRefine( 1, ioData.refinements[ level ] );
         else
           globalRefine( 1 );
@@ -710,13 +711,11 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy >
   inline void SPGrid< ct, dim, strategy >::clear ()
   {
+    const int maxL = maxLevel();
+    for( int i = 0; i <= maxL; ++i )
+      delete &gridLevel( i );
     levelViews_.clear();
     leafView_ = LeafGridView( LeafGridViewImpl() );
-
-    const GridLevel *macroLevel = leafLevel_;
-    while( !macroLevel->isMacro() )
-      macroLevel = &(macroLevel->fatherLevel());
-    delete macroLevel;
     leafLevel_ = 0;
   }
 

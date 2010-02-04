@@ -110,7 +110,7 @@ namespace Dune
     const GridLevel &childLevel () const;
     bool isMacro () const;
     bool isLeaf () const;
-    unsigned int level () const;
+    int level () const;
 
     const GlobalVector &h () const;
     const Refinement &refinement () const;
@@ -138,9 +138,8 @@ namespace Dune
     MultiIndex overlap () const;
 
     const Grid *grid_;
-    GridLevel *father_, *child_;
 
-    unsigned int level_;
+    int level_;
     const Refinement refinement_;
     MultiIndex macroFactor_;
     Domain domain_;
@@ -163,8 +162,6 @@ namespace Dune
   inline SPGridLevel< Grid >
     ::SPGridLevel ( const Grid &grid, const Decomposition &decomposition )
   : grid_( &grid ),
-    father_( 0 ),
-    child_( 0 ),
     level_( 0 ),
     refinement_(),
     macroFactor_( coarseMacroFactor() ),
@@ -183,8 +180,6 @@ namespace Dune
   inline SPGridLevel< Grid >
     ::SPGridLevel ( GridLevel &father, const Refinement &refinement )
   : grid_( father.grid_ ),
-    father_( &father ),
-    child_( 0 ),
     level_( father.level_ + 1 ),
     refinement_( refinement ),
     macroFactor_( father.macroFactor_ * refinement ),
@@ -194,9 +189,6 @@ namespace Dune
     partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() ),
     h_( domain().h() )
   {
-    assert( father.child_ == 0 );
-    father.child_ = this;
-
     const unsigned int numChildren = refinement.numChildren();
     geometryInFather_ = new LocalGeometry *[ numChildren ];
     const GlobalVector hInFather = refinement.template hInFather< ctype >();
@@ -214,12 +206,6 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >::~SPGridLevel ()
   {
-    if( child_ != 0 )
-      delete child_;
-    assert( child_ == 0 );
-    if( father_ != 0 )
-      father_->child_ = 0;
-
     if( geometryInFather_ != 0 )
     {
       unsigned int numChildren = refinement().numChildren();
@@ -302,8 +288,7 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::GridLevel &
   SPGridLevel< Grid >::fatherLevel () const
   {
-    assert( !isMacro() );
-    return *father_;
+    return grid().gridLevel( level_ - 1 );
   }
 
 
@@ -311,27 +296,26 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::GridLevel &
   SPGridLevel< Grid >::childLevel () const
   {
-    assert( !isLeaf() );
-    return *child_;
+    return grid().gridLevel( level_ + 1 );
   }
 
 
   template< class Grid >
   inline bool SPGridLevel< Grid >::isMacro () const
   {
-    return (father_ == 0 );
+    return (level_ == 0);
   }
 
 
   template< class Grid >
   inline bool SPGridLevel< Grid >::isLeaf () const
   {
-    return (child_ == 0);
+    return (level_ == grid().maxLevel());
   }
 
 
   template< class Grid >
-  inline unsigned int SPGridLevel< Grid >::level () const
+  inline int SPGridLevel< Grid >::level () const
   {
     return level_;
   }
