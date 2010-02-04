@@ -78,7 +78,7 @@ namespace Dune
   public:
     SPGridLevel ( const Grid &grid, const Decomposition &decomposition );
 
-    SPGridLevel ( GridLevel &father, const Refinement &refinement );
+    SPGridLevel ( const GridLevel &father, const Refinement &refinement );
 
   private:
     // prohibit copying
@@ -178,7 +178,7 @@ namespace Dune
 
   template< class Grid >
   inline SPGridLevel< Grid >
-    ::SPGridLevel ( GridLevel &father, const Refinement &refinement )
+    ::SPGridLevel ( const GridLevel &father, const Refinement &refinement )
   : grid_( father.grid_ ),
     level_( father.level_ + 1 ),
     refinement_( refinement ),
