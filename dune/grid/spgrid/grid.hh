@@ -174,7 +174,6 @@ namespace Dune
     SPGrid ( const CollectiveCommunication &comm = defaultCommunication() )
     : overlap_( MultiIndex::zero() ),
       name_( "SPGrid" ),
-      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
       comm_( comm )
@@ -188,7 +187,6 @@ namespace Dune
              const CollectiveCommunication &comm = defaultCommunication() )
     : overlap_( MultiIndex::zero() ),
       name_( name ),
-      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
       comm_( comm )
@@ -203,7 +201,6 @@ namespace Dune
              const CollectiveCommunication &comm = defaultCommunication() )
     : overlap_( MultiIndex::zero() ),
       name_( name ),
-      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
       comm_( comm )
@@ -219,7 +216,6 @@ namespace Dune
              const CollectiveCommunication &comm = defaultCommunication() )
     : overlap_( overlap ),
       name_( name ),
-      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
       comm_( comm )
@@ -235,7 +231,6 @@ namespace Dune
              const CollectiveCommunication &comm = defaultCommunication() )
     : overlap_( MultiIndex::zero() ),
       name_( name ),
-      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
       comm_( comm )
@@ -252,7 +247,6 @@ namespace Dune
              const CollectiveCommunication &comm = defaultCommunication() )
     : overlap_( overlap ),
       name_( name ),
-      leafLevel_( 0 ),
       leafView_( LeafGridViewImpl() ),
       hierarchicIndexSet_( *this ),
       comm_( comm )
@@ -297,8 +291,7 @@ namespace Dune
 
     int maxLevel () const
     {
-      assert( int( levelViews_.size() ) == leafLevel_->level()+1 );
-      return leafLevel_->level();
+      return leafLevel().level();
     }
 
     int size ( const int level, const int codim ) const
@@ -443,40 +436,12 @@ namespace Dune
     }
 
     void globalRefine ( const int refCount,
-                        const Refinement &refinement = Refinement() )
-    {
-      for( int i = 0; i < refCount; ++i )
-      {
-        leafLevel_ = new GridLevel( *leafLevel_, refinement );
-        levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-      }
-      getRealImplementation( leafView_ ).update( *leafLevel_ );
-      hierarchicIndexSet_.update();
-    }
+                        const Refinement &refinement = Refinement() );
 
     template< class DataHandle >
     void globalRefine ( const int refCount,
                         AdaptDataHandleInterface< This, DataHandle > &handle,
-                        const Refinement &refinement = Refinement() )
-    {
-      for( int i = 0; i < refCount; ++i )
-      {
-        const LevelGridView fatherView = levelView( maxLevel() );
-
-        leafLevel_ = new GridLevel( *leafLevel_, refinement );
-        levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-
-        hierarchicIndexSet_.update();
-        getRealImplementation( leafView_ ).update( *leafLevel_ );
-
-        handle.preAdapt( leafLevel_->size() );
-        typedef typename Codim< 0 >::LevelIterator LevelIterator;
-        const LevelIterator end = fatherView.template end< 0 >();
-        for( LevelIterator it = fatherView.template begin< 0 >(); it != end; ++it )
-          handle.postRefinement( *it );
-        handle.postAdapt();
-      }
-    }
+                        const Refinement &refinement = Refinement() );
 
     int overlapSize ( const int level, const int codim ) const
     {
@@ -522,6 +487,7 @@ namespace Dune
     bool readGrid ( const std::string &filename, ctype &time );
 
     const GridLevel &gridLevel ( const int level ) const;
+    const GridLevel &leafLevel () const;
 
     size_t numBoundarySegments () const;
 
@@ -550,7 +516,7 @@ namespace Dune
     MultiIndex overlap_;
     std::string name_;
     GenericGeometry::CodimTable< TheCube, dimension > cubes_;
-    GridLevel *leafLevel_;
+    std::vector< GridLevel * > gridLevels_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;
     HierarchicIndexSet hierarchicIndexSet_;
@@ -566,6 +532,48 @@ namespace Dune
 
   // Implementation of SPGrid
   // ------------------------
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void SPGrid< ct, dim, strategy >
+    ::globalRefine ( const int refCount, const Refinement &refinement )
+  {
+    for( int i = 0; i < refCount; ++i )
+    {
+      gridLevels_.push_back( new GridLevel( leafLevel(), refinement ) );
+      levelViews_.push_back( LevelGridViewImpl( leafLevel() ) );
+    }
+    getRealImplementation( leafView_ ).update( leafLevel() );
+    hierarchicIndexSet_.update();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class DataHandle >
+  inline void SPGrid< ct, dim, strategy >
+    ::globalRefine ( const int refCount,
+                     AdaptDataHandleInterface< This, DataHandle > &handle,
+                     const Refinement &refinement )
+  {
+    for( int i = 0; i < refCount; ++i )
+    {
+      const LevelGridView fatherView = levelView( maxLevel() );
+
+      gridLevels_.push_back( new GridLevel( leafLevel(), refinement ) );
+      levelViews_.push_back( LevelGridViewImpl( leafLevel() ) );
+
+      hierarchicIndexSet_.update();
+      getRealImplementation( leafView_ ).update( leafLevel() );
+
+      handle.preAdapt( leafLevel().size() );
+      typedef typename Codim< 0 >::LevelIterator LevelIterator;
+      const LevelIterator end = fatherView.template end< 0 >();
+      for( LevelIterator it = fatherView.template begin< 0 >(); it != end; ++it )
+        handle.postRefinement( *it );
+      handle.postAdapt();
+    }
+  }
+
 
   template< class ct, int dim, SPRefinementStrategy strategy >
   inline const typename SPGrid< ct, dim, strategy >::CollectiveCommunication &
@@ -655,8 +663,17 @@ namespace Dune
   inline const typename SPGrid< ct, dim, strategy >::GridLevel &
   SPGrid< ct, dim, strategy >::gridLevel ( const int level ) const
   {
-    assert( (level >= 0) && (level <= maxLevel()) );
-    return getRealImplementation( levelViews_[ level ] ).gridLevel();
+    assert( (level >= 0) && (level < int( gridLevels_.size() )) );
+    return *gridLevels_[ level ];
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline const typename SPGrid< ct, dim, strategy >::GridLevel &
+  SPGrid< ct, dim, strategy >::leafLevel () const
+  {
+    assert( !gridLevels_.empty() );
+    return *gridLevels_.back();
   }
 
 
@@ -711,12 +728,14 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy >
   inline void SPGrid< ct, dim, strategy >::clear ()
   {
-    const int maxL = maxLevel();
-    for( int i = 0; i <= maxL; ++i )
-      delete &gridLevel( i );
     levelViews_.clear();
     leafView_ = LeafGridView( LeafGridViewImpl() );
-    leafLevel_ = 0;
+
+    typedef typename std::vector< GridLevel * >::iterator Iterator;
+    const Iterator end = gridLevels_.end();
+    for( Iterator it = gridLevels_.begin(); it != end; ++it )
+      delete *it;
+    gridLevels_.clear();
   }
 
 
@@ -741,13 +760,16 @@ namespace Dune
   inline void
   SPGrid< ct, dim, strategy >::setupMacroGrid ( const Domain &domain )
   {
+    clear();
+
     domain_ = domain;
 
     SPDecomposition< dimension > decomposition( domain_.cells(), comm().size() );
 
-    leafLevel_ = new GridLevel( *this, decomposition );
-    levelViews_.push_back( LevelGridViewImpl( *leafLevel_ ) );
-    getRealImplementation( leafView_ ).update( *leafLevel_ );
+    GridLevel *leafLevel = new GridLevel( *this, decomposition );
+    gridLevels_.push_back( leafLevel );
+    levelViews_.push_back( LevelGridViewImpl( *leafLevel ) );
+    getRealImplementation( leafView_ ).update( *leafLevel );
     hierarchicIndexSet_.update();
     setupBoundaryIndices();
   }
