@@ -106,8 +106,6 @@ namespace Dune
     PartitionType
     partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const;
 
-    const GridLevel &fatherLevel () const;
-    const GridLevel &childLevel () const;
     bool isMacro () const;
     bool isLeaf () const;
     int level () const;
@@ -281,22 +279,6 @@ namespace Dune
     ::partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const
   {
     return partitionPool_.template partitionType< codim >( id, partitionNumber );
-  }
-
-
-  template< class Grid >
-  inline const typename SPGridLevel< Grid >::GridLevel &
-  SPGridLevel< Grid >::fatherLevel () const
-  {
-    return grid().gridLevel( level_ - 1 );
-  }
-
-
-  template< class Grid >
-  inline const typename SPGridLevel< Grid >::GridLevel &
-  SPGridLevel< Grid >::childLevel () const
-  {
-    return grid().gridLevel( level_ + 1 );
   }
 
 

@@ -117,26 +117,27 @@ namespace Dune
     void update ()
     {
       assert( (id_.direction() == direction()) );
-      //assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
     }
 
     void down ()
     {
-      assert( !gridLevel().isLeaf() );
-      gridLevel_ = &gridLevel().childLevel();
-      gridLevel_->refinement().firstChild( id_ );
+      const Grid &grid = gridLevel().grid();
+      const int level = gridLevel().level();
+      gridLevel_ = &grid.gridLevel( level+1 );
+      gridLevel().refinement().firstChild( id_ );
     }
 
     void up ()
     {
-      assert( gridLevel().level() > 0 );
-      gridLevel_->refinement().father( id_ );
-      gridLevel_ = &gridLevel().fatherLevel();
+      const Grid &grid = gridLevel().grid();
+      const int level = gridLevel().level();
+      gridLevel().refinement().father( id_ );
+      gridLevel_ = &grid.gridLevel( level-1 );
     }
 
     bool nextChild ()
     {
-      return gridLevel_->refinement().nextChild( id_ );
+      return gridLevel().refinement().nextChild( id_ );
     }
 
   private:
@@ -192,7 +193,6 @@ namespace Dune
     void update ()
     {
       assert( (id_.direction() == direction()) );
-      //assert( (id_.direction() == direction()) || (id_ == std::numeric_limits< MultiIndex >::max()) );
     }
 
   private:

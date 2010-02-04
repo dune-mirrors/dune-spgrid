@@ -236,13 +236,7 @@ namespace Dune
       return (level() > 0);
     }
 
-    EntityPointer father () const
-    {
-      const unsigned int partitionNumber = entityInfo().partitionNumber();
-      MultiIndex fatherId( entityInfo().id() );
-      gridLevel().refinement().father( fatherId );
-      return EntityPointer( EntityInfo( gridLevel().fatherLevel(), fatherId, partitionNumber ) );
-    }
+    EntityPointer father () const;
 
     const LocalGeometry &geometryInFather () const
     {
@@ -295,6 +289,17 @@ namespace Dune
       hasBoundaryIntersections |= (id[ i ] == 2*globalMesh.end()[ i ] - 1);
     }
     return hasBoundaryIntersections;
+  }
+
+
+  template< int dim, class Grid >
+  inline typename SPEntity< 0, dim, Grid >::EntityPointer
+  SPEntity< 0, dim, Grid >::father () const
+  {
+    EntityInfo fatherInfo( entityInfo() );
+    fatherInfo.up();
+    fatherInfo.update();
+    return EntityPointer( fatherInfo );
   }
 
 }
