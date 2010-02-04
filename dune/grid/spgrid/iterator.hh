@@ -21,11 +21,11 @@ namespace Dune
     typedef typename Base::EntityInfo EntityInfo;
     typedef typename Base::GridLevel GridLevel;
 
-    typedef typename GridLevel::PartitionList PartitionList;
-
     static const int dimension = Base::dimension;
     static const int codimension = Base::codimension;
     static const int mydimension = Base::mydimension;
+
+    typedef SPPartitionList< dimension > PartitionList;
 
     static const unsigned int numDirections = GridLevel::numDirections;
 
