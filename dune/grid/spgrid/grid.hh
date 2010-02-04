@@ -13,6 +13,7 @@
 #include <dune/grid/spgrid/hierarchiciterator.hh>
 #include <dune/grid/spgrid/idset.hh>
 #include <dune/grid/spgrid/indexset.hh>
+#include <dune/grid/spgrid/hindexset.hh>
 #include <dune/grid/spgrid/fileio.hh>
 
 namespace Dune
