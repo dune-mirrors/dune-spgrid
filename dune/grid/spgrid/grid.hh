@@ -513,90 +513,17 @@ namespace Dune
       leafView().communicate( data, interface, dir );
     }
 
-    const CollectiveCommunication &comm () const
-    {
-      return comm_;
-    }
+    const CollectiveCommunication &comm () const;
 
     template< GrapeIOFileFormatType format >
-    bool writeGrid ( const std::string &filename, const ctype &time ) const
-    {
-      if( (format != ascii) && (format != xdr) )
-        DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
-
-      int result = 0;
-      if( comm().rank() == 0 )
-      {
-        SPGridIOData< ctype, dimension, strategy > ioData;
-
-        ioData.name = name();
-        ioData.time = time;
-        ioData.origin = domain().origin();
-        ioData.width = domain().width();
-        ioData.cells = domain().cells();
-        ioData.overlap = overlap_;
-        ioData.periodic = domain().periodic();
-        ioData.maxLevel = maxLevel();
-        ioData.refinements.resize( maxLevel() );
-        for( int level = 0; level < maxLevel(); ++level )
-          ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
-
-        if( format == ascii )
-        {
-          ioData.writeAscii( filename );
-          result = 1;
-        }
-      }
-      comm().broadcast( &result, 1, 0 );
-      return (result != 0);
-    }
+    bool writeGrid ( const std::string &filename, const ctype &time ) const;
 
     template< GrapeIOFileFormatType format >
-    bool readGrid ( const std::string &filename, ctype &time )
-    {
-      if( (format != ascii) && (format != xdr) )
-        DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
+    bool readGrid ( const std::string &filename, ctype &time );
 
-      int result = 0;
-      SPGridIOData< ctype, dimension, strategy > ioData;
+    const GridLevel &gridLevel ( const int level ) const;
 
-      if( format == ascii )
-      {
-        ioData.readAscii( filename );
-        result = 1;
-      }
-
-      if( result != 0 )
-      {
-        clear();
-        overlap_ = ioData.overlap;
-        name_ = ioData.name;
-        time = ioData.time;
-        setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
-
-        for( int level = 0; level <= ioData.maxLevel; ++level )
-        {
-          if( (size_t)level < ioData.refinements.size() )
-            globalRefine( 1, ioData.refinements[ level ] );
-          else
-            globalRefine( 1 );
-        }
-      }
-
-      result = comm().sum( result );
-      return (result == comm().size());
-    }
-
-    const GridLevel &gridLevel ( const int level ) const
-    {
-      assert( (level >= 0) && (level <= maxLevel()) );
-      return getRealImplementation( levelViews_[ level ] ).gridLevel();
-    }
-
-    size_t numBoundarySegments () const
-    {
-      return boundarySize_;
-    }
+    size_t numBoundarySegments () const;
 
   private:
     // note: this method ignores the last bit of the macroId
@@ -639,6 +566,105 @@ namespace Dune
 
   // Implementation of SPGrid
   // ------------------------
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline const typename SPGrid< ct, dim, strategy >::CollectiveCommunication &
+  SPGrid< ct, dim, strategy >::comm () const
+  {
+    return comm_;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< GrapeIOFileFormatType format >
+  inline bool SPGrid< ct, dim, strategy >
+    ::writeGrid ( const std::string &filename, const ctype &time ) const
+  {
+    if( (format != ascii) && (format != xdr) )
+      DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
+
+    int result = 0;
+    if( comm().rank() == 0 )
+    {
+      SPGridIOData< ctype, dimension, strategy > ioData;
+
+      ioData.name = name();
+      ioData.time = time;
+      ioData.origin = domain().origin();
+      ioData.width = domain().width();
+      ioData.cells = domain().cells();
+      ioData.overlap = overlap_;
+      ioData.periodic = domain().periodic();
+      ioData.maxLevel = maxLevel();
+      ioData.refinements.resize( maxLevel() );
+      for( int level = 0; level < maxLevel(); ++level )
+        ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
+
+      if( format == ascii )
+      {
+        ioData.writeAscii( filename );
+        result = 1;
+      }
+    }
+    comm().broadcast( &result, 1, 0 );
+    return (result != 0);
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< GrapeIOFileFormatType format >
+  inline bool SPGrid< ct, dim, strategy >
+    ::readGrid ( const std::string &filename, ctype &time )
+  {
+    if( (format != ascii) && (format != xdr) )
+      DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
+
+    int result = 0;
+    SPGridIOData< ctype, dimension, strategy > ioData;
+
+    if( format == ascii )
+    {
+      ioData.readAscii( filename );
+      result = 1;
+    }
+
+    if( result != 0 )
+    {
+      clear();
+      overlap_ = ioData.overlap;
+      name_ = ioData.name;
+      time = ioData.time;
+      setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
+
+      for( int level = 0; level <= ioData.maxLevel; ++level )
+      {
+        if( (size_t)level < ioData.refinements.size() )
+          globalRefine( 1, ioData.refinements[ level ] );
+        else
+          globalRefine( 1 );
+      }
+    }
+
+    result = comm().sum( result );
+    return (result == comm().size());
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline const typename SPGrid< ct, dim, strategy >::GridLevel &
+  SPGrid< ct, dim, strategy >::gridLevel ( const int level ) const
+  {
+    assert( (level >= 0) && (level <= maxLevel()) );
+    return getRealImplementation( levelViews_[ level ] ).gridLevel();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline size_t SPGrid< ct, dim, strategy >::numBoundarySegments () const
+  {
+    return boundarySize_;
+  }
+
 
   // note: this method ignores the last bit of the macroId
   template< class ct, int dim, SPRefinementStrategy strategy >
