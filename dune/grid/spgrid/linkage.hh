@@ -55,6 +55,9 @@ namespace Dune
   public:
     typedef typename NodeContainer::const_iterator Iterator;
 
+    Interface ();
+    Interface ( const This &other );
+
     ~Interface ();
 
     Iterator begin () const;
@@ -80,8 +83,8 @@ namespace Dune
     Node ( const int rank, const PartitionList *sendList, const PartitionList *receiveList );
 
     int rank () const;
-    const PartitionList &sendList ( const CommunicationDirection direction ) const;
-    const PartitionList &receiveList ( const CommunicationDirection direction ) const;
+    const PartitionList &sendList ( const CommunicationDirection direction = ForwardCommunication ) const;
+    const PartitionList &receiveList ( const CommunicationDirection direction = ForwardCommunication ) const;
 
     void destroy ();
 
@@ -232,6 +235,25 @@ namespace Dune
 
   // Implementation of SPLinkage::Interface
   // --------------------------------------
+
+  template< int dim >
+  inline SPLinkage< dim >::Interface::Interface ()
+  {}
+
+
+  template< int dim >
+  inline SPLinkage< dim >::Interface::Interface ( const This &other )
+  {
+    nodes_.reserve( other.nodes_.size() );
+    const Iterator end = other.end();
+    for( Iterator it = other.begin(); it != end; ++it )
+    {
+      const PartitionList *sendList = new PartitionList( it->sendList() );
+      const PartitionList *receiveList = new PartitionList( it->receiveList() );
+      nodes_->push_back( it->rank(), sendList, receiveList );
+    }
+  }
+
 
   template< int dim >
   inline SPLinkage< dim >::Interface::~Interface ()
