@@ -1,18 +1,11 @@
 #ifndef DUNE_SPGRID_LINKAGE_HH
 #define DUNE_SPGRID_LINKAGE_HH
 
+#include <dune/grid/spgrid/partitionlist.hh>
 #include <dune/grid/spgrid/partitionpool.hh>
 
 namespace Dune
 {
-
-  // Internal Forward Declarations
-  // -----------------------------
-
-  template< InterfaceType >
-  struct SPCommunicationInterface;
-
-
 
   // SPLinkage
   // ---------
@@ -24,6 +17,7 @@ namespace Dune
 
   public:
     typedef SPPartitionPool< dim > PartitionPool;
+    typedef SPPartitionList< dim > PartitionList;
 
     typedef typename PartitionPool::Mesh Mesh;
     typedef typename PartitionPool::MultiIndex MultiIndex;
@@ -38,7 +32,9 @@ namespace Dune
 
   private:
     template< InterfaceType interface >
-    bool build ( const int rank, const PartitionPool &localPool, const PartitionPool &removePool );
+    bool build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool );
+
+   const PartitionList *intersect ( const PartitionList &local, const PartitionList &remote );
 
     // note: We use the knowledge that interfaces are numbered 0, ..., 4.
     Interface interface_[ 5 ];
@@ -58,6 +54,9 @@ namespace Dune
 
   // SPCommunicationInterface
   // ------------------------
+
+  template< InterfaceType >
+  struct SPCommunicationInterface;
 
   template<>
   struct SPCommunicationInterface< InteriorBorder_InteriorBorder_Interface >
@@ -139,9 +138,27 @@ namespace Dune
   template< int dim >
   template< InterfaceType interface >
   inline bool SPLinkage< dim >
-    ::build ( const int rank, const PartitionPool &localPool, const PartitionPool &removePool )
+    ::build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool )
   {
+    const PartitionType piSend = SPCommunicationInterface< interface >::sendPartition;
+    const PartitionType piReceive = SPCommunicationInterface< interface >::receivePartition;
+
+    const PartitionList *sendList, *receiveList;
+    sendList = intersect ( localPool.template get< piSend >(), remotePool.template get< piReceive >() );
+    if( piSend != piReceive )
+      receiveList = intersect( localPool.template get< piReceive >(), remotePool.template get< piSend >() );
+    else
+      receiveList = sendList;
+
     return false;
+  }
+
+
+  template< int dim >
+  inline const typename SPLinkage< dim >::PartitionList *
+  SPLinkage< dim >::intersect ( const PartitionList &local, const PartitionList &remote )
+  {
+    return 0;
   }
 
 }
