@@ -43,6 +43,23 @@ namespace Dune
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
+    template< class Mesh >
+    Mesh operator() ( const Mesh &mesh ) const
+    {
+      return mesh.refine( *this );
+    }
+
+    template< class Mesh >
+    std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const
+    {
+      std::vector< Mesh > fineMeshes;
+      const size_t size = coarseMeshes.size();
+      fineMeshes.reserve( size );
+      for( size_t i = 0; i < size; ++i )
+        fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
+      return fineMeshes;
+    }
+
     unsigned int factor ( const int i ) const
     {
       return 2;
@@ -152,6 +169,23 @@ namespace Dune
     {
       if( refDir >= (1 << dimension) )
         DUNE_THROW( GridError, "Trying to create anisotropic refinement from invalid value " << refDir << "." );
+    }
+
+    template< class Mesh >
+    Mesh operator() ( const Mesh &mesh ) const
+    {
+      return mesh.refine( *this );
+    }
+
+    template< class Mesh >
+    std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const
+    {
+      std::vector< Mesh > fineMeshes;
+      const size_t size = coarseMeshes.size();
+      fineMeshes.reserve( size );
+      for( size_t i = 0; i < size; ++i )
+        fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
+      return fineMeshes;
     }
 
     unsigned int factor ( const int i ) const
