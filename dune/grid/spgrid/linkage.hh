@@ -34,7 +34,7 @@ namespace Dune
     template< InterfaceType interface >
     bool build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool );
 
-   const PartitionList *intersect ( const PartitionList &local, const PartitionList &remote );
+   const PartitionList *intersect ( const PartitionList &local, const PartitionList &remote ) const;
 
     // note: We use the knowledge that interfaces are numbered 0, ..., 4.
     Interface interface_[ 5 ];
@@ -156,9 +156,25 @@ namespace Dune
 
   template< int dim >
   inline const typename SPLinkage< dim >::PartitionList *
-  SPLinkage< dim >::intersect ( const PartitionList &local, const PartitionList &remote )
+  SPLinkage< dim >::intersect ( const PartitionList &local, const PartitionList &remote ) const
   {
-    return 0;
+    typedef SPBasicPartition< dim > Intersection;
+    typedef typename PartitionList::Iterator Iterator;
+    typedef typename PartitionList::Partition Partition;
+
+    PartitionList *link = new PartitionList;
+    for( Iterator lit = local.begin(); lit; ++lit )
+    {
+      const int number = lit->number();
+      for( Iterator rit = remote.begin(); rit; ++rit )
+      {
+        Intersection intersection = lit->intersect( *rit );
+        if( !intersection.empty() )
+          link += Partition( intersection, number );
+      }
+    }
+
+    return link;
   }
 
 }

@@ -37,6 +37,7 @@ namespace Dune
 
     bool contains ( const MultiIndex &id ) const;
 
+    bool empty () const;
     int volume () const;
     MultiIndex width () const;
     int width ( const int i ) const;
@@ -155,6 +156,16 @@ namespace Dune
     for( int i = 0; i < dimension; ++i )
       contains &= (id[ i ] >= begin()[ i ]) && (id[ i ] <= end()[ i ]);
     return contains;
+  }
+
+
+  template< int dim >
+  inline bool SPBasicPartition< dim >::empty () const
+  {
+    bool empty = false;
+    for( int i = 0; i < dimension; ++i )
+      empty |= (begin()[ i ] > end()[ i ]);
+    return empty;
   }
 
 
