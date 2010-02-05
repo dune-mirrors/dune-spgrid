@@ -36,6 +36,8 @@ namespace Dune
     PartitionType
     partitionType ( const MultiIndex &id, const unsigned int number ) const;
 
+    const Mesh &globalMesh () const;
+
   private:
     Partition
     closedPartition ( const Mesh &localMesh, const unsigned int number ) const;
@@ -176,17 +178,25 @@ namespace Dune
 
 
   template< int dim >
+  inline const typename SPPartitionPool< dim >::Mesh &
+  SPPartitionPool< dim >::globalMesh () const
+  {
+    return globalMesh_;
+  }
+
+
+  template< int dim >
   inline typename SPPartitionPool< dim >::Partition
   SPPartitionPool< dim >
     ::closedPartition ( const Mesh &localMesh, const unsigned int number ) const
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
-    const MultiIndex &gbegin = globalMesh_.begin();
-    const MultiIndex &gend = globalMesh_.end();
+    const MultiIndex &gbegin = globalMesh().begin();
+    const MultiIndex &gend = globalMesh().end();
 
     // create partition
-    Partition partition( 2*lbegin, 2*lend, globalMesh_, number );
+    Partition partition( 2*lbegin, 2*lend, globalMesh(), number );
     
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )
@@ -208,8 +218,8 @@ namespace Dune
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
-    const MultiIndex &gbegin = globalMesh_.begin();
-    const MultiIndex &gend = globalMesh_.end();
+    const MultiIndex &gbegin = globalMesh().begin();
+    const MultiIndex &gend = globalMesh().end();
 
     // create partition
     MultiIndex begin, end;
@@ -218,7 +228,7 @@ namespace Dune
       begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
       end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
     }
-    Partition partition( begin, end, globalMesh_, number );
+    Partition partition( begin, end, globalMesh(), number );
     
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )
