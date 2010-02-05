@@ -6,11 +6,58 @@
 namespace Dune
 {
 
-  // SPCommunicationInterface
-  // ------------------------
+  // Internal Forward Declarations
+  // -----------------------------
 
   template< InterfaceType >
   struct SPCommunicationInterface;
+
+
+
+  // SPLinkage
+  // ---------
+
+  template< int dim >
+  class SPLinkage
+  {
+    typedef SPLinkage< dim > This;
+
+  public:
+    typedef SPPartitionPool< dim > PartitionPool;
+
+    typedef typename PartitionPool::Mesh Mesh;
+    typedef typename PartitionPool::MultiIndex MultiIndex;
+
+    struct Interface;
+
+    SPLinkage ( const int rank,
+                const PartitionPool &localPool,
+                const std::vector< Mesh > &decomposition );
+
+    const Interface &interface ( const InterfaceType interface ) const;
+
+  private:
+    template< InterfaceType interface >
+    bool build ( const int rank, const PartitionPool &localPool, const PartitionPool &removePool );
+
+    // note: We use the knowledge that interfaces are numbered 0, ..., 4.
+    Interface interface_[ 5 ];
+  };
+
+
+
+  // SPLinkage::Interface
+  // --------------------
+
+  template< int dim >
+  struct SPLinkage< dim >::Interface
+  {
+  };
+
+
+
+  // SPCommunicationInterface
+  // ------------------------
 
   template<>
   struct SPCommunicationInterface< InteriorBorder_InteriorBorder_Interface >
@@ -49,30 +96,6 @@ namespace Dune
 
 
 
-  // SPLinkage
-  // ---------
-
-  template< int dim >
-  class SPLinkage
-  {
-    typedef SPLinkage< dim > This;
-
-  public:
-    struct Interface;
-
-    SPLinkage ( const int rank,
-                const PartitionPool &partitionPool,
-                const std::vector< Mesh > &decomposition );
-
-    const Interface &interface ( InterfaceType interface ) const;
-
-  private:
-    // note: We use the knowledge that interfaces are numbered 0, ..., 4.
-    Interface interface_[ 5 ];
-  };
-
-
-
   // Implementation of SPLinkage
   // ---------------------------
 
@@ -106,10 +129,19 @@ namespace Dune
 
   template< int dim >
   inline const typename SPLinkage< dim >::Interface &
-  SPLinkage< dim >::interface ( InterfaceType interface ) const;
+  SPLinkage< dim >::interface ( const InterfaceType interface ) const
   {
     assert( (int( interface ) >= 0) && (int( interface ) < 5) );
     return interface_[ int( interface ) ];
+  }
+
+
+  template< int dim >
+  template< InterfaceType interface >
+  inline bool SPLinkage< dim >
+    ::build ( const int rank, const PartitionPool &localPool, const PartitionPool &removePool )
+  {
+    return false;
   }
 
 }
