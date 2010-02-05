@@ -143,6 +143,7 @@ namespace Dune
     const PartitionType piSend = SPCommunicationInterface< interface >::sendPartition;
     const PartitionType piReceive = SPCommunicationInterface< interface >::receivePartition;
 
+    // build intersection lists
     const PartitionList *sendList, *receiveList;
     sendList = intersect ( localPool.template get< piSend >(), remotePool.template get< piReceive >() );
     if( piSend != piReceive )
@@ -150,7 +151,18 @@ namespace Dune
     else
       receiveList = sendList;
 
-    return false;
+    // if both lists are empty, no communication is necessary
+    if( sendList->empty() && receiveList->empty() )
+    {
+      if( sendList != receiveList )
+        delete receiveList;
+      delete sendList;
+      return false;
+    }
+
+
+
+    return true;
   }
 
 
@@ -173,7 +185,6 @@ namespace Dune
           link += Partition( intersection, number );
       }
     }
-
     return link;
   }
 
