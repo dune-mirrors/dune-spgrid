@@ -49,17 +49,12 @@ namespace Dune
 
     This &operator+= ( const Partition &partition );
 
-    Iterator begin () const
-    {
-      return Iterator( head_ );
-    }
-
-    Iterator end () const
-    {
-      return Iterator( 0 );
-    }
+    Iterator begin () const;
+    Iterator end () const;
 
     bool contains ( const MultiIndex &id, const unsigned int number ) const;
+
+    bool empty () const;
     unsigned int size () const;
 
   protected:
@@ -181,6 +176,22 @@ namespace Dune
 
 
   template< int dim >
+  inline typename SPPartitionList< dim >::Iterator
+  SPPartitionList< dim >::begin () const
+  {
+    return Iterator( head_ );
+  }
+
+
+  template< int dim >
+  inline typename SPPartitionList< dim >::Iterator
+  SPPartitionList< dim >::end () const
+  {
+    return Iterator( 0 );
+  }
+
+
+  template< int dim >
   inline bool
   SPPartitionList< dim >
     ::contains ( const MultiIndex &id, const unsigned int number ) const
@@ -195,6 +206,13 @@ namespace Dune
       }
     }
     return false;
+  }
+
+
+  template< int dim >
+  inline bool SPPartitionList< dim >::empty () const
+  {
+    return (head_ == 0);
   }
 
 
