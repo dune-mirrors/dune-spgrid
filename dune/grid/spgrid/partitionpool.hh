@@ -37,6 +37,8 @@ namespace Dune
     partitionType ( const MultiIndex &id, const unsigned int number ) const;
 
     const Mesh &globalMesh () const;
+    const MultiIndex &overlap () const;
+    unsigned int periodic () const;
 
   private:
     Partition
@@ -45,6 +47,7 @@ namespace Dune
     openPartition ( const Mesh &localMesh, const unsigned int number ) const;
 
     Mesh globalMesh_;
+    MultiIndex overlap_;
     unsigned int periodic_;
 
     PartitionList interiorList_;
@@ -65,6 +68,7 @@ namespace Dune
     ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
                         const MultiIndex &overlap, unsigned int periodic )
   : globalMesh_( globalMesh ),
+    overlap_( overlap ),
     periodic_( periodic )
   {
     // generate Interior and InteriorBorder
@@ -186,6 +190,21 @@ namespace Dune
 
 
   template< int dim >
+  inline const typename SPPartitionPool< dim >::MultiIndex &
+  SPPartitionPool< dim >::overlap () const
+  {
+    return overlap_;
+  }
+
+
+  template< int dim >
+  inline unsigned int SPPartitionPool< dim >::periodic () const
+  {
+    return periodic_;
+  }
+
+
+  template< int dim >
   inline typename SPPartitionPool< dim >::Partition
   SPPartitionPool< dim >
     ::closedPartition ( const Mesh &localMesh, const unsigned int number ) const
@@ -201,7 +220,7 @@ namespace Dune
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )
     {
-      if( (periodic_ & (1 << i)) == 0 )
+      if( (periodic() & (1 << i)) == 0 )
         continue;
       if( (lbegin[ i ] == gbegin[ i ]) && (lend[ i ] == gend[ i ]) )
         partition.neighbor( 2*i ) = partition.neighbor( 2*i+1 ) = number;
@@ -233,7 +252,7 @@ namespace Dune
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )
     {
-      if( (periodic_ & (1 << i)) == 0 )
+      if( (periodic() & (1 << i)) == 0 )
         continue;
       if( (lbegin[ i ] == gbegin[ i ]) && (lend[ i ] == gend[ i ]) )
         partition.neighbor( 2*i ) = partition.neighbor( 2*i+1 ) = number;
