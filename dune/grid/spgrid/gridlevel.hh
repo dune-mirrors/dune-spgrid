@@ -80,11 +80,8 @@ namespace Dune
 
     SPGridLevel ( const GridLevel &father, const Refinement &refinement );
 
-  private:
-    // prohibit copying
     SPGridLevel ( const This &other );
 
-  public:
     ~SPGridLevel ();
 
     const Grid &grid () const;
@@ -164,8 +161,7 @@ namespace Dune
     domain_( grid.domain() ),
     globalMesh_( decomposition.mesh() ),
     localMesh_( decomposition.subMesh( grid.comm().rank() ) ),
-    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() ),
-    geometryInFather_( 0 )
+    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
   {
     buildGeometry();
   }
@@ -183,16 +179,21 @@ namespace Dune
     localMesh_( father.localMesh().refine( refinement ) ),
     partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
   {
-    const unsigned int numChildren = refinement.numChildren();
-    geometryInFather_ = new LocalGeometry *[ numChildren ];
-    const GlobalVector hInFather = refinement.template hInFather< ctype >();
-    const typename Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
-    for( unsigned int index = 0; index < numChildren; ++index )
-    {
-      const GlobalVector origin = refinement.template originInFather< ctype >( index );
-      geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
-    }
+    buildGeometry();
+  }
 
+
+  template< class Grid >
+  inline SPGridLevel< Grid >::SPGridLevel ( const This &other )
+  : grid_( other.grid_ ),
+    level_( other.level_ ),
+    refinement_( other.refinement_ ),
+    macroFactor_( other.macroFactor_ ),
+    domain_( other.domain_ ),
+    globalMesh_( other.globalMesh_ ),
+    localMesh_( other.localMesh_ ),
+    partitionPool_( other.partitionPool_ )
+  {
     buildGeometry();
   }
 
@@ -371,6 +372,20 @@ namespace Dune
     const MultiIndex meshWidth = globalMesh().width();
     for( int i = 0; i < dimension; ++i )
       h_[ i ] = domainWidth[ i ] / ctype( meshWidth[ i ] );
+
+    geometryInFather_ = 0;
+    if( level() > 0 )
+    {
+      const unsigned int numChildren = refinement().numChildren();
+      geometryInFather_ = new LocalGeometry *[ numChildren ];
+      const GlobalVector hInFather = refinement().template hInFather< ctype >();
+      const typename Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
+      for( unsigned int index = 0; index < numChildren; ++index )
+      {
+        const GlobalVector origin = refinement().template originInFather< ctype >( index );
+        geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
+      }
+    }
 
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
