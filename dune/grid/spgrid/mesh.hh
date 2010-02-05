@@ -51,6 +51,8 @@ namespace Dune
     MultiIndex width () const;
     int width ( const int i ) const;
 
+    static This unitMesh ();
+
   private:
     MultiIndex bound_[ 2 ];
   };
@@ -222,6 +224,17 @@ namespace Dune
   {
     //return std::max( end()[ i ] - begin()[ i ], 0 );
     return end()[ i ] - begin()[ i ];
+  }
+
+
+  template< int dim >
+  inline typename SPMesh< dim >::This
+  SPMesh< dim >::unitMesh ()
+  {
+    MultiIndex w;
+    for( int i = 0; i < dimension; ++i )
+      w[ i ] = 1;
+    return This( w );
   }
 
 

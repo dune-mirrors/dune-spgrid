@@ -165,7 +165,6 @@ namespace Dune
     globalMesh_( decomposition.mesh() ),
     localMesh_( decomposition.subMesh( grid.comm().rank() ) ),
     partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() ),
-    h_( domain().h() ),
     geometryInFather_( 0 )
   {
     buildGeometry();
@@ -179,11 +178,10 @@ namespace Dune
     level_( father.level_ + 1 ),
     refinement_( refinement ),
     macroFactor_( father.macroFactor_ * refinement ),
-    domain_( father.domain(), refinement ),
+    domain_( father.domain() ),
     globalMesh_( father.globalMesh().refine( refinement ) ),
     localMesh_( father.localMesh().refine( refinement ) ),
-    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() ),
-    h_( domain().h() )
+    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
   {
     const unsigned int numChildren = refinement.numChildren();
     geometryInFather_ = new LocalGeometry *[ numChildren ];
@@ -369,6 +367,11 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
+    const GlobalVector domainWidth = domain().width();
+    const MultiIndex meshWidth = globalMesh().width();
+    for( int i = 0; i < dimension; ++i )
+      h_[ i ] = domainWidth[ i ] / ctype( meshWidth[ i ] );
+
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
     const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();

@@ -32,30 +32,18 @@ namespace Dune
       {
         origin_[ i ] = ctype( 0 );
         width_[ i ] = ctype( 1 );
-        cells_[ i ] = 1;
       }
     }
 
-    SPDomain ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+    SPDomain ( const GlobalVector &a, const GlobalVector &b,
                const unsigned int periodic = 0 )
-    : cells_( cells ),
-      periodic_( periodic )
+    : periodic_( periodic )
     {
       for( int i = 0; i < dimension; ++i )
       {
         origin_[ i ] = std::min( a[ i ], b[ i ] );
         width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
       }
-    }
-
-    template< SPRefinementStrategy strategy >
-    SPDomain ( const This &other, const SPRefinement< dimension, strategy > &refinement )
-    : origin_( other.origin_ ),
-      width_( other.width_ ),
-      periodic_( other.periodic_ )
-    {
-      for( int i = 0; i < dimension; ++i )
-        cells_[ i ] = refinement.factor( i ) * other.cells_[ i ];
     }
 
     const GlobalVector &origin () const
@@ -68,11 +56,7 @@ namespace Dune
       return width_;
     }
 
-    const MultiIndex &cells () const
-    {
-      return cells_;
-    }
-
+#if 0
     GlobalVector h () const
     {
       GlobalVector h;
@@ -80,6 +64,7 @@ namespace Dune
         h[ i ] = width_[ i ] / ctype( cells_[ i ] );
       return h;
     }
+#endif
 
     bool periodic ( const int i ) const
     {
@@ -94,7 +79,6 @@ namespace Dune
 
   private:
     GlobalVector origin_, width_;
-    MultiIndex cells_;
     unsigned int periodic_;
   };
 

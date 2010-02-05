@@ -39,6 +39,7 @@ namespace Dune
 
       typedef SPCube< ct, dim > Cube;
       typedef SPDomain< ct, dim > Domain;
+      typedef SPMesh< dim > Mesh;
       typedef SPRefinement< dim, strategy > Refinement;
 
 #if HAVE_MPI
@@ -126,6 +127,7 @@ namespace Dune
 
     typedef typename Traits::Cube Cube;
     typedef typename Traits::Domain Domain;
+    typedef typename Traits::Mesh Mesh;
     typedef typename Traits::Refinement Refinement;
 
     typedef typename Cube::ctype ctype;
@@ -172,89 +174,30 @@ namespace Dune
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
   public:
-    SPGrid ( const CollectiveCommunication &comm = defaultCommunication() )
-    : overlap_( MultiIndex::zero() ),
-      name_( "SPGrid" ),
-      leafView_( LeafGridViewImpl() ),
-      hierarchicIndexSet_( *this ),
-      comm_( comm )
-    {
-      createLocalGeometries();
-      setupMacroGrid( Domain() );
-    }
+    SPGrid ( const CollectiveCommunication &comm = defaultCommunication() );
 
-    SPGrid ( const Domain &domain,
+    SPGrid ( const Domain &domain, const MultiIndex &cells,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() )
-    : overlap_( MultiIndex::zero() ),
-      name_( name ),
-      leafView_( LeafGridViewImpl() ),
-      hierarchicIndexSet_( *this ),
-      comm_( comm )
-    {
-      createLocalGeometries();
-      setupMacroGrid( domain );
-    }
+             const CollectiveCommunication &comm = defaultCommunication() );
 
-    SPGrid ( const GlobalVector &a, const GlobalVector &b,
-             const int (&cells)[ dimension ],
+    SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() )
-    : overlap_( MultiIndex::zero() ),
-      name_( name ),
-      leafView_( LeafGridViewImpl() ),
-      hierarchicIndexSet_( *this ),
-      comm_( comm )
-    {
-      createLocalGeometries();
-      setupMacroGrid( Domain( a, b, cells ) );
-    }
+             const CollectiveCommunication &comm = defaultCommunication() );
 
-    SPGrid ( const GlobalVector &a, const GlobalVector &b,
-             const int (&cells)[ dimension ],
-             const int (&overlap)[ dimension ],
+    SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+             const MultiIndex &overlap,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() )
-    : overlap_( overlap ),
-      name_( name ),
-      leafView_( LeafGridViewImpl() ),
-      hierarchicIndexSet_( *this ),
-      comm_( comm )
-    {
-      createLocalGeometries();
-      setupMacroGrid( Domain( a, b, cells ) );
-    }
+             const CollectiveCommunication &comm = defaultCommunication() );
 
-    SPGrid ( const GlobalVector &a, const GlobalVector &b,
-             const int (&cells)[ dimension ],
+    SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const unsigned int periodic,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() )
-    : overlap_( MultiIndex::zero() ),
-      name_( name ),
-      leafView_( LeafGridViewImpl() ),
-      hierarchicIndexSet_( *this ),
-      comm_( comm )
-    {
-      createLocalGeometries();
-      setupMacroGrid( Domain( a, b, cells, periodic ) );
-    }
+             const CollectiveCommunication &comm = defaultCommunication() );
 
-    SPGrid ( const GlobalVector &a, const GlobalVector &b,
-             const int (&cells)[ dimension ],
-             const int (&overlap)[ dimension ],
-             const unsigned int periodic,
+    SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+             const MultiIndex &overlap, const unsigned int periodic,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() )
-    : overlap_( overlap ),
-      name_( name ),
-      leafView_( LeafGridViewImpl() ),
-      hierarchicIndexSet_( *this ),
-      comm_( comm )
-    {
-      createLocalGeometries();
-      setupMacroGrid( Domain( a, b, cells, periodic ) );
-    }
+             const CollectiveCommunication &comm = defaultCommunication() );
 
     ~SPGrid ()
     {
@@ -503,7 +446,7 @@ namespace Dune
     void clear ();
 
     void createLocalGeometries ();
-    void setupMacroGrid ( const Domain &domain );
+    void setupMacroGrid ();
     void setupBoundaryIndices ();
 
     static CollectiveCommunication defaultCommunication ();
@@ -514,6 +457,7 @@ namespace Dune
     {};
   
     Domain domain_;
+    Mesh globalMesh_;
     MultiIndex overlap_;
     std::string name_;
     GenericGeometry::CodimTable< TheCube, dimension > cubes_;
@@ -533,6 +477,108 @@ namespace Dune
 
   // Implementation of SPGrid
   // ------------------------
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy >::SPGrid ( const CollectiveCommunication &comm )
+  : domain_(),
+    globalMesh_( Mesh::unitMesh() ),
+    overlap_( MultiIndex::zero() ),
+    name_( "SPGrid" ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy >
+    ::SPGrid ( const Domain &domain, const MultiIndex &cells,
+               const std::string &name, const CollectiveCommunication &comm )
+  : domain_( domain ),
+    globalMesh_( cells ),
+    overlap_( MultiIndex::zero() ),
+    name_( name ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy >
+    ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+               const std::string &name, const CollectiveCommunication &comm )
+  : domain_( a, b ),
+    globalMesh_( cells ),
+    overlap_( MultiIndex::zero() ),
+    name_( name ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy >
+    ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+               const MultiIndex &overlap,
+               const std::string &name, const CollectiveCommunication &comm )
+  : domain_( a, b ),
+    globalMesh_( cells ),
+    overlap_( overlap ),
+    name_( name ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy >
+    ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+               const unsigned int periodic,
+               const std::string &name, const CollectiveCommunication &comm )
+  : domain_( a, b, periodic ),
+    globalMesh_( cells ),
+    overlap_( MultiIndex::zero() ),
+    name_( name ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline SPGrid< ct, dim, strategy >
+    ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
+               const MultiIndex &overlap, const unsigned int periodic,
+               const std::string &name, const CollectiveCommunication &comm )
+  : domain_( a, b, periodic ),
+    globalMesh_( cells ),
+    overlap_( overlap ),
+    name_( name ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
 
 
   template< class ct, int dim, SPRefinementStrategy strategy >
@@ -601,7 +647,7 @@ namespace Dune
       ioData.time = time;
       ioData.origin = domain().origin();
       ioData.width = domain().width();
-      ioData.cells = domain().cells();
+      ioData.cells = globalMesh_.width();
       ioData.overlap = overlap_;
       ioData.periodic = domain().periodic();
       ioData.maxLevel = maxLevel();
@@ -639,10 +685,13 @@ namespace Dune
 
     if( result != 0 )
     {
+      time = ioData.time;
+
+      domain_ = Domain( ioData.origin, ioData.origin + ioData.width, ioData.periodic );
+      globalMesh_ = Mesh( ioData.cells );
       overlap_ = ioData.overlap;
       name_ = ioData.name;
-      time = ioData.time;
-      setupMacroGrid( Domain( ioData.origin, ioData.origin + ioData.width, ioData.cells, ioData.periodic ) );
+      setupMacroGrid();
 
       for( int level = 0; level < ioData.maxLevel; ++level )
       {
@@ -756,14 +805,11 @@ namespace Dune
 
 
   template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void
-  SPGrid< ct, dim, strategy >::setupMacroGrid ( const Domain &domain )
+  inline void SPGrid< ct, dim, strategy >::setupMacroGrid ()
   {
     clear();
 
-    domain_ = domain;
-
-    SPDecomposition< dimension > decomposition( domain_.cells(), comm().size() );
+    SPDecomposition< dimension > decomposition( globalMesh_, comm().size() );
 
     GridLevel *leafLevel = new GridLevel( *this, decomposition );
     gridLevels_.push_back( leafLevel );
