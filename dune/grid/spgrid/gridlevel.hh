@@ -106,8 +106,6 @@ namespace Dune
     PartitionType
     partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const;
 
-    bool isMacro () const;
-    bool isLeaf () const;
     int level () const;
 
     const GlobalVector &h () const;
@@ -283,20 +281,6 @@ namespace Dune
 
 
   template< class Grid >
-  inline bool SPGridLevel< Grid >::isMacro () const
-  {
-    return (level_ == 0);
-  }
-
-
-  template< class Grid >
-  inline bool SPGridLevel< Grid >::isLeaf () const
-  {
-    return (level_ == grid().maxLevel());
-  }
-
-
-  template< class Grid >
   inline int SPGridLevel< Grid >::level () const
   {
     return level_;
@@ -315,7 +299,7 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::Refinement &
   SPGridLevel< Grid >::refinement () const
   {
-    assert( !isMacro() );
+    assert( level() > 0 );
     return refinement_;
   }
 
@@ -350,7 +334,7 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::LocalGeometry &
   SPGridLevel< Grid >::geometryInFather ( const MultiIndex &id ) const
   {
-    assert( !isMacro() && (geometryInFather_ != 0) );
+    assert( (level() > 0) && (geometryInFather_ != 0) );
     return *(geometryInFather_[ refinement().childIndex( id ) ]);
   }
 

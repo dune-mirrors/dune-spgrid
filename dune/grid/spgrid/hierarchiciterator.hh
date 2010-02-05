@@ -28,7 +28,7 @@ namespace Dune
     SPHierarchicIterator ( const EntityImpl &entityImpl, int maxLevel )
     : Base( entityImpl ),
       minLevel_( entityImpl.level() ),
-      maxLevel_( maxLevel )
+      maxLevel_( std::min( maxLevel, entityImpl.grid().maxLevel() ) )
     {
       increment();
     }
@@ -40,7 +40,7 @@ namespace Dune
     void increment ()
     {
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      if( entity_.isLeaf() || (level() >= maxLevel_) )
+      if( level() >= maxLevel_ )
       {
         while( (level() > minLevel_) && !entityInfo.nextChild() )
           entityInfo.up();

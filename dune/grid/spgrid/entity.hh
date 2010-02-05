@@ -76,7 +76,7 @@ namespace Dune
 
     bool isLeaf () const
     {
-      return entityInfo().gridLevel().isLeaf();
+      return (level() == entityInfo().gridLevel().grid().maxLevel());
     }
 
     PartitionType partitionType () const
@@ -112,6 +112,11 @@ namespace Dune
     const GridLevel &gridLevel () const
     {
       return entityInfo().gridLevel();
+    }
+
+    const Grid &grid () const
+    {
+      return gridLevel().grid();
     }
 
   private:
