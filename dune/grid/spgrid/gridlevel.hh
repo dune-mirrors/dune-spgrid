@@ -137,6 +137,7 @@ namespace Dune
     MultiIndex macroFactor_;
     Domain domain_;
     Mesh globalMesh_;
+    std::vector< Mesh > decomposition_;
     Mesh localMesh_;
     PartitionPool partitionPool_;
 
@@ -160,7 +161,8 @@ namespace Dune
     macroFactor_( coarseMacroFactor() ),
     domain_( grid.domain() ),
     globalMesh_( decomposition.mesh() ),
-    localMesh_( decomposition.subMesh( grid.comm().rank() ) ),
+    decomposition_( decomposition.subMeshes() ),
+    localMesh_( decomposition_[ grid.comm().rank() ] ),
     partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
   {
     buildGeometry();
@@ -179,6 +181,11 @@ namespace Dune
     localMesh_( father.localMesh().refine( refinement ) ),
     partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
   {
+    const size_t size = father.decomposition_.size();
+    decomposition_.reserve( size );
+    for( size_t rank = 0; rank < size; ++rank )
+      decomposition_.push_back( father.decomposition_[ rank ].refine( refinement ) );
+
     buildGeometry();
   }
 
@@ -191,6 +198,7 @@ namespace Dune
     macroFactor_( other.macroFactor_ ),
     domain_( other.domain_ ),
     globalMesh_( other.globalMesh_ ),
+    decomposition_( other.decomposition_ ),
     localMesh_( other.localMesh_ ),
     partitionPool_( other.partitionPool_ )
   {
