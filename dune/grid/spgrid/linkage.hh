@@ -22,7 +22,7 @@ namespace Dune
     typedef typename PartitionPool::Mesh Mesh;
     typedef typename PartitionPool::MultiIndex MultiIndex;
 
-    struct Interface;
+    class Interface;
 
     SPLinkage ( const int rank,
                 const PartitionPool &localPool,
@@ -46,8 +46,48 @@ namespace Dune
   // --------------------
 
   template< int dim >
-  struct SPLinkage< dim >::Interface
+  class SPLinkage< dim >::Interface
   {
+    struct Node;
+
+    typedef std::vector< Node > NodeContainer;
+
+  public:
+    typedef typename NodeContainer::const_iterator Iterator;
+
+    ~Interface ();
+
+    Iterator begin () const;
+    Iterator end () const;
+
+    void add ( const int rank, const PartitionList *sendList, const PartitionList *receiveList );
+
+  private:
+    NodeContainer nodes_;
+  };
+
+
+
+  // SPLinkage::Interface::Node
+  // --------------------------
+
+  template< int dim >
+  struct SPLinkage< dim >::Interface::Node
+  {
+    dune_static_assert( (int( ForwardCommunication ) == 0) && (int( BackwardCommunication ) == 1),
+                        "enumeration CommunicationDirection has changed." );
+
+    Node ( const int rank, const PartitionList *sendList, const PartitionList *receiveList );
+
+    int rank () const;
+    const PartitionList &sendList ( const CommunicationDirection direction ) const;
+    const PartitionList &receiveList ( const CommunicationDirection direction ) const;
+
+    void destroy ();
+
+  private:
+    const int rank_;
+    const PartitionList *partitionList_[ 2 ];
   };
 
 
@@ -160,8 +200,8 @@ namespace Dune
       return false;
     }
 
-
-
+    assert( (interface >= 0) && (interface < 5) );
+    interface_[ interface ].add( rank, sendList, receiveList );
     return true;
   }
 
@@ -186,6 +226,96 @@ namespace Dune
       }
     }
     return link;
+  }
+
+
+
+  // Implementation of SPLinkage::Interface
+  // --------------------------------------
+
+  template< int dim >
+  inline SPLinkage< dim >::Interface::~Interface ()
+  {
+    typedef typename NodeContainer::iterator Iterator;
+    const Iterator end = nodes_.end();
+    for( Iterator it = nodes_.begin(); it != end; ++it )
+      it->destroy();
+  }
+
+
+  template< int dim >
+  inline typename SPLinkage< dim >::Interface::Iterator
+  SPLinkage< dim >::Interface::begin () const
+  {
+    return nodes_.begin();
+  }
+
+
+  template< int dim >
+  inline typename SPLinkage< dim >::Interface::Iterator
+  SPLinkage< dim >::Interface::end () const
+  {
+    return nodes_.end();
+  }
+
+
+  template< int dim >
+  inline void SPLinkage< dim >::Interface
+    ::add ( const int rank, const PartitionList *sendList, const PartitionList *receiveList )
+  {
+    nodes_.push_back( Node( rank, sendList, receiveList ) );
+  }
+
+
+
+  // Implementation of SPLinkage::Interface
+  // --------------------------------------
+
+  template< int dim >
+  inline SPLinkage< dim >::Interface::Node
+    ::Node ( const int rank, const PartitionList *sendList, const PartitionList *receiveList )
+  : rank_( rank )
+  {
+    partitionList_[ 0 ] = sendList;
+    partitionList_[ 1 ] = receiveList;
+  }
+
+
+  template< int dim >
+  inline int SPLinkage< dim >::Interface::Node::rank () const
+  {
+    assert( rank_ >= 0 );
+    return rank_;
+  }
+
+
+  template< int dim >
+  inline const typename SPLinkage< dim >::PartitionList &
+  SPLinkage< dim >::Interface::Node::sendList ( const CommunicationDirection direction ) const
+  {
+    assert( (int( direction ) >= 0) && (int( direction ) <= 1) );
+    assert( partitionList_[ direction ] != 0 );
+    return *partitionList_[ direction ];
+  }
+
+  template< int dim >
+  inline const typename SPLinkage< dim >::PartitionList &
+  SPLinkage< dim >::Interface::Node::receiveList ( const CommunicationDirection direction ) const
+  {
+    assert( (int( direction ) >= 0) && (int( direction ) <= 1) );
+    assert( partitionList_[ 1 - direction ] != 0 );
+    return *partitionList_[ 1 - direction ];
+  }
+
+
+  template< int dim >
+  inline void SPLinkage< dim >::Interface::Node::destroy ()
+  {
+    rank_ = -1;
+    if( partitionList_[ 0 ] != partitionList_[ 1 ] )
+      delete partitionList_[ 1 ];
+    delete partitionList_[ 0 ];
+    partitionList_[ 0 ] = partitionList_[ 1 ] = 0;
   }
 
 }
