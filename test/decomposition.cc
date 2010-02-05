@@ -123,8 +123,8 @@ int main ( int argc, char **argv )
   
   typedef SPGrid< double, dimGrid > Grid;
   FieldVector< double, dimGrid > a( 0.0 ), b( 1.0 );
-  SPDomain< double, dimGrid > domain( a, b, width );
-  Grid grid( domain );
+  SPDomain< double, dimGrid > domain( a, b );
+  Grid grid( domain, width );
 
   std::vector< double > data( grid.size( 0 ) );
   for( unsigned int rank = 0; rank < size; ++rank )
