@@ -136,7 +136,6 @@ namespace Dune
     const Refinement refinement_;
     MultiIndex macroFactor_;
     Domain domain_;
-    Mesh globalMesh_;
     std::vector< Mesh > decomposition_;
     Mesh localMesh_;
     PartitionPool partitionPool_;
@@ -160,10 +159,9 @@ namespace Dune
     refinement_(),
     macroFactor_( coarseMacroFactor() ),
     domain_( grid.domain() ),
-    globalMesh_( decomposition.mesh() ),
     decomposition_( decomposition.subMeshes() ),
     localMesh_( decomposition_[ grid.comm().rank() ] ),
-    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
+    partitionPool_( localMesh_, decomposition.mesh(), overlap(), domain_.periodic() )
   {
     buildGeometry();
   }
@@ -177,9 +175,8 @@ namespace Dune
     refinement_( refinement ),
     macroFactor_( father.macroFactor_ * refinement ),
     domain_( father.domain() ),
-    globalMesh_( father.globalMesh().refine( refinement ) ),
     localMesh_( father.localMesh().refine( refinement ) ),
-    partitionPool_( localMesh_, globalMesh_, overlap(), domain_.periodic() )
+    partitionPool_( localMesh_, father.globalMesh().refine( refinement ), overlap(), domain_.periodic() )
   {
     const size_t size = father.decomposition_.size();
     decomposition_.reserve( size );
@@ -197,7 +194,6 @@ namespace Dune
     refinement_( other.refinement_ ),
     macroFactor_( other.macroFactor_ ),
     domain_( other.domain_ ),
-    globalMesh_( other.globalMesh_ ),
     decomposition_( other.decomposition_ ),
     localMesh_( other.localMesh_ ),
     partitionPool_( other.partitionPool_ )
@@ -257,7 +253,7 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::Mesh &
   SPGridLevel< Grid >::globalMesh () const
   {
-    return globalMesh_;
+    return partitionPool_.globalMesh();
   }
 
 
