@@ -28,10 +28,10 @@ namespace Dune
                 const PartitionPool &localPool,
                 const std::vector< Mesh > &decomposition );
 
-    const Interface &interface ( const InterfaceType interface ) const;
+    const Interface &interface ( const InterfaceType iftype ) const;
 
   private:
-    template< InterfaceType interface >
+    template< InterfaceType iftype >
     bool build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool );
 
    const PartitionList *intersect ( const PartitionList &local, const PartitionList &remote ) const;
@@ -89,7 +89,7 @@ namespace Dune
     void destroy ();
 
   private:
-    const int rank_;
+    int rank_;
     const PartitionList *partitionList_[ 2 ];
   };
 
@@ -98,7 +98,7 @@ namespace Dune
   // SPCommunicationInterface
   // ------------------------
 
-  template< InterfaceType >
+  template< InterfaceType iftype >
   struct SPCommunicationInterface;
 
   template<>
@@ -171,20 +171,20 @@ namespace Dune
 
   template< int dim >
   inline const typename SPLinkage< dim >::Interface &
-  SPLinkage< dim >::interface ( const InterfaceType interface ) const
+  SPLinkage< dim >::interface ( const InterfaceType iftype ) const
   {
-    assert( (int( interface ) >= 0) && (int( interface ) < 5) );
-    return interface_[ int( interface ) ];
+    assert( (int( iftype ) >= 0) && (int( iftype ) < 5) );
+    return interface_[ int( iftype ) ];
   }
 
 
   template< int dim >
-  template< InterfaceType interface >
+  template< InterfaceType iftype >
   inline bool SPLinkage< dim >
     ::build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool )
   {
-    const PartitionType piSend = SPCommunicationInterface< interface >::sendPartition;
-    const PartitionType piReceive = SPCommunicationInterface< interface >::receivePartition;
+    const PartitionIteratorType piSend = SPCommunicationInterface< iftype >::sendPartition;
+    const PartitionIteratorType piReceive = SPCommunicationInterface< iftype >::receivePartition;
 
     // build intersection lists
     const PartitionList *sendList, *receiveList;
@@ -203,8 +203,8 @@ namespace Dune
       return false;
     }
 
-    assert( (interface >= 0) && (interface < 5) );
-    interface_[ interface ].add( rank, sendList, receiveList );
+    assert( (iftype >= 0) && (iftype < 5) );
+    interface_[ iftype ].add( rank, sendList, receiveList );
     return true;
   }
 
@@ -225,7 +225,7 @@ namespace Dune
       {
         Intersection intersection = lit->intersect( *rit );
         if( !intersection.empty() )
-          link += Partition( intersection, number );
+          *link += Partition( intersection, number );
       }
     }
     return link;
