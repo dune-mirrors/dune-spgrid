@@ -47,12 +47,12 @@ namespace Dune
     Mesh globalMesh_;
     unsigned int periodic_;
 
-    PartitionList interior_;
-    PartitionList interiorBorder_;
-    PartitionList overlap_;
-    PartitionList overlapFront_;
-    PartitionList all_;
-    PartitionList ghost_;
+    PartitionList interiorList_;
+    PartitionList interiorBorderList_;
+    PartitionList overlapList_;
+    PartitionList overlapFrontList_;
+    PartitionList allList_;
+    PartitionList ghostList_;
   };
 
 
@@ -68,10 +68,10 @@ namespace Dune
     periodic_( periodic )
   {
     // generate Interior and InteriorBorder
-    interior_ += openPartition( localMesh, 0 );
-    interiorBorder_ += closedPartition( localMesh, 0 );
-    interior_.updateCache();
-    interiorBorder_.updateCache();
+    interiorList_ += openPartition( localMesh, 0 );
+    interiorBorderList_ += closedPartition( localMesh, 0 );
+    interiorList_.updateCache();
+    interiorBorderList_.updateCache();
 
     // detect which directions have to be split in the overlap partition
     const MultiIndex globalWidth = globalMesh.width();
@@ -119,14 +119,14 @@ namespace Dune
         open.neighbor( 2*i + j ) = d ^ (1 << i);
         closed.neighbor( 2*i + j ) = d ^ (1 << i);
       }
-      overlap_ += open;
-      overlapFront_ += closed;
+      overlapList_ += open;
+      overlapFrontList_ += closed;
     }
-    overlap_.updateCache();
-    overlapFront_.updateCache();
+    overlapList_.updateCache();
+    overlapFrontList_.updateCache();
 
     // generate All
-    all_ = overlapFront_;
+    allList_ = overlapFrontList_;
   }
 
 
@@ -138,22 +138,22 @@ namespace Dune
     switch( pitype )
     {
     case Interior_Partition:
-      return interior_;
+      return interiorList_;
 
     case InteriorBorder_Partition:
-      return interiorBorder_;
+      return interiorBorderList_;
 
     case Overlap_Partition:
-      return overlap_;
+      return overlapList_;
 
     case OverlapFront_Partition:
-      return overlapFront_;
+      return overlapFrontList_;
 
     case All_Partition:
-      return all_;
+      return allList_;
 
     case Ghost_Partition:
-      return ghost_;
+      return ghostList_;
 
     default:
       DUNE_THROW( GridError, "No such PartitionIteratorType." );
@@ -167,11 +167,11 @@ namespace Dune
   SPPartitionPool< dim >
     ::partitionType ( const MultiIndex &id, const unsigned int number ) const
   {
-    assert( all_.contains( id, number ) );
-    if( interiorBorder_.contains( id, number ) )
-      return ((codim == 0) || interior_.contains( id, number )) ? InteriorEntity : BorderEntity;
-    else if( overlapFront_.contains( id, number ) )
-      return ((codim == 0) || overlap_.contains( id, number )) ? OverlapEntity : FrontEntity;
+    assert( allList_.contains( id, number ) );
+    if( interiorBorderList_.contains( id, number ) )
+      return ((codim == 0) || interiorList_.contains( id, number )) ? InteriorEntity : BorderEntity;
+    else if( overlapFrontList_.contains( id, number ) )
+      return ((codim == 0) || overlapList_.contains( id, number )) ? OverlapEntity : FrontEntity;
     else
       return GhostEntity;
   }
