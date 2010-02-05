@@ -25,62 +25,84 @@ namespace Dune
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
 
-    SPDomain ()
-    : periodic_( 0 )
-    {
-      for( int i = 0; i < dimension; ++i )
-      {
-        origin_[ i ] = ctype( 0 );
-        width_[ i ] = ctype( 1 );
-      }
-    }
-
     SPDomain ( const GlobalVector &a, const GlobalVector &b,
-               const unsigned int periodic = 0 )
-    : periodic_( periodic )
-    {
-      for( int i = 0; i < dimension; ++i )
-      {
-        origin_[ i ] = std::min( a[ i ], b[ i ] );
-        width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
-      }
-    }
+               const unsigned int periodic = 0 );
 
-    const GlobalVector &origin () const
-    {
-      return origin_;
-    }
+    const GlobalVector &origin () const;
+    const GlobalVector &width () const;
 
-    const GlobalVector &width () const
-    {
-      return width_;
-    }
+    bool periodic ( const int i ) const;
+    unsigned int periodic () const;
 
-#if 0
-    GlobalVector h () const
-    {
-      GlobalVector h;
-      for( int i = 0; i < dimension; ++i )
-        h[ i ] = width_[ i ] / ctype( cells_[ i ] );
-      return h;
-    }
-#endif
-
-    bool periodic ( const int i ) const
-    {
-      assert( (i >= 0) && (i < dimension) );
-      return ((periodic_ & (1 << i)) != 0);
-    }
-
-    unsigned int periodic () const
-    {
-      return periodic_;
-    }
+    static This unitCube ();
 
   private:
     GlobalVector origin_, width_;
     unsigned int periodic_;
   };
+
+
+
+  // Implementation of SPDomain
+  // --------------------------
+
+  template< class ct, int dim >
+  inline SPDomain< ct, dim >
+    ::SPDomain ( const GlobalVector &a, const GlobalVector &b,
+                 const unsigned int periodic )
+  : periodic_( periodic )
+  {
+    for( int i = 0; i < dimension; ++i )
+    {
+      origin_[ i ] = std::min( a[ i ], b[ i ] );
+      width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
+    }
+  }
+
+
+  template< class ct, int dim >
+  inline const typename SPDomain< ct, dim >::GlobalVector &
+  SPDomain< ct, dim >::origin () const
+  {
+    return origin_;
+  }
+
+
+  template< class ct, int dim >
+  inline const typename SPDomain< ct, dim >::GlobalVector &
+  SPDomain< ct, dim >::width () const
+  {
+    return width_;
+  }
+
+
+  template< class ct, int dim >
+  inline bool SPDomain< ct, dim >::periodic ( const int i ) const
+  {
+    assert( (i >= 0) && (i < dimension) );
+    return ((periodic_ & (1 << i)) != 0);
+  }
+
+
+  template< class ct, int dim >
+  inline unsigned int SPDomain< ct, dim >::periodic () const
+  {
+    return periodic_;
+  }
+
+
+  template< class ct, int dim >
+  inline typename SPDomain< ct, dim >::This
+  SPDomain< ct, dim >::unitCube ()
+  {
+    GlobalVector a, b;
+    for( int i = 0; i < dimension; ++i )
+    {
+      a = ctype( 0 );
+      b = ctype( 1 );
+    }
+    return This( a, b );
+  }
 
 }
 

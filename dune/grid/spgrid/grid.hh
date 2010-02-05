@@ -480,7 +480,7 @@ namespace Dune
 
   template< class ct, int dim, SPRefinementStrategy strategy >
   inline SPGrid< ct, dim, strategy >::SPGrid ( const CollectiveCommunication &comm )
-  : domain_(),
+  : domain_( Domain::unitCube() ),
     globalMesh_( Mesh::unitMesh() ),
     overlap_( MultiIndex::zero() ),
     name_( "SPGrid" ),
