@@ -11,26 +11,20 @@
 namespace Dune
 {
 
-  // SPPartition
-  // -----------
+  // SPBasicPartition
+  // ----------------
 
   template< int dim >
-  class SPPartition
+  class SPBasicPartition
   {
-    typedef SPPartition< dim > This;
-
-    typedef unsigned int Flags;
+    typedef SPBasicPartition< dim > This;
 
   public:
     static const int dimension = dim;
 
     typedef SPMultiIndex< dimension > MultiIndex;
-    typedef SPMesh< dimension > Mesh;
 
-    SPPartition ( const MultiIndex &begin, const MultiIndex &end,
-                  const unsigned int number );
-    SPPartition ( const MultiIndex &begin, const MultiIndex &end,
-                  const Mesh &globalMesh, const unsigned int number );
+    SPBasicPartition ( const MultiIndex &begin, const MultiIndex &end );
 
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
@@ -39,13 +33,8 @@ namespace Dune
     int bound ( const unsigned int b, const int i,
                 const unsigned int d ) const;
 
-    unsigned int number () const;
-    const unsigned int &neighbor ( const int face ) const;
-    unsigned int &neighbor ( const int face );
+    This intersect ( const This &other ) const;
 
-    bool hasNeighbor ( const int face ) const;
-    Flags boundary () const;
-    bool boundary ( const int face ) const;
     bool contains ( const MultiIndex &id ) const;
 
     int volume () const;
@@ -60,6 +49,43 @@ namespace Dune
 
   private:
     MultiIndex bound_[ 2 ];
+  };
+
+
+
+  // SPPartition
+  // -----------
+
+  template< int dim >
+  class SPPartition
+  : public SPBasicPartition< dim >
+  {
+    typedef SPPartition< dim > This;
+    typedef SPBasicPartition< dim > Base;
+
+    typedef unsigned int Flags;
+
+  public:
+    static const int dimension = dim;
+
+    typedef typename Base::MultiIndex MultiIndex;
+    typedef SPMesh< dimension > Mesh;
+
+    SPPartition ( const Base &base, const unsigned int number );
+    SPPartition ( const MultiIndex &begin, const MultiIndex &end,
+                  const unsigned int number );
+    SPPartition ( const MultiIndex &begin, const MultiIndex &end,
+                  const Mesh &globalMesh, const unsigned int number );
+
+    unsigned int number () const;
+    const unsigned int &neighbor ( const int face ) const;
+    unsigned int &neighbor ( const int face );
+
+    bool hasNeighbor ( const int face ) const;
+    Flags boundary () const;
+    bool boundary ( const int face ) const;
+
+  private:
     unsigned int number_;
     unsigned int neighbor_[ 2*dimension ];
     Flags boundary_;
@@ -67,19 +93,151 @@ namespace Dune
 
 
 
+  // Implementation of SPBasicPartition
+  // ----------------------------------
+
+  template< int dim >
+  SPBasicPartition< dim >
+   ::SPBasicPartition ( const MultiIndex &begin, const MultiIndex &end )
+  {
+    bound_[ 0 ] = begin;
+    bound_[ 1 ] = end;
+  }
+
+
+  template< int dim >
+  inline const typename SPBasicPartition< dim >::MultiIndex &
+  SPBasicPartition< dim >::begin () const
+  {
+    return bound_[ 0 ];
+  }
+
+
+  template< int dim >
+  inline const typename SPBasicPartition< dim >::MultiIndex &
+  SPBasicPartition< dim >::end () const
+  {
+    return bound_[ 1 ];
+  }
+
+
+  template< int dim >
+  inline const typename SPBasicPartition< dim >::MultiIndex &
+  SPBasicPartition< dim >::bound ( const unsigned int b ) const
+  {
+    assert( b == (b & 1) );
+    return bound_[ b ];
+  }
+
+
+  template< int dim >
+  inline int
+  SPBasicPartition< dim >::bound ( const unsigned int b, const int i,
+                                   const unsigned int d ) const
+  {
+    assert( d == (d & 1) );
+    return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ d) & 1);
+  }
+
+
+  template< int dim >
+  inline typename SPBasicPartition< dim >::This
+  SPBasicPartition< dim >::intersect ( const This &other ) const
+  {
+    return This( std::max( begin(), other.begin() ), std::min( end(), other.end() ) );
+  }
+
+
+  template< int dim >
+  inline bool SPBasicPartition< dim >::contains ( const MultiIndex &id ) const
+  {
+    bool contains = true;
+    for( int i = 0; i < dimension; ++i )
+      contains &= (id[ i ] >= begin()[ i ]) && (id[ i ] <= end()[ i ]);
+    return contains;
+  }
+
+
+  template< int dim >
+  inline int SPBasicPartition< dim >::volume () const
+  {
+    int volume = 1;
+    for( int i = 0; i < dimension; ++i )
+      volume *= width( i );
+    return volume;
+  }
+
+
+  template< int dim >
+  inline typename SPBasicPartition< dim >::MultiIndex
+  SPBasicPartition< dim >::width () const
+  {
+    MultiIndex w;
+    for( int i = 0; i < dimension; ++i )
+      w[ i ] = width( i );
+    return w;
+  }
+
+
+  template< int dim >
+  inline int SPBasicPartition< dim >::width ( const int i ) const
+  {
+    return std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 );
+  }
+
+
+  template< int dim >
+  template< class char_type, class traits >
+  inline void SPBasicPartition< dim >
+    ::print ( std::basic_ostream< char_type, traits > &out ) const
+  {
+    print( out, 0 );
+    for( int i = 1; i < dimension; ++i )
+    {
+      out << " x ";
+      print( out, i );
+    }
+  }
+
+
+  template< int dim >
+  template< class char_type, class traits >
+  inline void SPBasicPartition< dim >
+    ::print ( std::basic_ostream< char_type, traits > &out, const int i ) const
+  {
+    const int b = begin()[ i ];
+    const int e= end()[ i ];
+
+    const char left = '[' + (b & 1)*(']'-'[');
+    const char right = ']' + (e & 1)*('['-']');
+
+    out << left << ' ' << (b/2) << ", " << ((e+1)/2) << ' ' << right;
+  }
+
+
+
   // Implementation of SPPartition
   // -----------------------------
+
+  template< int dim >
+  SPPartition< dim >::SPPartition ( const Base &base, const unsigned int number )
+  : Base( base ),
+    number_( number ),
+    boundary_( ((Flags( 1 ) << (2*dimension-1))-1) | (Flags( 1 ) << (2*dimension-1)) )
+  {
+    for( int face = 0; face < 2*dimension; ++face )
+      neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
+  }
+
 
   template< int dim >
   SPPartition< dim >
    ::SPPartition ( const MultiIndex &begin, const MultiIndex &end,
                    const unsigned int number )
-  : number_( number ),
+  : Base( begin, end ),
+    number_( number ),
     boundary_( ((Flags( 1 ) << (2*dimension-1))-1) | (Flags( 1 ) << (2*dimension-1)) )
   {
-    bound_[ 0 ] = begin;
-    bound_[ 1 ] = end;
-
     for( int face = 0; face < 2*dimension; ++face )
       neighbor_[ face ] = std::numeric_limits< unsigned int >::max();
   }
@@ -89,53 +247,16 @@ namespace Dune
   SPPartition< dim >
    ::SPPartition ( const MultiIndex &begin, const MultiIndex &end,
                    const Mesh &globalMesh, const unsigned int number )
-  : number_( number ),
+  : Base( begin, end ),
+    number_( number ),
     boundary_( 0 )
   {
-    bound_[ 0 ] = begin;
-    bound_[ 1 ] = end;
-
     for( int i = 0; i < dimension; ++i )
     {
       neighbor_[ 2*i ] = neighbor_[ 2*i+1 ] = std::numeric_limits< unsigned int >::max();
       boundary_ |= Flags( begin[ i ] == 2*globalMesh.begin()[ i ] ) << (2*i);
       boundary_ |= Flags( end[ i ] == 2*globalMesh.end()[ i ] ) << (2*i+1);
     }
-  }
-
-
-  template< int dim >
-  inline const typename SPPartition< dim >::MultiIndex &
-  SPPartition< dim >::begin () const
-  {
-    return bound_[ 0 ];
-  }
-
-
-  template< int dim >
-  inline const typename SPPartition< dim >::MultiIndex &
-  SPPartition< dim >::end () const
-  {
-    return bound_[ 1 ];
-  }
-
-
-  template< int dim >
-  inline const typename SPPartition< dim >::MultiIndex &
-  SPPartition< dim >::bound ( const unsigned int b ) const
-  {
-    assert( b == (b & 1) );
-    return bound_[ b ];
-  }
-
-
-  template< int dim >
-  inline int
-  SPPartition< dim >::bound ( const unsigned int b, const int i,
-                              const unsigned int d ) const
-  {
-    assert( d == (d & 1) );
-    return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ d) & 1);
   }
 
 
@@ -187,79 +308,14 @@ namespace Dune
   }
 
 
-  template< int dim >
-  inline bool SPPartition< dim >::contains ( const MultiIndex &id ) const
-  {
-    bool contains = true;
-    for( int i = 0; i < dimension; ++i )
-      contains &= (id[ i ] >= begin()[ i ]) && (id[ i ] <= end()[ i ]);
-    return contains;
-  }
 
-
-  template< int dim >
-  inline int SPPartition< dim >::volume () const
-  {
-    int volume = 1;
-    for( int i = 0; i < dimension; ++i )
-      volume *= width( i );
-    return volume;
-  }
-
-
-  template< int dim >
-  inline typename SPPartition< dim >::MultiIndex SPPartition< dim >::width () const
-  {
-    MultiIndex w;
-    for( int i = 0; i < dimension; ++i )
-      w[ i ] = width( i );
-    return w;
-  }
-
-
-  template< int dim >
-  inline int SPPartition< dim >::width ( const int i ) const
-  {
-    return std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 );
-  }
-
-
-  template< int dim >
-  template< class char_type, class traits >
-  inline void SPPartition< dim >
-    ::print ( std::basic_ostream< char_type, traits > &out ) const
-  {
-    print( out, 0 );
-    for( int i = 1; i < dimension; ++i )
-    {
-      out << " x ";
-      print( out, i );
-    }
-  }
-
-
-  template< int dim >
-  template< class char_type, class traits >
-  inline void SPPartition< dim >
-    ::print ( std::basic_ostream< char_type, traits > &out, const int i ) const
-  {
-    const int b = begin()[ i ];
-    const int e= end()[ i ];
-
-    const char left = '[' + (b & 1)*(']'-'[');
-    const char right = ']' + (e & 1)*('['-']');
-
-    out << left << ' ' << (b/2) << ", " << ((e+1)/2) << ' ' << right;
-  }
-
-
-
-  // Auxilliary functions for SPPartition
-  // ------------------------------------
+  // Auxilliary functions for SPBasicPartition
+  // -----------------------------------------
 
   template< class char_type, class traits, int dim >
   inline std::basic_ostream< char_type, traits > &
-  operator<< ( std::basic_ostream< char_type, traits > &out, const SPPartition< dim > &partition )
+  operator<< ( std::basic_ostream< char_type, traits > &out,
+               const SPBasicPartition< dim > &partition )
   {
     partition.print( out );
     return out;
