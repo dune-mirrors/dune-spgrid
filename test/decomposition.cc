@@ -41,6 +41,7 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
     }
     std::cout << " (load: " << load << ")" << std::endl;
 
+#if 0
     for( typename PartitionList::Iterator it = partition.begin(); it; ++it )
     {
       std::cout << "        - " << it->number();
@@ -52,6 +53,7 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
       }
       std::cout << std::endl;
     }
+#endif
 
     minload = std::min( minload, load );
     maxload = std::max( maxload, load );
@@ -60,6 +62,55 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
   std::cout << "maximal load: " << maxload << ", minimal load: " << minload
             << ", ratio: " << (double( maxload ) / double( minload )) << std::endl;
 }
+
+
+
+template< InterfaceType iftype >
+void listLinkage ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, unsigned int periodic )
+{
+  typedef SPLinkage< dimGrid > Linkage;
+  typedef typename Linkage::Interface Interface;
+  const int size = decomposition.size();
+  for( int rank = 0; rank < size; ++rank )
+  {
+    PartitionPool localPool( decomposition.subMesh( rank ), decomposition.mesh(), overlap, periodic );
+    Linkage linkage( rank, localPool, decomposition.subMeshes() );
+
+    std::cout << "rank " << rank << ":" << std::endl;
+    const Interface &interface = linkage.interface( iftype );
+
+    const typename Interface::Iterator end = interface.end();
+    for( typename Interface::Iterator it = interface.begin(); it != end; ++it )
+    {
+      const PartitionList &sendList = it->sendList();
+      if( !sendList.empty() )
+      {
+        std::cout << "- snd " << it->rank();
+        char separator = ':';
+        for( typename PartitionList::Iterator pit = sendList.begin(); pit; ++pit )
+        {
+          std::cout << separator << " " << *pit;
+          separator = ';';
+        }
+        std::cout << std::endl;
+      }
+
+      const PartitionList &receiveList = it->receiveList();
+      if( !receiveList.empty() )
+      {
+        std::cout << "- rcv " << it->rank();
+        char separator = ':';
+        for( typename PartitionList::Iterator pit = receiveList.begin(); pit; ++pit )
+        {
+          std::cout << separator << " " << *pit;
+          separator = ';';
+        }
+        std::cout << std::endl;
+      }
+    }
+  }
+}
+
 
 int main ( int argc, char **argv )
 {
@@ -120,7 +171,32 @@ int main ( int argc, char **argv )
   std::cout << "All Partitions:" << std::endl;
   std::cout << "---------------" << std::endl;
   listPartitions< All_Partition >( decomposition, overlap, periodic );
-  
+
+  std::cout << std::endl;
+  std::cout << "InteriorBorder InteriorBorder Communication:" << std::endl;
+  std::cout << "--------------------------------------------" << std::endl;
+  listLinkage< InteriorBorder_InteriorBorder_Interface >( decomposition, overlap, periodic );
+
+  std::cout << std::endl;
+  std::cout << "InteriorBorder All Communication:" << std::endl;
+  std::cout << "---------------------------------" << std::endl;
+  listLinkage< InteriorBorder_All_Interface >( decomposition, overlap, periodic );
+
+  std::cout << std::endl;
+  std::cout << "Overlap OverlapFront Communication:" << std::endl;
+  std::cout << "-----------------------------------" << std::endl;
+  listLinkage< Overlap_OverlapFront_Interface >( decomposition, overlap, periodic );
+
+  std::cout << std::endl;
+  std::cout << "Overlap All Communication:" << std::endl;
+  std::cout << "--------------------------" << std::endl;
+  listLinkage< Overlap_All_Interface >( decomposition, overlap, periodic );
+
+  std::cout << std::endl;
+  std::cout << "All All Communication:" << std::endl;
+  std::cout << "----------------------" << std::endl;
+  listLinkage< All_All_Interface >( decomposition, overlap, periodic );
+
   typedef SPGrid< double, dimGrid > Grid;
   FieldVector< double, dimGrid > a( 0.0 ), b( 1.0 );
   SPDomain< double, dimGrid > domain( a, b );
