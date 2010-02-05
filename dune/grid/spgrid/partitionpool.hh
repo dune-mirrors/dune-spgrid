@@ -41,10 +41,8 @@ namespace Dune
     unsigned int periodic () const;
 
   private:
-    Partition
-    closedPartition ( const Mesh &localMesh, const unsigned int number ) const;
-    Partition
-    openPartition ( const Mesh &localMesh, const unsigned int number ) const;
+    Partition makePartition ( const Mesh &localMesh, const unsigned int number,
+                              const unsigned int open ) const;
 
     Mesh globalMesh_;
     MultiIndex overlap_;
@@ -72,8 +70,8 @@ namespace Dune
     periodic_( periodic )
   {
     // generate Interior and InteriorBorder
-    interiorList_ += openPartition( localMesh, 0 );
-    interiorBorderList_ += closedPartition( localMesh, 0 );
+    interiorList_ += makePartition( localMesh, 0, (1 << dimension) - 1 );
+    interiorBorderList_ += makePartition( localMesh, 0, 0 );
     interiorList_.updateCache();
     interiorBorderList_.updateCache();
 
@@ -84,8 +82,10 @@ namespace Dune
     int n = 0;
     int shift[ dimension ];
     int dir[ dimension ];
+    unsigned int openOverlap = 0;
     for( int i = 0; i < dimension; ++i )
     {
+      openOverlap |= (overlap[ i ] > 0 ? (1 << i) : 0);
       if( (periodic & (1 << i)) == 0 )
         continue;
 
@@ -115,8 +115,8 @@ namespace Dune
       MultiIndex s = MultiIndex::zero();
       for( int i = 0; i < n; ++i )
         s[ dir[ i ] ] = ((d >> i)&1)*shift[ i ];
-      Partition open = openPartition( globalMesh.intersect( overlapMesh + s ), d );
-      Partition closed = closedPartition( globalMesh.intersect( overlapMesh + s ), d );
+      Partition open = makePartition( globalMesh.intersect( overlapMesh + s ), d, openOverlap );
+      Partition closed = makePartition( globalMesh.intersect( overlapMesh + s ), d, 0 );
       for( int i = 0; i < n; ++i )
       {
         const int j = (shift[ i ] < 0) ^ ((d >> i)&1);
@@ -207,33 +207,8 @@ namespace Dune
   template< int dim >
   inline typename SPPartitionPool< dim >::Partition
   SPPartitionPool< dim >
-    ::closedPartition ( const Mesh &localMesh, const unsigned int number ) const
-  {
-    const MultiIndex &lbegin = localMesh.begin();
-    const MultiIndex &lend = localMesh.end();
-    const MultiIndex &gbegin = globalMesh().begin();
-    const MultiIndex &gend = globalMesh().end();
-
-    // create partition
-    Partition partition( 2*lbegin, 2*lend, globalMesh(), number );
-    
-    // deal with self-neighborship (periodicity)
-    for( int i = 0; i < dimension; ++i )
-    {
-      if( (periodic() & (1 << i)) == 0 )
-        continue;
-      if( (lbegin[ i ] == gbegin[ i ]) && (lend[ i ] == gend[ i ]) )
-        partition.neighbor( 2*i ) = partition.neighbor( 2*i+1 ) = number;
-    }
-
-    return partition;
-  }
-
-
-  template< int dim >
-  inline typename SPPartitionPool< dim >::Partition
-  SPPartitionPool< dim >
-    ::openPartition ( const Mesh &localMesh, const unsigned int number ) const
+    ::makePartition ( const Mesh &localMesh, const unsigned int number,
+                      const unsigned int open ) const
   {
     const MultiIndex &lbegin = localMesh.begin();
     const MultiIndex &lend = localMesh.end();
@@ -244,8 +219,9 @@ namespace Dune
     MultiIndex begin, end;
     for( int i = 0; i < dimension; ++i )
     {
-      begin[ i ] = 2*lbegin[ i ] + int( lbegin[ i ] != gbegin[ i ] );
-      end[ i ] = 2*lend[ i ] - int( lend[ i ] != gend[ i ] );
+      const int o = ((open >> i) & 1);
+      begin[ i ] = 2*lbegin[ i ] + o*int( lbegin[ i ] != gbegin[ i ] );
+      end[ i ] = 2*lend[ i ] - o*int( lend[ i ] != gend[ i ] );
     }
     Partition partition( begin, end, globalMesh(), number );
     
@@ -260,7 +236,6 @@ namespace Dune
 
     return partition;
   }
-
 }
 
 #endif // #ifndef DUNE_SPGRID_PARTITIONPOOL_HH
