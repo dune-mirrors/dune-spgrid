@@ -12,6 +12,7 @@
 #include <dune/grid/spgrid/domain.hh>
 #include <dune/grid/spgrid/mesh.hh>
 #include <dune/grid/spgrid/partitionpool.hh>
+#include <dune/grid/spgrid/linkage.hh>
 #include <dune/grid/spgrid/decomposition.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
 
@@ -51,6 +52,7 @@ namespace Dune
 
     typedef SPDecomposition< dimension > Decomposition;
     typedef SPPartitionPool< dimension > PartitionPool;
+    typedef SPLinkage< dimension > Linkage;
 
     typedef typename Decomposition::Mesh Mesh;
 
@@ -139,6 +141,7 @@ namespace Dune
     std::vector< Mesh > decomposition_;
     Mesh localMesh_;
     PartitionPool partitionPool_;
+    Linkage linkage_;
 
     GlobalVector h_;
     void *geometryCache_[ numDirections ];
@@ -161,7 +164,8 @@ namespace Dune
     domain_( grid.domain() ),
     decomposition_( decomposition.subMeshes() ),
     localMesh_( decomposition_[ grid.comm().rank() ] ),
-    partitionPool_( localMesh_, decomposition.mesh(), overlap(), domain_.periodic() )
+    partitionPool_( localMesh_, decomposition.mesh(), overlap(), domain_.periodic() ),
+    linkage_( grid.comm().rank(), partitionPool_, decomposition_ )
   {
     buildGeometry();
   }
@@ -175,14 +179,11 @@ namespace Dune
     refinement_( refinement ),
     macroFactor_( father.macroFactor_ * refinement ),
     domain_( father.domain() ),
-    localMesh_( father.localMesh().refine( refinement ) ),
-    partitionPool_( localMesh_, father.globalMesh().refine( refinement ), overlap(), domain_.periodic() )
+    decomposition_( refinement( father.decomposition_ ) ),
+    localMesh_( refinement( father.localMesh() ) ),
+    partitionPool_( localMesh_, refinement( father.globalMesh() ), overlap(), domain_.periodic() ),
+    linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
   {
-    const size_t size = father.decomposition_.size();
-    decomposition_.reserve( size );
-    for( size_t rank = 0; rank < size; ++rank )
-      decomposition_.push_back( father.decomposition_[ rank ].refine( refinement ) );
-
     buildGeometry();
   }
 
@@ -196,7 +197,8 @@ namespace Dune
     domain_( other.domain_ ),
     decomposition_( other.decomposition_ ),
     localMesh_( other.localMesh_ ),
-    partitionPool_( other.partitionPool_ )
+    partitionPool_( other.partitionPool_ ),
+    linkage_( other.linkage_ )
   {
     buildGeometry();
   }
