@@ -17,6 +17,7 @@
 #include <dune/grid/test/checkgeometryinfather.cc>
 #include <dune/grid/test/checkiterators.cc>
 #include <dune/grid/test/checkpartition.cc>
+#include <dune/grid/test/checkcommunicate.cc>
 
 static const int dimGrid = DIMGRID;
 
@@ -43,6 +44,9 @@ void performCheck ( Grid &grid, const int maxLevel )
       std::cerr << ">>> Checking geometry in father..." << std::endl;
       checkGeometryInFather( grid );
     }
+
+    std::cerr << ">>> Checking communication..." << std::endl;
+    checkCommunication( grid, -1, std::cout );
   }
 
   std::cerr << ">>> Writing out grid..." << std::endl;
