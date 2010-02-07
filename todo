@@ -3,10 +3,9 @@ dune-spgrid's To-Do-List
 ------------------------
 
 Parallelization:
- * implement communication
+ * update superentity iterators to partitioning
  * add ghosts
  * adapt local / global id set to partitioning
- * update superentity iterators to partitioning
  * decomposition should just store a std::vector
  * correctly implement overlapSize and ghostSize
 
