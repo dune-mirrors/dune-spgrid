@@ -8,6 +8,7 @@ Parallelization:
  * adapt local / global id set to partitioning
  * update superentity iterators to partitioning
  * decomposition should just store a std::vector
+ * correctly implement overlapSize and ghostSize
 
 Refinement techniques:
  * implement bisection refinement
