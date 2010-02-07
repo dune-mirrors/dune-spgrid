@@ -43,6 +43,8 @@ namespace Dune
     SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
                           const End &e, const unsigned int sweepDir = 0 );
 
+    This &operator++ ();
+
     void increment ();
 
   private:
@@ -87,6 +89,15 @@ namespace Dune
   {
     assert( sweepDir < numDirections );
     init();
+  }
+
+
+  template< int codim, class Grid >
+  inline typename SPPartitionIterator< codim, Grid >::This &
+  SPPartitionIterator< codim, Grid >::operator++ ()
+  {
+    increment();
+    return *this;
   }
 
 
