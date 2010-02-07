@@ -8,6 +8,7 @@
 #include <dune/grid/extensions/superentityiterator.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
+#include <dune/grid/spgrid/communication.hh>
 #include <dune/grid/spgrid/indexset.hh>
 #include <dune/grid/spgrid/intersection.hh>
 #include <dune/grid/spgrid/intersectioniterator.hh>
@@ -199,7 +200,7 @@ namespace Dune
 
     template< class DataHandle, class Data >
     void communicate ( CommDataHandleIF< DataHandle, Data > &data,
-                       InterfaceType interface, CommunicationDirection dir ) const;
+                       InterfaceType iftype, CommunicationDirection dir ) const;
 
     const GridLevel &gridLevel () const;
 
@@ -404,8 +405,20 @@ namespace Dune
   template< class DataHandle, class Data >
   inline void SPGridView< ViewTraits >
     ::communicate ( CommDataHandleIF< DataHandle, Data > &data,
-                    InterfaceType interface, CommunicationDirection dir ) const
-  {}
+                    InterfaceType iftype, CommunicationDirection dir ) const
+  {
+    typedef CommDataHandleIF< DataHandle, Data > DataHandleIF;
+    typedef typename GridLevel::CommInterface Interface;
+
+    SPCommunication< Grid, DataHandleIF > communication( gridLevel(), data );
+    const Interface &interface = gridLevel().commInterface( iftype );
+
+    const typename Interface::Iterator &end = interface.end();
+    for( typename Interface::Iterator it = interface.begin(); it != end; ++it )
+      communication.gather( it->rank(), it->sendList( dir ) );
+    for( typename Interface::Iterator it = interface.begin(); it != end; ++it )
+      communication.scatter( it->rank(), it->receiveList( dir ) );
+  }
 
 
   template< class ViewTraits >

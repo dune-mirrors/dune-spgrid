@@ -58,6 +58,8 @@ namespace Dune
 
     typedef typename PartitionPool::PartitionList PartitionList;
 
+    typedef typename Linkage::Interface CommInterface;
+
     static const unsigned int numDirections = Cube::numCorners;
 
     template< int codim >
@@ -104,6 +106,8 @@ namespace Dune
     template< int codim >
     PartitionType
     partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const;
+
+    const CommInterface &commInterface ( const InterfaceType iftype ) const;
 
     int level () const;
 
@@ -282,6 +286,14 @@ namespace Dune
     ::partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const
   {
     return partitionPool_.template partitionType< codim >( id, partitionNumber );
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::CommInterface &
+  SPGridLevel< Grid >::commInterface ( const InterfaceType iftype ) const
+  {
+    return linkage_.commInterface( iftype );
   }
 
 
