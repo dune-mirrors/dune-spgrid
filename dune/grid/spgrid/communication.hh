@@ -28,10 +28,10 @@ namespace Dune
     struct Codim;
 
   public:
-    typedef SPGridLevel< Grid > GridLevel;
-    typedef typename GridLevel::PartitionList PartitionList;
+    static const unsigned int dimension = Grid::dimension;
 
-    static const unsigned int dimension = GridLevel::dimension;
+    typedef SPGridLevel< const Grid > GridLevel;
+    typedef SPPartitionList< dimension > PartitionList;
 
     typedef typename DataHandle::DataType DataType;
 
@@ -113,7 +113,7 @@ namespace Dune
   template< int codim >
   struct SPCommunication< Grid, DataHandle >::Codim
   {
-    typedef SPPartitionIterator< codim, Grid > Iterator;
+    typedef SPPartitionIterator< codim, const Grid > Iterator;
 
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
@@ -145,8 +145,8 @@ namespace Dune
     const Iterator end = packets_.end();
     for( Iterator it = packets_.begin(); it != end; ++it )
     {
-      it->first.wait( gridLevel_.grid().comm() );
-      it->second.wait( gridLevel_.grid().comm() );
+      (*it)->first.wait( gridLevel_.grid().comm() );
+      (*it)->second.wait( gridLevel_.grid().comm() );
       delete *it;
     }
   }
