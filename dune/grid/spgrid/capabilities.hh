@@ -27,13 +27,19 @@ namespace Dune
     template< class ct, int dim, SPRefinementStrategy strategy, int codim >
     struct hasEntity< SPGrid< ct, dim, strategy >, codim >
     {
-      static const bool v = true;
+      static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
     template< class ct, int dim, SPRefinementStrategy strategy >
     struct isParallel< SPGrid< ct, dim, strategy > >
     {
-      static const bool v = false;
+      static const bool v = true;
+    };
+
+    template< class ct, int dim, SPRefinementStrategy strategy, int codim >
+    struct canCommunicate< SPGrid< ct, dim, strategy >, codim >
+    {
+      static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
     template< class ct, int dim, SPRefinementStrategy strategy >
