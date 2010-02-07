@@ -293,7 +293,7 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::CommInterface &
   SPGridLevel< Grid >::commInterface ( const InterfaceType iftype ) const
   {
-    return linkage_.commInterface( iftype );
+    return linkage_.interface( iftype );
   }
 
 
