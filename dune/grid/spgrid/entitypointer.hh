@@ -45,56 +45,140 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
-    SPEntityPointer ( const EntityInfo &entityInfo )
-    : entity_( EntityImpl( entityInfo ) )
-    {}
-
+    SPEntityPointer ( const EntityInfo &entityInfo );
     SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id,
-                      const unsigned int partitionNumber )
-    : entity_( EntityImpl( EntityInfo( gridLevel, id, partitionNumber ) ) )
-    {}
+                      const unsigned int partitionNumber );
+    SPEntityPointer ( const EntityImpl &entityImpl );
+    SPEntityPointer ( const This &other );
 
-    SPEntityPointer ( const EntityImpl &entityImpl )
-    : entity_( entityImpl )
-    {}
+    This &operator= ( const This &other );
 
-    SPEntityPointer ( const This &other )
-    : entity_( EntityImpl( Grid::getRealImplementation( other.dereference() ) ) )
-    {}
+    const Entity &operator* () const;
+    const Entity *operator-> () const;
 
-    This &operator= ( const This &other )
-    {
-      Grid::getRealImplementation( entity_ )
-        = Grid::getRealImplementation( other.dereference() );
-      return *this;
-    }
+    bool operator== ( const This &other ) const;
+    bool operator!= ( const This &other ) const;
 
-    void compactify ()
-    {}
+    void compactify ();
+    Entity &dereference () const;
 
-    Entity &dereference () const
-    {
-      return const_cast< Entity & >( entity_ );
-    }
+    bool equals ( const This &other ) const;
 
-    bool equals ( const This &other ) const
-    {
-      return Grid::getRealImplementation( entity_ ).equals( Grid::getRealImplementation( other.entity_ ) );
-    }
-
-    int level () const
-    {
-      return entity_.level();
-    }
-
-    const GridLevel &gridLevel () const
-    {
-      return Grid::getRealImplementation( entity_ ).gridLevel();
-    }
+    int level () const;
+    const GridLevel &gridLevel () const;
 
   protected:
     Entity entity_;
   };
+
+
+
+  // Implementation of SPEntityPointer
+  // ---------------------------------
+
+  template< int codim, class Grid >
+  inline SPEntityPointer< codim, Grid >
+    ::SPEntityPointer ( const EntityInfo &entityInfo )
+  : entity_( EntityImpl( entityInfo ) )
+  {}
+
+
+  template< int codim, class Grid >
+  inline SPEntityPointer< codim, Grid >
+    ::SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id,
+                        const unsigned int partitionNumber )
+  : entity_( EntityImpl( EntityInfo( gridLevel, id, partitionNumber ) ) )
+  {}
+
+
+  template< int codim, class Grid >
+  inline SPEntityPointer< codim, Grid >
+    ::SPEntityPointer ( const EntityImpl &entityImpl )
+  : entity_( entityImpl )
+  {}
+
+
+  template< int codim, class Grid >
+  inline SPEntityPointer< codim, Grid >::SPEntityPointer ( const This &other )
+  : entity_( EntityImpl( Grid::getRealImplementation( other.dereference() ) ) )
+  {}
+
+
+  template< int codim, class Grid >
+  inline typename SPEntityPointer< codim, Grid >::This &
+  SPEntityPointer< codim, Grid >::operator= ( const This &other )
+  {
+    Grid::getRealImplementation( entity_ )
+      = Grid::getRealImplementation( other.dereference() );
+    return *this;
+  }
+
+
+  template< int codim, class Grid >
+  inline const typename SPEntityPointer< codim, Grid >::Entity &
+  SPEntityPointer< codim, Grid >::operator* () const
+  {
+    return entity_;
+  }
+
+
+  template< int codim, class Grid >
+  inline const typename SPEntityPointer< codim, Grid >::Entity *
+  SPEntityPointer< codim, Grid >::operator-> () const
+  {
+    return &entity_;
+  }
+
+
+  template< int codim, class Grid >
+  inline bool
+  SPEntityPointer< codim, Grid >::operator== ( const This &other ) const
+  {
+    return equals( other );
+  }
+
+  template< int codim, class Grid >
+  inline bool
+  SPEntityPointer< codim, Grid >::operator!= ( const This &other ) const
+  {
+    return !equals( other );
+  }
+
+
+  template< int codim, class Grid >
+  inline void SPEntityPointer< codim, Grid >::compactify ()
+  {}
+
+
+  template< int codim, class Grid >
+  inline typename SPEntityPointer< codim, Grid >::Entity &
+  SPEntityPointer< codim, Grid >::dereference () const
+  {
+    return const_cast< Entity & >( entity_ );
+  }
+
+
+  template< int codim, class Grid >
+  inline bool
+  SPEntityPointer< codim, Grid >::equals ( const This &other ) const
+  {
+    return Grid::getRealImplementation( entity_ ).equals( Grid::getRealImplementation( other.entity_ ) );
+  }
+
+
+  template< int codim, class Grid >
+  inline int SPEntityPointer< codim, Grid >::level () const
+  {
+    return entity_.level();
+  }
+
+
+  template< int codim, class Grid >
+  inline const typename SPEntityPointer< codim, Grid >::GridLevel &
+  SPEntityPointer< codim, Grid >::gridLevel () const
+  {
+    return Grid::getRealImplementation( entity_ ).gridLevel();
+  }
 
 }
 
