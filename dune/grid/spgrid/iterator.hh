@@ -163,13 +163,18 @@ namespace Dune
     {
       unsigned int dir = 0;
       const unsigned int mydim = mydimension;
-      for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
-      assert( dir < numDirections );
-
-      for( int i = 0; i < dimension; ++i )
-        id[ i ] = begin( i, dir );
-
-      entityInfo.update( partition_->number() );
+      for( ; (dir < numDirections) && ((bitCount( dir ) != mydim) || partition_->empty( dir )); ++dir );
+      if( dir < numDirections )
+      {
+        for( int i = 0; i < dimension; ++i )
+          id[ i ] = begin( i, dir );
+        entityInfo.update( partition_->number() );
+      }
+      else
+      {
+        ++partition_;
+        init();
+      }
     }
     else
       id = std::numeric_limits< MultiIndex >::max();
