@@ -117,7 +117,7 @@ namespace Dune
 
     unsigned int dir = entityInfo.direction()+1;
     const unsigned int mydim = mydimension;
-    for( ; (dir < numDirections) && (bitCount( dir ) != mydim); ++dir );
+    for( ; (dir < numDirections) && ((bitCount( dir ) != mydim) || partition_->empty( dir )); ++dir );
     if( dir < numDirections )
     {
       for( int i = 0; i < dimension; ++i )

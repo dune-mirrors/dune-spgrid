@@ -38,6 +38,8 @@ namespace Dune
     bool contains ( const MultiIndex &id ) const;
 
     bool empty () const;
+    bool empty ( const unsigned int dir ) const;
+
     int volume () const;
     MultiIndex width () const;
     int width ( const int i ) const;
@@ -165,6 +167,16 @@ namespace Dune
     bool empty = false;
     for( int i = 0; i < dimension; ++i )
       empty |= (begin()[ i ] > end()[ i ]);
+    return empty;
+  }
+
+
+  template< int dim >
+  inline bool SPBasicPartition< dim >::empty ( const unsigned int dir ) const
+  {
+    bool empty = false;
+    for( int i = 0; i < dimension; ++i )
+      empty |= (bound( 0, i, (dir >> i) & 1 ) > bound( 1, i, (dir >> i) & 1 ));
     return empty;
   }
 
