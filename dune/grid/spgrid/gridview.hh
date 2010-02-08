@@ -302,14 +302,20 @@ namespace Dune
   template< class ViewTraits >
   inline int SPGridView< ViewTraits >::overlapSize ( const int codim ) const
   {
-    return 0;
+    if( codim != 0 )
+      DUNE_THROW( NotImplemented, "overlapSize not implemented for codim > 0." );
+    int volume = gridLevel().template partition< OverlapFront_Partition >().volume();
+    volume -= gridLevel().template partition< InteriorBorder_Partition >().volume();
+    return volume;
   }
 
 
   template< class ViewTraits >
   inline int SPGridView< ViewTraits >::ghostSize ( const int codim ) const
   {
-    return 0;
+    if( codim != 0 )
+      DUNE_THROW( NotImplemented, "ghostSize not implemented for codim > 0." );
+    return gridLevel().template partition< Ghost_Partition >().volume();
   }
 
 
