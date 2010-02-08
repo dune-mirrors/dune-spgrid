@@ -174,10 +174,11 @@ namespace Dune
       face_ = face;
       if( face < GridLevel::Cube::numFaces )
       {
+        const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
         MultiIndex &id = Grid::getRealImplementation( geometry_ ).entityInfo().id();
         id = inside_->entityInfo().id();
         id += gridLevel().cube().subId( 1, face );
-        Grid::getRealImplementation( geometry_ ).entityInfo().update();
+        Grid::getRealImplementation( geometry_ ).entityInfo().update( partitionNumber );
       }
     }
 
