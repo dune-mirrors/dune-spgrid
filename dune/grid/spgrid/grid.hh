@@ -379,6 +379,18 @@ namespace Dune
       return hierarchicIndexSet_;
     }
 
+    bool mark ( const int refCount, const typename Codim< 0 >::Entity &e );
+    int getMark ( const typename Codim< 0 >::Entity &e ) const;
+
+    bool preAdapt ();
+
+    bool adapt ();
+
+    template< class DataHandle >
+    bool adapt ( AdaptDataHandleInterface< This, DataHandle > &handle );
+
+    void postAdapt ();
+
     void globalRefine ( const int refCount,
                         const Refinement &refinement = Refinement() );
 
@@ -579,6 +591,50 @@ namespace Dune
     createLocalGeometries();
     setupMacroGrid();
   }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline bool SPGrid< ct, dim, strategy >
+    ::mark ( const int refCount, const typename Codim< 0 >::Entity &e )
+  {
+    return false;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline int SPGrid< ct, dim, strategy >
+    ::getMark ( const typename Codim< 0 >::Entity &e ) const
+  {
+    return 0;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline bool SPGrid< ct, dim, strategy >::preAdapt ()
+  {
+    return false;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline bool SPGrid< ct, dim, strategy >::adapt ()
+  {
+    return false;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class DataHandle >
+  inline bool SPGrid< ct, dim, strategy >
+    ::adapt ( AdaptDataHandleInterface< This, DataHandle > &handle )
+  {
+    return false;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void SPGrid< ct, dim, strategy >::postAdapt ()
+  {}
 
 
   template< class ct, int dim, SPRefinementStrategy strategy >
