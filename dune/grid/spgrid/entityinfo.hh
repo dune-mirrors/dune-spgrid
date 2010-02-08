@@ -273,6 +273,7 @@ namespace Dune
     void update ()
     {
       assert( id() != std::numeric_limits< MultiIndex >::max() );
+      assert( gridLevel().template partition< All_Partition >().contains( id(), partitionNumber() ) );
       Base::update();
       origin_ = computeOrigin();
     }
