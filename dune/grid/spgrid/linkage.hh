@@ -24,7 +24,7 @@ namespace Dune
 
     class Interface;
 
-    SPLinkage ( const int rank,
+    SPLinkage ( const int localRank,
                 const PartitionPool &localPool,
                 const std::vector< Mesh > &decomposition );
 
@@ -32,7 +32,8 @@ namespace Dune
 
   private:
     template< InterfaceType iftype >
-    bool build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool );
+    bool build ( const int localRank, const PartitionPool &localPool,
+                 const int remoteRank, const PartitionPool &remotePool );
 
    const PartitionList *intersect ( const PartitionList &local, const PartitionList &remote ) const;
 
@@ -143,7 +144,7 @@ namespace Dune
 
   template< int dim >
   inline SPLinkage< dim >
-    ::SPLinkage ( const int rank,
+    ::SPLinkage ( const int localRank,
                   const PartitionPool &localPool,
                   const std::vector< Mesh > &decomposition )
   {
@@ -153,17 +154,17 @@ namespace Dune
     const MultiIndex &overlap = localPool.overlap();
     const unsigned int periodic = localPool.periodic();
 
-    for( int p = 0; p < size; ++p )
+    for( int remoteRank = 0; remoteRank < size; ++remoteRank )
     {
-      if( p == rank )
+      if( remoteRank == localRank )
         continue;
-      PartitionPool remotePool( decomposition[ p ], globalMesh, overlap, periodic );
-      if( build< All_All_Interface >( p, localPool, remotePool ) )
+      PartitionPool remotePool( decomposition[ remoteRank ], globalMesh, overlap, periodic );
+      if( build< All_All_Interface >( localRank, localPool, remoteRank, remotePool ) )
       {
-        build< InteriorBorder_InteriorBorder_Interface >( p, localPool, remotePool );
-        build< InteriorBorder_All_Interface >( p, localPool, remotePool );
-        build< Overlap_OverlapFront_Interface >( p, localPool, remotePool );
-        build< Overlap_All_Interface >( p, localPool, remotePool );
+        build< InteriorBorder_InteriorBorder_Interface >( localRank, localPool, remoteRank, remotePool );
+        build< InteriorBorder_All_Interface >( localRank, localPool, remoteRank, remotePool );
+        build< Overlap_OverlapFront_Interface >( localRank, localPool, remoteRank, remotePool );
+        build< Overlap_All_Interface >( localRank, localPool, remoteRank, remotePool );
       }
     }
   }
@@ -181,7 +182,8 @@ namespace Dune
   template< int dim >
   template< InterfaceType iftype >
   inline bool SPLinkage< dim >
-    ::build ( const int rank, const PartitionPool &localPool, const PartitionPool &remotePool )
+    ::build ( const int localRank, const PartitionPool &localPool,
+              const int remoteRank, const PartitionPool &remotePool )
   {
     const PartitionIteratorType piSend = SPCommunicationInterface< iftype >::sendPartition;
     const PartitionIteratorType piReceive = SPCommunicationInterface< iftype >::receivePartition;
@@ -204,7 +206,7 @@ namespace Dune
     }
 
     assert( (iftype >= 0) && (iftype < 5) );
-    interface_[ iftype ].add( rank, sendList, receiveList );
+    interface_[ iftype ].add( remoteRank, sendList, receiveList );
     return true;
   }
 
