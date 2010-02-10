@@ -5,6 +5,8 @@ LDADD = $(DUNE_LIBS) $(DUNEMPILIBS)
 
 check_PROGRAMS = decomposition gridcheck seitcheck
 
+EXTRA_DIST = checkidcommunication.hh checkseiterator.hh
+
 decomposition_SOURCES = decomposition.cc
 gridcheck_SOURCES = gridcheck.cc
 seitcheck_SOURCES = seitcheck.cc
