@@ -120,8 +120,8 @@ namespace Dune
       for( int i = 0; i < n; ++i )
       {
         const int j = (shift[ i ] < 0) ^ ((d >> i)&1);
-        open.neighbor( 2*i + j ) = d ^ (1 << i);
-        closed.neighbor( 2*i + j ) = d ^ (1 << i);
+        open.neighbor( 2*dir[ i ] + j ) = d ^ (1 << i);
+        closed.neighbor( 2*dir[ i ] + j ) = d ^ (1 << i);
       }
       overlapList_ += open;
       overlapFrontList_ += closed;
