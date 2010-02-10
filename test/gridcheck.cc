@@ -19,6 +19,8 @@
 #include <dune/grid/test/checkpartition.cc>
 #include <dune/grid/test/checkcommunicate.cc>
 
+#include "checkidcommunication.hh"
+
 static const int dimGrid = DIMGRID;
 
 
@@ -46,6 +48,7 @@ void performCheck ( Grid &grid, const int maxLevel )
     }
 
     std::cerr << ">>> Checking communication..." << std::endl;
+    checkIdCommunication( grid.leafView() );
     checkCommunication( grid, -1, std::cout );
   }
 
