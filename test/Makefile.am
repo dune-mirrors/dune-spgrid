@@ -9,4 +9,6 @@ decomposition_SOURCES = decomposition.cc
 gridcheck_SOURCES = gridcheck.cc
 seitcheck_SOURCES = seitcheck.cc
 
+CLEANFILES = *.out
+
 include $(top_srcdir)/am/global-rules
