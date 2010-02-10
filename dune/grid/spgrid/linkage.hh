@@ -35,7 +35,8 @@ namespace Dune
     bool build ( const int localRank, const PartitionPool &localPool,
                  const int remoteRank, const PartitionPool &remotePool );
 
-   const PartitionList *intersect ( const PartitionList &local, const PartitionList &remote ) const;
+   const PartitionList *
+   intersect ( const bool order, const PartitionList &local, const PartitionList &remote ) const;
 
     // note: We use the knowledge that interfaces are numbered 0, ..., 4.
     Interface interface_[ 5 ];
@@ -188,11 +189,13 @@ namespace Dune
     const PartitionIteratorType piSend = SPCommunicationInterface< iftype >::sendPartition;
     const PartitionIteratorType piReceive = SPCommunicationInterface< iftype >::receivePartition;
 
+    const bool order = (localRank < remoteRank);
+
     // build intersection lists
     const PartitionList *sendList, *receiveList;
-    sendList = intersect ( localPool.template get< piSend >(), remotePool.template get< piReceive >() );
+    sendList = intersect( order, localPool.template get< piSend >(), remotePool.template get< piReceive >() );
     if( piSend != piReceive )
-      receiveList = intersect( localPool.template get< piReceive >(), remotePool.template get< piSend >() );
+      receiveList = intersect( order, localPool.template get< piReceive >(), remotePool.template get< piSend >() );
     else
       receiveList = sendList;
 
@@ -213,19 +216,21 @@ namespace Dune
 
   template< int dim >
   inline const typename SPLinkage< dim >::PartitionList *
-  SPLinkage< dim >::intersect ( const PartitionList &local, const PartitionList &remote ) const
+  SPLinkage< dim >::intersect ( const bool order, const PartitionList &local, const PartitionList &remote ) const
   {
     typedef SPBasicPartition< dim > Intersection;
     typedef typename PartitionList::Iterator Iterator;
     typedef typename PartitionList::Partition Partition;
 
+    // order = true <=>  pit local iterator, qit remote iterator
+
     PartitionList *link = new PartitionList;
-    for( Iterator lit = local.begin(); lit; ++lit )
+    for( Iterator pit = (order ? local.begin() : remote.begin()); pit; ++pit )
     {
-      const int number = lit->number();
-      for( Iterator rit = remote.begin(); rit; ++rit )
+      for( Iterator qit = (order ? remote.begin() : local.begin()); qit; ++qit )
       {
-        Intersection intersection = lit->intersect( *rit );
+        const int number = (order ? pit->number() : qit->number());
+        Intersection intersection = pit->intersect( *qit );
         if( !intersection.empty() )
           *link += Partition( intersection, number );
       }
