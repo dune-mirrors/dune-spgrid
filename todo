@@ -2,6 +2,9 @@
 dune-spgrid's To-Do-List
 ------------------------
 
+Periodicity:
+ * support glueing of multiple (fitting) interval blocks
+
 Parallelization:
  * update superentity iterators to partitioning
  * add ghosts
