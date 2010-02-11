@@ -68,28 +68,35 @@ namespace Dune
         fBoundary_ |= (int( bndLow ) | 2*int( bndHigh )) << (2*i);
       }
 
-      increment();
+      if( next( id ) )
+        entityInfo.update( entityImpl.entityInfo().partitionNumber() );
     }
 
   public:
     void increment ()
     {
-      assert( sequence_ != 0 );
-
       EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      entityInfo.id() += sequence_->idAdd;
-      index_ = sequence_->index;
-      const bool skip = ((fBoundary_ & sequence_->fBoundary) != 0);
-      sequence_ = sequence_->next;
-      if( skip )
-        increment();
-      else
+      if( next( entityInfo.id() ) )
         entityInfo.update();
     }
 
     int index () const
     {
       return index_;
+    }
+
+  private:
+    bool next ( MultiIndex &id )
+    {
+      bool skip;
+      do {
+        assert( sequence_ != 0 );
+        id += sequence_->idAdd;
+        index_ = sequence_->index;
+        skip = ((fBoundary_ & sequence_->fBoundary) != 0);
+        sequence_ = sequence_->next;
+      } while( skip );
+      return (sequence_ != 0);
     }
 
   protected:
