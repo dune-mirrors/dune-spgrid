@@ -35,7 +35,7 @@ namespace Dune
     typedef typename Traits::Cube::ctype ctype;
 
     static const int dimension = Traits::Cube::dimension;
-    static const int dimensionworld = Traits::Cube::dimensionworld;
+    static const int dimensionworld = dimension;
 
     typedef typename Traits::template Codim< 0 >::Entity Entity;
     typedef typename Traits::template Codim< 0 >::EntityPointer EntityPointer;
