@@ -80,19 +80,12 @@ namespace Dune
 
     GlobalVector global ( const LocalVector &local ) const
     {
-      GlobalVector y = asImpl().origin();
-      // this can be optimized
-      asImpl().geometryCache().jacobianTransposed().umtv( local, y );
-      return y;
+      return asImpl().geometryCache().global( asImpl().origin(), local );
     }
 
     LocalVector local ( const GlobalVector &global ) const
     {
-      GlobalVector y = global - asImpl().origin();
-      LocalVector x;
-      // this can be optimized
-      asImpl().geometryCache().jacobianInverseTransposed().mtv( y, x );
-      return x;
+      return asImpl().geometryCache().local( asImpl().origin(), global );
     }
 
     ctype volume () const
