@@ -7,13 +7,60 @@
 namespace Dune
 {
 
+  // SPGeometryCacheBase
+  // -------------------
+
+  template< int dim, int codim >
+  class SPGeometryCacheBase
+  {
+    typedef SPGeometryCacheBase< dim, codim > This;
+
+  protected:
+    explicit SPGeometryCacheBase ( const unsigned int dir );
+
+    int direction ( const int k ) const;
+
+  private:
+    int direction_[ dim - codim ];
+  };
+
+
+
+  template< int dim >
+  class SPGeometryCacheBase< dim, 0 >
+  {
+    typedef SPGeometryCacheBase< dim, 0 > This;
+
+  protected:
+    explicit SPGeometryCacheBase ( const unsigned int dir );
+
+    int direction ( const int k ) const;
+  };
+
+
+
+  template< int dim >
+  class SPGeometryCacheBase< dim, dim >
+  {
+    typedef SPGeometryCacheBase< dim, dim > This;
+
+  protected:
+    explicit SPGeometryCacheBase ( const unsigned int dir );
+
+    int direction ( const int k ) const;
+  };
+
+
+
   // SPGeometryCache
   // ---------------
 
   template< class ct, int dim, int codim >
   class SPGeometryCache
+  : public SPGeometryCacheBase< dim, codim >
   {
     typedef SPGeometryCache< ct, dim, codim > This;
+    typedef SPGeometryCacheBase< dim, codim > Base;
 
   public:
     typedef ct ctype;
@@ -36,11 +83,72 @@ namespace Dune
     GlobalVector global ( const GlobalVector &origin, const LocalVector &local ) const;
     LocalVector local ( const GlobalVector &origin, const GlobalVector &global ) const;
 
+  protected:
+    using Base::direction;
+
   private:
+    LocalVector h_;
     ctype volume_;
     JacobianTransposed jacobianTransposed_;
     Jacobian jacobianInverseTransposed_;
   };
+
+
+
+  // Implementation of SPGeometryCacheBase
+  // -------------------------------------
+
+  template< int dim, int codim >
+  inline SPGeometryCacheBase< dim, codim >
+    ::SPGeometryCacheBase ( const unsigned int dir )
+  {
+    int k = 0;
+    for( int j = 0; j < dim; ++j )
+    {
+      if( ((dir >> j) & 1) != 0 )
+        direction_[ k++ ] = j;
+    }
+    assert( k == dim - codim );
+  }
+
+
+  template< int dim >
+  inline SPGeometryCacheBase< dim, 0 >
+    ::SPGeometryCacheBase ( const unsigned int dir )
+  {}
+
+
+  template< int dim >
+  inline SPGeometryCacheBase< dim, dim >
+    ::SPGeometryCacheBase ( const unsigned int dir )
+  {}
+
+
+  template< int dim, int codim >
+  inline int
+  SPGeometryCacheBase< dim, codim >::direction ( const int k ) const
+  {
+    assert( (k >= 0) && (k < dim - codim) );
+    return direction_[ k ];
+  }
+
+
+  template< int dim >
+  inline int
+  SPGeometryCacheBase< dim, 0 >::direction ( const int k ) const
+  {
+    assert( (k >= 0) && (k < dim) );
+    return k;
+  }
+
+
+  template< int dim >
+  inline int
+  SPGeometryCacheBase< dim, dim >::direction ( const int k ) const
+  {
+    assert( false );
+    return k;
+  }
 
 
 
@@ -50,19 +158,17 @@ namespace Dune
   template< class ct, int dim, int codim >
   inline SPGeometryCache< ct, dim, codim >
     ::SPGeometryCache ( const GlobalVector &h, const unsigned int dir )
-  : volume_( 1 ),
+  : Base( dir ),
+    volume_( 1 ),
     jacobianTransposed_( 0 ),
     jacobianInverseTransposed_( 0 )
   {
-    int k = 0;
-    for( int j = 0; j < dimension; ++j )
+    for( int k = 0; k < mydimension; ++k )
     {
-      if( ((dir >> j) & 1) == 0 )
-        continue;
-      volume_ *= h[ j ];
-      jacobianTransposed_[ k ][ j ] = h[ j ];
-      jacobianInverseTransposed_[ j ][ k ] = ctype( 1 ) / h[ j ];
-      ++k;
+      h_[ k ] = h[ direction( k ) ];
+      volume_ *= h_[ k ];
+      jacobianTransposed_[ k ][ direction( k ) ] = h_[ k ];
+      jacobianInverseTransposed_[ direction( k ) ][ k ] = ctype( 1 ) / h_[ k ];
     }
   }
 
@@ -96,9 +202,9 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >
     ::global ( const GlobalVector &origin, const LocalVector &local ) const
   {
-    // this can be optimized
     GlobalVector y( origin );
-    jacobianTransposed().umtv( local, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ direction( k ) ] += h_[ k ] * local[ k ];
     return y;
   }
 
@@ -108,10 +214,9 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >
     ::local ( const GlobalVector &origin, const GlobalVector &global ) const
   {
-    // this can be optimized
-    GlobalVector y = global - origin;
     LocalVector x;
-    jacobianInverseTransposed().mtv( y, x );
+    for( int k = 0; k < mydimension; ++k )
+      x[ k ] = (global[ direction( k ) ] - origin[ direction( k ) ]) / h_[ k ];
     return x;
   }
 
