@@ -11,6 +11,7 @@ Parallelization:
  * adapt local / global id set to partitioning
  * decomposition should just store a std::vector
  * correctly implement overlapSize and ghostSize
+ * implement load balance (with selectable number of non-empty processes)
 
 Refinement techniques:
  * implement bisection refinement
