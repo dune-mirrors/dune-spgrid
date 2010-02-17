@@ -24,6 +24,9 @@ namespace Dune
     typedef SPMultiIndex< dim > MultiIndex;
     typedef SPRefinement< dim, strategy > Refinement;
 
+    static const unsigned int versionMajor = DUNE_SPGRID_VERSION_MAJOR;
+    static const unsigned int versionMinor = DUNE_SPGRID_VERSION_MINOR;
+
     std::string name;
     ctype time;
     Vector origin;
@@ -35,8 +38,8 @@ namespace Dune
     int maxLevel;
     std::vector< Refinement > refinements;
 
-    void writeAscii ( const std::string &filename ) const;
-    void readAscii ( const std::string &filename );
+    bool write ( const std::string &filename ) const;
+    bool read ( const std::string &filename );
 
   private:
     static std::string readLine ( std::istream &in, unsigned int *count = 0 );
@@ -48,20 +51,27 @@ namespace Dune
   // ------------------------------
 
   template< class ctype, int dim, SPRefinementStrategy strategy >
-  inline void
-  SPGridIOData< ctype, dim, strategy >::writeAscii ( const std::string &filename ) const
+  inline bool
+  SPGridIOData< ctype, dim, strategy >::write ( const std::string &filename ) const
   {
     std::ofstream fileOut( filename.c_str() );
+    if( !fileOut )
+      return false;
 
-    fileOut << "SPGrid " << dim << std::endl << std::endl;
+    // write header
+    fileOut << "SPGrid";
+    fileOut << "  dimension=" << dim;
+    fileOut << "  version=" << versionMajor << "." << versionMinor;
+    fileOut << std::endl << std::endl;
+
+    // write generic information
     fileOut << "name " << name << std::endl;
     fileOut << "time " << time << std::endl;
+    fileOut << std::endl;
+
+    // write domain information
     fileOut << "origin " << origin << std::endl;
     fileOut << "width " << width << std::endl;
-
-    fileOut << "cells " << cells << std::endl;
-    fileOut << "partitions " << partitions << std::endl;
-    fileOut << "overlap " << overlap << std::endl;
 
     fileOut << "periodic";
     for( int i = 0; i < dim; ++i )
@@ -69,35 +79,86 @@ namespace Dune
       if( (periodic & (1 << i)) != 0 )
         fileOut << " " << i;
     }
+    fileOut << std::endl << std::endl;
+
+    // write discretization information
+    fileOut << "cells " << cells << std::endl;
+    fileOut << "partitions " << partitions << std::endl;
+    fileOut << "overlap " << overlap << std::endl;
     fileOut << std::endl;
 
+    // write refinement information
     fileOut << "maxLevel " << maxLevel << std::endl;
-
     fileOut << "refinement " << Refinement::type() << std::endl;
-
     fileOut << "refinements";
     for( unsigned int i = 0; i < refinements.size(); ++i )
       fileOut << " " << refinements[ i ];
     fileOut << std::endl;
 
     fileOut.close();
+    return true;
   }
 
 
   template< class ctype, int dim, SPRefinementStrategy strategy >
-  inline void
-  SPGridIOData< ctype, dim, strategy >::readAscii ( const std::string &filename )
+  inline bool
+  SPGridIOData< ctype, dim, strategy >::read ( const std::string &filename )
   {
     std::ifstream fileIn( filename.c_str() );
     if( !fileIn )
-      DUNE_THROW( IOError, "Unable to open file: '" << filename << "'." );
+      return false;
 
     unsigned int lineNr = 0;
     std::string line = readLine( fileIn, &lineNr );
     std::istringstream lineIn( line );
-    lineIn >> match( std::string( "SPGrid" ) ) >> match( dim );
+    lineIn >> match( std::string( "SPGrid" ) );
     if( lineIn.fail() )
-      DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: 'SPGrid " << dim << "' expected." );
+    {
+      std::cerr << filename << "[ " << lineNr << " ]: 'SPGrid' expected." << std::endl;
+      return false;
+    }
+
+    int fdim = -1;
+
+    while( lineIn.good() )
+    {
+      std::string tag;
+      lineIn >> tag;
+
+      const size_t eq = tag.find( '=' );
+      const std::string key = tag.substr( 0, eq );
+      const std::string value = (eq+1 < tag.size() ? tag.substr( eq+1 ) : std::string());
+      std::istringstream valueIn( value );
+      if( key == "version" )
+      {
+        // ensure that the check passes on read failure
+        unsigned int vMajor = versionMajor, vMinor = versionMinor;
+        valueIn >> vMajor >> match( '.' ) >> vMinor;
+        if( (vMajor > versionMajor) || ((vMajor == versionMajor) && (vMinor > versionMinor)) )
+        {
+          std::cerr << filename << "[ " << lineNr << " ]: File was created by newer version of SPGrid." << std::endl;
+          return false;
+        }
+      }
+      else if( key == "dimension" )
+        valueIn >> fdim;
+      else
+      {
+        std::cerr << filename << "[ " << lineNr << " ]: Invalid tag: '" << key << "'." << std::endl;
+        return false;
+      }
+      if( !valueIn )
+      {
+        std::cerr << filename << "[ " << lineNr << " ]: Invalid value for tag '" << key << "'." << std::endl;
+        return false;
+      }
+    }
+
+    if( fdim != dim )
+    {
+      std::cerr << filename << "[ " << lineNr << " ]: File has wrong grid dimension." << std::endl;
+      return false;
+    }
 
     name = "SPGrid";
     partitions = 1;
@@ -121,6 +182,7 @@ namespace Dune
 
       std::string cmd;
       lineIn >> cmd;
+
       if( cmd == "name" )
         name = readLine( lineIn );
       else if( cmd == "time" )
@@ -137,6 +199,20 @@ namespace Dune
         if( lineIn )
           flags |= flagWidth;
       }
+      else if( cmd == "periodic" )
+      {
+        while( lineIn.good() )
+        {
+          int axis;
+          lineIn >> axis;
+          if( (axis < 0) || (axis >= dim) )
+          {
+            std::cerr << filename << "[ " << lineNr << " ]: Invalid periodic axis: " << axis << "." << std::endl;
+            return false;
+          }
+          periodic |= (1 << axis);
+        }
+      }
       else if( cmd == "cells" )
       {
         lineIn >> cells;
@@ -146,37 +222,17 @@ namespace Dune
       else if( cmd == "partitions" )
       {
         lineIn >> partitions;
-        if( lineIn.fail() )
-          DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Cannot parse value for partitions." );
       }
       else if( cmd == "overlap" )
-      {
         lineIn >> overlap;
-        if( lineIn.fail() )
-          DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Cannot parse value for overlap." );
-      }
-      else if( cmd == "periodic" )
-      {
-        while( !lineIn.eof() )
-        {
-          int axis;
-          lineIn >> axis;
-          if( (axis < 0) || (axis >= dim) )
-            DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Invalid periodic axis: " << axis << "." );
-          periodic |= (1 << axis);
-        }
-      }
       else if( cmd == "maxLevel" )
       {
         lineIn >> maxLevel;
-        if( lineIn )
-          flags |= flagMaxLevel;
+        flags |= flagMaxLevel;
       }
       else if( cmd == "refinement" )
       {
         lineIn >> match( Refinement::type() );
-        if( lineIn.fail() )
-          DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Refinement technique must be " << Refinement::type() << "." );
         flags |= flagRefinement;
       }
       else if( cmd == "refinements" )
@@ -189,13 +245,23 @@ namespace Dune
         }
       }
       else
-        DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Invalid statement: '" << cmd << "'." );
+      {
+        std::cerr << filename << "[ " << lineNr << " ]: Invalid statement: '" << cmd << "'." << std::endl;
+        return false;
+      }
       if( !lineIn )
-        DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Invalid arguments for '" << cmd << "'." );
+      {
+        std::cerr << filename << "[ " << lineNr << " ]: Invalid arguments for '" << cmd << "'." << std::endl;
+        return false;
+      }
     }
 
     if( flags != flagAll )
-      DUNE_THROW( IOError, "SPGrid file misses required fields: '" << filename << "'." );
+    {
+      std::cerr << filename << ": File misses required field." << std::endl;
+      return false;
+    }
+    return true;
   }
 
 

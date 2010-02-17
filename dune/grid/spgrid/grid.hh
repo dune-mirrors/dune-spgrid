@@ -691,8 +691,7 @@ namespace Dune
   inline bool SPGrid< ct, dim, strategy >
     ::writeGrid ( const std::string &filename, const ctype &time ) const
   {
-    if( (format != ascii) && (format != xdr) )
-      DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
+    // we ignore the format and always write ascii
 
     int result = 0;
     if( comm().rank() == 0 )
@@ -712,11 +711,7 @@ namespace Dune
       for( int level = 0; level < maxLevel(); ++level )
         ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
 
-      if( format == ascii )
-      {
-        ioData.writeAscii( filename );
-        result = 1;
-      }
+      result = int( ioData.write( filename ) );
     }
     comm().broadcast( &result, 1, 0 );
     return (result != 0);
@@ -728,19 +723,12 @@ namespace Dune
   inline bool SPGrid< ct, dim, strategy >
     ::readGrid ( const std::string &filename, ctype &time )
   {
-    if( (format != ascii) && (format != xdr) )
-      DUNE_THROW( NotImplemented, "SPGrid: Unknwon data format: " << format << "." );
+    // we ignore the format and always read ascii
 
     int result = 0;
     SPGridIOData< ctype, dimension, strategy > ioData;
 
-    if( format == ascii )
-    {
-      ioData.readAscii( filename );
-      result = 1;
-    }
-
-    if( result != 0 )
+    if( ioData.read( filename ) )
     {
       time = ioData.time;
 
