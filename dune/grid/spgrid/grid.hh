@@ -704,6 +704,7 @@ namespace Dune
       ioData.origin = domain().origin();
       ioData.width = domain().width();
       ioData.cells = globalMesh_.width();
+      ioData.partitions = comm().size();
       ioData.overlap = overlap_;
       ioData.periodic = domain().periodic();
       ioData.maxLevel = maxLevel();
@@ -742,6 +743,12 @@ namespace Dune
     if( result != 0 )
     {
       time = ioData.time;
+
+      if( ioData.partitions != comm().size() )
+      {
+        std::cerr << "Warning: Reading grid with different number of partitions,"
+                  << " index sets will not coincide." << std::endl;
+      }
 
       domain_ = Domain( ioData.origin, ioData.origin + ioData.width, ioData.periodic );
       globalMesh_ = Mesh( ioData.cells );

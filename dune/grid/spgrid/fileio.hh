@@ -30,6 +30,7 @@ namespace Dune
     Vector width;
     MultiIndex cells;
     MultiIndex overlap;
+    int partitions;
     unsigned int periodic;
     int maxLevel;
     std::vector< Refinement > refinements;
@@ -59,6 +60,7 @@ namespace Dune
     fileOut << "width " << width << std::endl;
 
     fileOut << "cells " << cells << std::endl;
+    fileOut << "partitions " << partitions << std::endl;
     fileOut << "overlap " << overlap << std::endl;
 
     fileOut << "periodic";
@@ -98,6 +100,7 @@ namespace Dune
       DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: 'SPGrid " << dim << "' expected." );
 
     name = "SPGrid";
+    partitions = 1;
     overlap = MultiIndex::zero();
     time = ctype( 0 );
 
@@ -139,6 +142,12 @@ namespace Dune
         lineIn >> cells;
         if( lineIn )
           flags |= flagCells;
+      }
+      else if( cmd == "partitions" )
+      {
+        lineIn >> partitions;
+        if( lineIn.fail() )
+          DUNE_THROW( IOError, filename << "[ " << lineNr << " ]: Cannot parse value for partitions." );
       }
       else if( cmd == "overlap" )
       {
