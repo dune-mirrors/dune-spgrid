@@ -73,6 +73,9 @@ namespace Dune
     typedef typename Grid::template Codim< 0 >::Entity Element;
     typedef typename Grid::template Codim< dimension >::Entity Vertex;
 
+    explicit DGFGridFactory ( std::istream &input,
+                              MPICommunicatorType comm = MPIHelper::getCommunicator() );
+
     explicit DGFGridFactory ( const std::string &filename,
                               MPICommunicatorType comm = MPIHelper::getCommunicator() );
 
@@ -107,21 +110,44 @@ namespace Dune
     }
 
   private:
+    void generate ( std::istream &input );
+
     Grid *grid_;
   };
+
+
+
+  // Implementation of DGFGridFactory< SPGrid >
+  // ------------------------------------------
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline DGFGridFactory< SPGrid< ct, dim, strategy > >
+    ::DGFGridFactory ( std::istream &input, MPICommunicatorType )
+  {
+    generate( input );
+  }
 
 
   template< class ct, int dim, SPRefinementStrategy strategy >
   inline DGFGridFactory< SPGrid< ct, dim, strategy > >
     ::DGFGridFactory ( const std::string &filename, MPICommunicatorType )
   {
-    typedef SPGrid< ct, dim, strategy > Grid;
+    std::ifstream input( filename.c_str() );
+    if( !input )
+      DUNE_THROW( DGFException, "Unable to open file: " << filename << "." );
+    generate( input );
+    input.close();
+  }
 
-    std::ifstream file( filename.c_str() );
-    dgf::IntervalBlock intervalBlock( file );
+
+  template< class ct, int dim, SPRefinementStrategy strategy >
+  inline void
+  DGFGridFactory< SPGrid< ct, dim, strategy > >::generate ( std::istream &input )
+  {
+    dgf::IntervalBlock intervalBlock( input );
 
     if( !intervalBlock.isactive() )
-      DUNE_THROW( DGFException, "DGF file must contain an interval block to be used with SPGrid< ct, " << dim << " >." );
+      DUNE_THROW( DGFException, "DGF stream must contain an interval block to be used with SPGrid< ct, " << dim << " >." );
     if( intervalBlock.numIntervals() != 1 )
       DUNE_THROW( DGFException, "SPGrid< ct, " << dim << " > can only handle 1 interval block." );
 
@@ -139,7 +165,7 @@ namespace Dune
     }
 
     typedef dgf::PeriodicFaceTransformationBlock::AffineTransformation Transformation;
-    dgf::PeriodicFaceTransformationBlock trafoBlock( file, dim );
+    dgf::PeriodicFaceTransformationBlock trafoBlock( input, dim );
 
     unsigned int periodic = 0;
 
@@ -175,7 +201,7 @@ namespace Dune
         periodic |= (1 << dir);
     }
 
-    dgf::SPGridParameterBlock< dim > parameter( file );
+    dgf::SPGridParameterBlock< dim > parameter( input );
     const std::string gridName = parameter.name( "SPGrid" );
 
     grid_ = new Grid( a, b, cells, parameter.overlap(), periodic, gridName );
