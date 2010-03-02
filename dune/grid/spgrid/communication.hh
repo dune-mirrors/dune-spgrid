@@ -60,8 +60,12 @@ namespace Dune
 
   template< class Grid, class DataHandle >
   template< class T >
-  struct SPCommunication< Grid, DataHandle >::WriteBuffer
+  class SPCommunication< Grid, DataHandle >::WriteBuffer
   {
+    template< int >
+    friend class SPCommunication< Grid, DataHandle >::Codim;
+
+  public:
     void write ( const T &value );
 
     template< class C >
@@ -88,8 +92,12 @@ namespace Dune
 
   template< class Grid, class DataHandle >
   template< class T >
-  struct SPCommunication< Grid, DataHandle >::ReadBuffer
+  class SPCommunication< Grid, DataHandle >::ReadBuffer
   {
+    template< int >
+    friend class SPCommunication< Grid, DataHandle >::Codim;
+
+  public:
     template< class C >
     ReadBuffer ( int rank, int tag, const CollectiveCommunication< C > &comm );
 
