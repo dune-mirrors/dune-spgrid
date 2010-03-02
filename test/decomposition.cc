@@ -1,3 +1,5 @@
+#include <config.h>
+
 #include <limits>
 #include <sstream>
 
@@ -17,6 +19,7 @@ static const int dimGrid = DIMGRID;
 typedef SPMultiIndex< dimGrid > MultiIndex;
 typedef SPPartitionPool< dimGrid > PartitionPool;
 typedef SPPartitionList< dimGrid > PartitionList;
+
 
 template< PartitionIteratorType pitype >
 void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, unsigned int periodic )
@@ -121,17 +124,20 @@ int main ( int argc, char **argv )
   }
 
   MultiIndex width;
-  std::istringstream widthStream( argv[ 1 ] );
+  std::string widthArg( argv[ 1 ] );
+  std::istringstream widthStream( widthArg );
   widthStream >> width;
 
   unsigned int size;
-  std::istringstream sizeStream( argv[ 2 ] );
+  std::string sizeArg( argv[ 2 ] );
+  std::istringstream sizeStream( sizeArg );
   sizeStream >> size;
 
   MultiIndex overlap = MultiIndex::zero();
   if( argc > 3 )
   {
-    std::istringstream overlapStream( argv[ 3 ] );
+    std::string overlapArg( argv[ 3 ] );
+    std::istringstream overlapStream( overlapArg );
     overlapStream >> overlap;
   }
 
@@ -139,7 +145,8 @@ int main ( int argc, char **argv )
   for( int i = 4; i < argc; ++i )
   {
     unsigned int dir;
-    std::istringstream periodicStream( argv[ i ] );
+    std::string periodicArg( argv[ i ] );
+    std::istringstream periodicStream( periodicArg );
     periodicStream >> dir;
     periodic |= (1 << dir);
   }
