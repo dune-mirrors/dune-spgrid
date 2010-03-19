@@ -10,6 +10,7 @@
 
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
+#include <dune/grid/spgrid/version.hh>
 
 namespace Dune
 {
@@ -23,9 +24,6 @@ namespace Dune
     typedef FieldVector< ctype, dim > Vector;
     typedef SPMultiIndex< dim > MultiIndex;
     typedef SPRefinement< dim, strategy > Refinement;
-
-    static const unsigned int versionMajor = DUNE_SPGRID_VERSION_MAJOR;
-    static const unsigned int versionMinor = DUNE_SPGRID_VERSION_MINOR;
 
     std::string name;
     ctype time;
@@ -61,6 +59,8 @@ namespace Dune
     // write header
     fileOut << "SPGrid";
     fileOut << "  dimension=" << dim;
+    const unsigned int versionMajor = SPGridVersion::major;
+    const unsigned int versionMinor = SPGridVersion::minor;
     fileOut << "  version=" << versionMajor << "." << versionMinor;
     fileOut << std::endl << std::endl;
 
@@ -132,9 +132,9 @@ namespace Dune
       if( key == "version" )
       {
         // ensure that the check passes on read failure
-        unsigned int vMajor = versionMajor, vMinor = versionMinor;
+        unsigned int vMajor = SPGridVersion::major, vMinor = SPGridVersion::minor;
         valueIn >> vMajor >> match( '.' ) >> vMinor;
-        if( (vMajor > versionMajor) || ((vMajor == versionMajor) && (vMinor > versionMinor)) )
+        if( SPGridVersion::later( vMajor, vMinor ) )
         {
           std::cerr << filename << "[ " << lineNr << " ]: File was created by newer version of SPGrid." << std::endl;
           return false;
