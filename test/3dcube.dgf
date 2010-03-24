@@ -1,0 +1,22 @@
+DGF
+
+INTERVAL
+0 0 0           % lower left corner
+1 1 1           % upper right corner
+4 4 4           % number of cells in each direction
+#
+
+PERIODICFACETRANSFORMATION
+1 0 0, 0 1 0, 0 0 1 + 1 0 0  % make periodic in x-direction
+#
+
+BOUNDARYDOMAIN
+DEFAULT 1
+#
+
+GRIDPARAMETER
+NAME 3d-cube
+OVERLAP 1
+#
+
+#
