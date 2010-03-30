@@ -3,4 +3,27 @@
 
 \section introduction Introduction
 
+The DUNE module <tt>dune-spgrid</tt> provides a structured, parallel grid
+(\ref Dune::SPGrid "SPGrid"). Though the <tt>dune-grid</tt> module already
+contains two structured grids, <tt>SGrid</tt> and <tt>YaspGrid</tt>, both lack
+several important features (see \ref features for details).
+
+
+\section features Features
+
+<table>
+<tr><th></th>
+    <th>SGrid</th><th>YaspGrid</th><th>SPGrid</th></tr>
+<tr><th>Provides entities for codimensions</th>
+    <td>all</td><td>0, dim</td><td>all</td></tr>
+<tr><th>Can communicate on codimensions</th>
+    <td>none</td><td>0, dim</td><td>all</td></tr>
+<tr><th>Coordinate type is a template parameter</th>
+    <td>no</td><td>no</td><td>yes</td></tr>
+<tr><th>Supports anisotropic refinement</td>
+    <td>no</td><td>no</td><td>yes</td></tr>
+<tr><th>Supports periodicity</th>
+    <td>no</td><td>no</td><td>yes</td></tr>
+</table>
+
 */

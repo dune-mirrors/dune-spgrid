@@ -110,6 +110,13 @@ namespace Dune
 
 
 
+  /** \class SPGrid
+   *  \brief structured, parallel DUNE grid
+   *
+   *  \tparam  ct        coordinate type (e.g., double)
+   *  \tparam  dim       dimension of the grid
+   *  \tparam  strategy  refinement strategy (default is red refinement)
+   */
   template< class ct, int dim, SPRefinementStrategy strategy >
   class SPGrid
   : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy > >
