@@ -62,10 +62,10 @@ namespace Dune
   // DGFGridFactory< SPGrid >
   // ------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  struct DGFGridFactory< SPGrid< ct, dim, strategy > >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  struct DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
   {
-    typedef SPGrid< ct, dim, strategy > Grid;
+    typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
 
@@ -120,16 +120,16 @@ namespace Dune
   // Implementation of DGFGridFactory< SPGrid >
   // ------------------------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline DGFGridFactory< SPGrid< ct, dim, strategy > >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
     ::DGFGridFactory ( std::istream &input, MPICommunicatorType )
   {
     generate( input );
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline DGFGridFactory< SPGrid< ct, dim, strategy > >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
     ::DGFGridFactory ( const std::string &filename, MPICommunicatorType )
   {
     std::ifstream input( filename.c_str() );
@@ -140,9 +140,9 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline void
-  DGFGridFactory< SPGrid< ct, dim, strategy > >::generate ( std::istream &input )
+  DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >::generate ( std::istream &input )
   {
     dgf::IntervalBlock intervalBlock( input );
 
@@ -212,8 +212,8 @@ namespace Dune
   // DGFGridInfo< SPGrid >
   // ---------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  struct DGFGridInfo< SPGrid< ct, dim, strategy > >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  struct DGFGridInfo< SPGrid< ct, dim, strategy, Comm > >
   {
     static int refineStepsForHalf ()
     {

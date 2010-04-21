@@ -13,7 +13,7 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   class SPGrid;
 
 
@@ -24,56 +24,56 @@ namespace Dune
   namespace Capabilities
   {
 
-    template< class ct, int dim, SPRefinementStrategy strategy, int codim >
-    struct hasEntity< SPGrid< ct, dim, strategy >, codim >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
+    struct hasEntity< SPGrid< ct, dim, strategy, Comm >, codim >
     {
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct isParallel< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct isParallel< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = true;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy, int codim >
-    struct canCommunicate< SPGrid< ct, dim, strategy >, codim >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
+    struct canCommunicate< SPGrid< ct, dim, strategy, Comm >, codim >
     {
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct isLevelwiseConforming< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct isLevelwiseConforming< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = true;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct isLeafwiseConforming< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct isLeafwiseConforming< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = true;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct hasBackupRestoreFacilities< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct hasBackupRestoreFacilities< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = true;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct IsUnstructured< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct IsUnstructured< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = false;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct threadSafe< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct threadSafe< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = false;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct viewThreadSafe< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct viewThreadSafe< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = false;
     };
@@ -86,8 +86,8 @@ namespace Dune
     template< class Grid >
     struct hasHierarchicIndexSet;
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct hasHierarchicIndexSet< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct hasHierarchicIndexSet< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = true;
     };
@@ -96,8 +96,8 @@ namespace Dune
     template< class Grid >
     struct supportsCallbackAdaptation;
 
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct supportsCallbackAdaptation< SPGrid< ct, dim, strategy > >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct supportsCallbackAdaptation< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = true;
     };
@@ -112,8 +112,8 @@ namespace Dune
   namespace Extensions
   {
 
-    template< class ct, int dim, SPRefinementStrategy strategy, int codim >
-    struct SuperEntityIterator< SPGrid< ct, dim, strategy >, codim >
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
+    struct SuperEntityIterator< SPGrid< ct, dim, strategy, Comm >, codim >
     {
       static const bool v = true;
     };

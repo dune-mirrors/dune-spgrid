@@ -124,7 +124,7 @@ namespace Dune
   {
     typedef SPGridView< ViewTraits > This;
 
-    template< class, int, SPRefinementStrategy > friend class SPGrid;
+    template< class, int, SPRefinementStrategy, class > friend class SPGrid;
     template< class > friend class SPGridView;
 
   public:

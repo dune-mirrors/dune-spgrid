@@ -22,31 +22,61 @@ namespace Dune
   // Internal Forward Declarations
   // -----------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy = SPIsotropicRefinement >
+#if HAVE_MPI
+  template< class ct, int dim, SPRefinementStrategy strategy = SPIsotropicRefinement, class Comm = MPI_Comm >
   class SPGrid;
+#else
+  template< class ct, int dim, SPRefinementStrategy strategy = SPIsotropicRefinement, class Comm = No_Comm >
+  class SPGrid;
+#endif // #if !HAVE_MPI
+
+
+
+  // SPCommunicationTraits
+  // ---------------------
+
+  template< class Comm >
+  struct SPCommunicationTraits
+  {
+    typedef Dune::CollectiveCommunication< Comm > CollectiveCommunication;
+
+    static CollectiveCommunication defaultComm ()
+    {
+      return CollectiveCommunication();
+    }
+  };
+
+#if HAVE_MPI
+  template<>
+  struct SPCommunicationTraits< MPI_Comm >
+  {
+    typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+
+    static CollectiveCommunication defaultComm ()
+    {
+      return CollectiveCommunication( MPI_COMM_WORLD );
+    }
+  };
+#endif // #if HAVE_MPI
 
 
 
   // SPGridFamily
   // ------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   struct SPGridFamily
   {
     struct Traits
     {
-      typedef SPGrid< ct, dim, strategy > Grid;
+      typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
       typedef SPCube< ct, dim > Cube;
       typedef SPDomain< ct, dim > Domain;
       typedef SPMesh< dim > Mesh;
       typedef SPRefinement< dim, strategy > Refinement;
 
-#if HAVE_MPI
-      typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
-#else
-      typedef Dune::CollectiveCommunication< Grid > CollectiveCommunication;
-#endif // #if HAVE_MPI
+      typedef typename SPCommunicationTraits< Comm >::CollectiveCommunication CollectiveCommunication;
 
       typedef Dune::Intersection< const Grid, SPIntersection >
         LevelIntersection;
@@ -116,19 +146,20 @@ namespace Dune
    *  \tparam  ct        coordinate type (e.g., double)
    *  \tparam  dim       dimension of the grid
    *  \tparam  strategy  refinement strategy (default is red refinement)
+   *  \tparam  Comm      type of communicator (default depends on HAVE_MPI)
    */
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   class SPGrid
-  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy > >
+  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > >
   {
-    typedef SPGrid< ct, dim, strategy > This;
-    typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy > > Base;
+    typedef SPGrid< ct, dim, strategy, Comm > This;
+    typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > > Base;
 
     friend class SPIntersection< const This >;
     friend class SPGridLevel< const This >;
 
   public:
-    typedef SPGridFamily< ct, dim, strategy > GridFamily;
+    typedef SPGridFamily< ct, dim, strategy, Comm > GridFamily;
 
     typedef typename GridFamily::Traits Traits;
 
@@ -181,30 +212,30 @@ namespace Dune
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
   public:
-    SPGrid ( const CollectiveCommunication &comm = defaultCommunication() );
+    SPGrid ( const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const Domain &domain, const MultiIndex &cells,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() );
+             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() );
+             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const MultiIndex &overlap,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() );
+             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const unsigned int periodic,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() );
+             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const MultiIndex &overlap, const unsigned int periodic,
              const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = defaultCommunication() );
+             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     ~SPGrid ()
     {
@@ -497,8 +528,8 @@ namespace Dune
   // Implementation of SPGrid
   // ------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy >::SPGrid ( const CollectiveCommunication &comm )
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >::SPGrid ( const CollectiveCommunication &comm )
   : domain_( Domain::unitCube() ),
     globalMesh_( Mesh::unitMesh() ),
     overlap_( MultiIndex::zero() ),
@@ -512,8 +543,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells,
                const std::string &name, const CollectiveCommunication &comm )
   : domain_( domain ),
@@ -529,8 +560,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const std::string &name, const CollectiveCommunication &comm )
   : domain_( a, b ),
@@ -546,8 +577,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const MultiIndex &overlap,
                const std::string &name, const CollectiveCommunication &comm )
@@ -564,8 +595,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const unsigned int periodic,
                const std::string &name, const CollectiveCommunication &comm )
@@ -582,8 +613,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const MultiIndex &overlap, const unsigned int periodic,
                const std::string &name, const CollectiveCommunication &comm )
@@ -600,52 +631,52 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline bool SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline bool SPGrid< ct, dim, strategy, Comm >
     ::mark ( const int refCount, const typename Codim< 0 >::Entity &e )
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline int SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline int SPGrid< ct, dim, strategy, Comm >
     ::getMark ( const typename Codim< 0 >::Entity &e ) const
   {
     return 0;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline bool SPGrid< ct, dim, strategy >::preAdapt ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline bool SPGrid< ct, dim, strategy, Comm >::preAdapt ()
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline bool SPGrid< ct, dim, strategy >::adapt ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline bool SPGrid< ct, dim, strategy, Comm >::adapt ()
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   template< class DataHandle >
-  inline bool SPGrid< ct, dim, strategy >
+  inline bool SPGrid< ct, dim, strategy, Comm >
     ::adapt ( AdaptDataHandleInterface< This, DataHandle > &handle )
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void SPGrid< ct, dim, strategy >::postAdapt ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline void SPGrid< ct, dim, strategy, Comm >::postAdapt ()
   {}
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline void SPGrid< ct, dim, strategy, Comm >
     ::globalRefine ( const int refCount, const Refinement &refinement )
   {
     for( int i = 0; i < refCount; ++i )
@@ -658,9 +689,9 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   template< class DataHandle >
-  inline void SPGrid< ct, dim, strategy >
+  inline void SPGrid< ct, dim, strategy, Comm >
     ::globalRefine ( const int refCount,
                      AdaptDataHandleInterface< This, DataHandle > &handle,
                      const Refinement &refinement )
@@ -685,17 +716,17 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline const typename SPGrid< ct, dim, strategy >::CollectiveCommunication &
-  SPGrid< ct, dim, strategy >::comm () const
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline const typename SPGrid< ct, dim, strategy, Comm >::CollectiveCommunication &
+  SPGrid< ct, dim, strategy, Comm >::comm () const
   {
     return comm_;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   template< GrapeIOFileFormatType format >
-  inline bool SPGrid< ct, dim, strategy >
+  inline bool SPGrid< ct, dim, strategy, Comm >
     ::writeGrid ( const std::string &filename, const ctype &time ) const
   {
     // we ignore the format and always write ascii
@@ -725,9 +756,9 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   template< GrapeIOFileFormatType format >
-  inline bool SPGrid< ct, dim, strategy >
+  inline bool SPGrid< ct, dim, strategy, Comm >
     ::readGrid ( const std::string &filename, ctype &time )
   {
     // we ignore the format and always read ascii
@@ -765,34 +796,34 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline const typename SPGrid< ct, dim, strategy >::GridLevel &
-  SPGrid< ct, dim, strategy >::gridLevel ( const int level ) const
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline const typename SPGrid< ct, dim, strategy, Comm >::GridLevel &
+  SPGrid< ct, dim, strategy, Comm >::gridLevel ( const int level ) const
   {
     assert( (level >= 0) && (level < int( gridLevels_.size() )) );
     return *gridLevels_[ level ];
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline const typename SPGrid< ct, dim, strategy >::GridLevel &
-  SPGrid< ct, dim, strategy >::leafLevel () const
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline const typename SPGrid< ct, dim, strategy, Comm >::GridLevel &
+  SPGrid< ct, dim, strategy, Comm >::leafLevel () const
   {
     assert( !gridLevels_.empty() );
     return *gridLevels_.back();
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline size_t SPGrid< ct, dim, strategy >::numBoundarySegments () const
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline size_t SPGrid< ct, dim, strategy, Comm >::numBoundarySegments () const
   {
     return boundarySize_;
   }
 
 
   // note: this method ignores the last bit of the macroId
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline size_t SPGrid< ct, dim, strategy >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline size_t SPGrid< ct, dim, strategy, Comm >
     ::boundaryIndex ( const MultiIndex &macroId,
                       const unsigned int partitionNumber,
                       const int face ) const
@@ -822,17 +853,17 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline const typename SPGrid< ct, dim, strategy >::template Codim< 1 >::LocalGeometry &
-  SPGrid< ct, dim, strategy >::localFaceGeometry ( const int face ) const
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline const typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometry &
+  SPGrid< ct, dim, strategy, Comm >::localFaceGeometry ( const int face ) const
   {
     assert( (face >= 0) && (face < Cube::numFaces) );
     return *localFaceGeometry_[ face ];
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void SPGrid< ct, dim, strategy >::clear ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline void SPGrid< ct, dim, strategy, Comm >::clear ()
   {
     levelViews_.clear();
     leafView_ = LeafGridView( LeafGridViewImpl() );
@@ -845,8 +876,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void SPGrid< ct, dim, strategy >::createLocalGeometries ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline void SPGrid< ct, dim, strategy, Comm >::createLocalGeometries ()
   {
     typedef typename Codim< 1 >::LocalGeometry LocalGeo;
     typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
@@ -862,8 +893,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void SPGrid< ct, dim, strategy >::setupMacroGrid ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline void SPGrid< ct, dim, strategy, Comm >::setupMacroGrid ()
   {
     clear();
 
@@ -878,8 +909,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline void SPGrid< ct, dim, strategy >::setupBoundaryIndices ()
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline void SPGrid< ct, dim, strategy, Comm >::setupBoundaryIndices ()
   {
     const LevelGridView &macroView = levelView( 0 );
     const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
@@ -907,18 +938,6 @@ namespace Dune
         boundarySize_ += (it->boundary( 2*i+1 ) ? size : 0);
       }
     }
-  }
-
-
-  template< class ct, int dim, SPRefinementStrategy strategy >
-  inline typename SPGrid< ct, dim, strategy >::CollectiveCommunication
-  SPGrid< ct, dim, strategy >::defaultCommunication ()
-  {
-#if HAVE_MPI
-    return CollectiveCommunication( MPI_COMM_WORLD );
-#else
-    return CollectiveCommunication();
-#endif // #if HAVE_MPI
   }
 
 }
