@@ -30,17 +30,19 @@ namespace Dune
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct isParallel< SPGrid< ct, dim, strategy, Comm > >
+#if HAVE_MPI
+    template< class ct, int dim, SPRefinementStrategy strategy >
+    struct isParallel< SPGrid< ct, dim, strategy, MPI_Comm > >
     {
       static const bool v = true;
     };
 
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
-    struct canCommunicate< SPGrid< ct, dim, strategy, Comm >, codim >
+    template< class ct, int dim, SPRefinementStrategy strategy, int codim >
+    struct canCommunicate< SPGrid< ct, dim, strategy, MPI_Comm >, codim >
     {
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
+#endif
 
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct isLevelwiseConforming< SPGrid< ct, dim, strategy, Comm > >
