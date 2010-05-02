@@ -265,14 +265,14 @@ namespace Dune
   // -----------------------------------------------------
 
   template< class ct, int dim, int codim >
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed
+  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
     ::JacobianTransposed ( const GeometryCache &geometryCache )
   : geometryCache_( geometryCache )
   {}
 
 
   template< class ct, int dim, int codim >
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed
+  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
     ::operator const JacobianMatrixTransposed & () const
   {
     return geometryCache_.jacobianTransposed_;
@@ -284,14 +284,14 @@ namespace Dune
   // ------------------------------------------------------------
 
   template< class ct, int dim, int codim >
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
     ::JacobianInverseTransposed ( const GeometryCache &geometryCache )
   : geometryCache_( geometryCache )
   {}
 
 
   template< class ct, int dim, int codim >
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
     ::operator const JacobianMatrix & () const
   {
     return geometryCache_.jacobianInverseTransposed_;
