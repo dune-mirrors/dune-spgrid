@@ -71,14 +71,17 @@ namespace Dune
 
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef FieldVector< ctype, mydimension > LocalVector;
-    typedef FieldMatrix< ctype, dimension, mydimension > Jacobian;
-    typedef FieldMatrix< ctype, mydimension, dimension > JacobianTransposed;
+    typedef FieldMatrix< ctype, dimension, mydimension > JacobianMatrix;
+    typedef FieldMatrix< ctype, mydimension, dimension > JacobianMatrixTransposed;
+
+    struct JacobianTransposed;
+    struct JacobianInverseTransposed;
 
     SPGeometryCache ( const GlobalVector &h, const unsigned int dir );
 
     const ctype &volume () const;
-    const JacobianTransposed &jacobianTransposed () const;
-    const Jacobian &jacobianInverseTransposed () const;
+    JacobianTransposed jacobianTransposed () const;
+    JacobianInverseTransposed jacobianInverseTransposed () const;
 
     GlobalVector global ( const GlobalVector &origin, const LocalVector &local ) const;
     LocalVector local ( const GlobalVector &origin, const GlobalVector &global ) const;
@@ -89,8 +92,44 @@ namespace Dune
   private:
     LocalVector h_;
     ctype volume_;
-    JacobianTransposed jacobianTransposed_;
-    Jacobian jacobianInverseTransposed_;
+    JacobianMatrixTransposed jacobianTransposed_;
+    JacobianMatrix jacobianInverseTransposed_;
+  };
+
+
+
+  // SPGeometryCache::JacobianTransposed
+  // -----------------------------------
+
+  template< class ct, int dim, int codim >
+  struct SPGeometryCache< ct, dim, codim >::JacobianTransposed
+  {
+    typedef SPGeometryCache< ct, dim, codim > GeometryCache;
+
+    JacobianTransposed ( const GeometryCache &geometryCache );
+
+    operator const JacobianMatrixTransposed & () const;
+
+  private:
+    const GeometryCache &geometryCache_;
+  };
+
+
+
+  // SPGeometryCache::JacobianInverseTransposed
+  // ------------------------------------------
+
+  template< class ct, int dim, int codim >
+  struct SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+  {
+    typedef SPGeometryCache< ct, dim, codim > GeometryCache;
+
+    JacobianInverseTransposed ( const GeometryCache &geometryCache );
+
+    operator const JacobianMatrix & () const;
+
+  private:
+    const GeometryCache &geometryCache_;
   };
 
 
@@ -182,18 +221,18 @@ namespace Dune
 
 
   template< class ct, int dim, int codim >
-  inline const typename SPGeometryCache< ct, dim, codim >::JacobianTransposed &
+  inline typename SPGeometryCache< ct, dim, codim >::JacobianTransposed
   SPGeometryCache< ct, dim, codim >::jacobianTransposed () const
   {
-    return jacobianTransposed_;
+    return JacobianTransposed( *this );
   }
 
 
   template< class ct, int dim, int codim >
-  inline const typename SPGeometryCache< ct, dim, codim >::Jacobian &
+  inline typename SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
   SPGeometryCache< ct, dim, codim >::jacobianInverseTransposed () const
   {
-    return jacobianInverseTransposed_;
+    return JacobianInverseTransposed( *this );
   }
 
 
@@ -218,6 +257,44 @@ namespace Dune
     for( int k = 0; k < mydimension; ++k )
       x[ k ] = (global[ direction( k ) ] - origin[ direction( k ) ]) / h_[ k ];
     return x;
+  }
+
+
+
+  // Implementation of SPGeometryCache::JacobianTransposed
+  // -----------------------------------------------------
+
+  template< class ct, int dim, int codim >
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed
+    ::JacobianTransposed ( const GeometryCache &geometryCache )
+  : geometryCache_( geometryCache )
+  {}
+
+
+  template< class ct, int dim, int codim >
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed
+    ::operator const JacobianMatrixTransposed & () const
+  {
+    return geometryCache_.jacobianTransposed_;
+  }
+
+
+
+  // Implementation of SPGeometryCache::JacobianInverseTransposed
+  // ------------------------------------------------------------
+
+  template< class ct, int dim, int codim >
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+    ::JacobianInverseTransposed ( const GeometryCache &geometryCache )
+  : geometryCache_( geometryCache )
+  {}
+
+
+  template< class ct, int dim, int codim >
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+    ::operator const JacobianMatrix & () const
+  {
+    return geometryCache_.jacobianInverseTransposed_;
   }
 
 }

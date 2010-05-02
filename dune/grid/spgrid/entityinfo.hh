@@ -227,8 +227,6 @@ namespace Dune
 
     typedef typename GridLevel::template Codim< codim >::GeometryCache GeometryCache;
     typedef typename GeometryCache::LocalVector LocalVector;
-    typedef typename GeometryCache::Jacobian Jacobian;
-    typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
 
     SPEntityInfo ( const GridLevel &gridLevel )
     : Base( gridLevel )
