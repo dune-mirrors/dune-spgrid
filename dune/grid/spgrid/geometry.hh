@@ -36,10 +36,11 @@ namespace Dune
 
     static const int numCorners = (1 << mydimension);
 
-    typedef FieldVector< ctype, coorddimension > GlobalVector;
-    typedef FieldVector< ctype, mydimension > LocalVector;
-    typedef FieldMatrix< ctype, coorddimension, mydimension > Jacobian;
-    typedef FieldMatrix< ctype, mydimension, coorddimension > JacobianTransposed;
+    typedef typename GeometryCache::GlobalVector GlobalVector;
+    typedef typename GeometryCache::LocalVector LocalVector;
+
+    typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
+    typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
 
   protected:
     SPBasicGeometry ()
@@ -98,14 +99,12 @@ namespace Dune
       return volume();
     }
 
-    const JacobianTransposed &
-    jacobianTransposed ( const LocalVector &local ) const
+    JacobianTransposed jacobianTransposed ( const LocalVector &local ) const
     {
       return asImpl().geometryCache().jacobianTransposed();
     }
 
-    const Jacobian &
-    jacobianInverseTransposed ( const LocalVector &local ) const
+    JacobianInverseTransposed jacobianInverseTransposed ( const LocalVector &local ) const
     {
       return asImpl().geometryCache().jacobianInverseTransposed();
     }
@@ -147,8 +146,6 @@ namespace Dune
 
     typedef typename Base::GlobalVector GlobalVector;
     typedef typename Base::LocalVector LocalVector;
-    typedef typename Base::Jacobian Jacobian;
-    typedef typename Base::JacobianTransposed JacobianTransposed;
 
   private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
@@ -230,8 +227,6 @@ namespace Dune
 
     typedef typename Base::GlobalVector GlobalVector;
     typedef typename Base::LocalVector LocalVector;
-    typedef typename Base::Jacobian Jacobian;
-    typedef typename Base::JacobianTransposed JacobianTransposed;
 
   public:
     SPLocalGeometry ( const Cube &cube, const GeometryCache &geometryCache,
