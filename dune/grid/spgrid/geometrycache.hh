@@ -110,6 +110,15 @@ namespace Dune
 
     operator const JacobianMatrixTransposed & () const;
 
+    template< class X, class Y > void mv ( const X &x, Y &y ) const;
+    template< class X, class Y > void mtv ( const X &x, Y &y ) const;
+
+    template< class X, class Y > void umv ( const X &x, Y &y ) const;
+    template< class X, class Y > void umtv ( const X &x, Y &y ) const;
+
+    template< class X, class Y > void mmv ( const X &x, Y &y ) const;
+    template< class X, class Y > void mmtv ( const X &x, Y &y ) const;
+
   private:
     const GeometryCache &geometryCache_;
   };
@@ -127,6 +136,15 @@ namespace Dune
     JacobianInverseTransposed ( const GeometryCache &geometryCache );
 
     operator const JacobianMatrix & () const;
+
+    template< class X, class Y > void mv ( const X &x, Y &y ) const;
+    template< class X, class Y > void mtv ( const X &x, Y &y ) const;
+
+    template< class X, class Y > void umv ( const X &x, Y &y ) const;
+    template< class X, class Y > void umtv ( const X &x, Y &y ) const;
+
+    template< class X, class Y > void mmv ( const X &x, Y &y ) const;
+    template< class X, class Y > void mmtv ( const X &x, Y &y ) const;
 
   private:
     const GeometryCache &geometryCache_;
@@ -279,6 +297,60 @@ namespace Dune
   }
 
 
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianTransposed_.mv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mtv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianTransposed_.mtv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::umv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianTransposed_.umv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::umtv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianTransposed_.umtv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianTransposed_.mmv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmtv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianTransposed_.mmtv( x, y );
+  }
+
+
 
   // Implementation of SPGeometryCache::JacobianInverseTransposed
   // ------------------------------------------------------------
@@ -295,6 +367,60 @@ namespace Dune
     ::operator const JacobianMatrix & () const
   {
     return geometryCache_.jacobianInverseTransposed_;
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianInverseTransposed_.mv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mtv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianInverseTransposed_.mtv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianInverseTransposed_.umv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umtv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianInverseTransposed_.umtv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianInverseTransposed_.mmv( x, y );
+  }
+
+
+  template< class ct, int dim, int codim >
+  template< class X, class Y >
+  inline void
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmtv ( const X &x, Y &y ) const
+  {
+    geometryCache_.jacobianInverseTransposed_.mmtv( x, y );
   }
 
 }
