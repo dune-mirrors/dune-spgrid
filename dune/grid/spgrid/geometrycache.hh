@@ -91,6 +91,7 @@ namespace Dune
 
   private:
     LocalVector h_;
+    LocalVector hInv_;
     ctype volume_;
     JacobianMatrixTransposed jacobianTransposed_;
     JacobianMatrix jacobianInverseTransposed_;
@@ -217,15 +218,16 @@ namespace Dune
     ::SPGeometryCache ( const GlobalVector &h, const unsigned int dir )
   : Base( dir ),
     volume_( 1 ),
-    jacobianTransposed_( 0 ),
-    jacobianInverseTransposed_( 0 )
+    jacobianTransposed_( ctype( 0 ) ),
+    jacobianInverseTransposed_( ctype( 0 ) )
   {
     for( int k = 0; k < mydimension; ++k )
     {
       h_[ k ] = h[ direction( k ) ];
+      hInv_[ k ] = ctype( 1 ) / h_[ k ];
       volume_ *= h_[ k ];
       jacobianTransposed_[ k ][ direction( k ) ] = h_[ k ];
-      jacobianInverseTransposed_[ direction( k ) ][ k ] = ctype( 1 ) / h_[ k ];
+      jacobianInverseTransposed_[ direction( k ) ][ k ] = hInv_[ k ];
     }
   }
 
@@ -302,7 +304,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianTransposed_.mv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ k ] = geometryCache_.h_[ k ] * x[ geometryCache_.direction( k ) ];
   }
 
 
@@ -311,7 +314,13 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mtv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianTransposed_.mtv( x, y );
+    if( mydimension < dimension )
+    {
+      for( int k = 0; k < dimension; ++k )
+        y[ k ] = 0;
+    }
+    for( int k = 0; k < mydimension; ++k )
+      y[ geometryCache_.direction( k ) ] = geometryCache_.h_[ k ] * x[ k ];
   }
 
 
@@ -320,7 +329,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianTransposed_.umv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ k ] += geometryCache_.h_[ k ] * x[ geometryCache_.direction( k ) ];
   }
 
 
@@ -329,7 +339,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umtv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianTransposed_.umtv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ geometryCache_.direction( k ) ] += geometryCache_.h_[ k ] * x[ k ];
   }
 
 
@@ -338,7 +349,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianTransposed_.mmv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ k ] -= geometryCache_.h_[ k ] * x[ geometryCache_.direction( k ) ];
   }
 
 
@@ -347,7 +359,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmtv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianTransposed_.mmtv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ geometryCache_.direction( k ) ] -= geometryCache_.h_[ k ] * x[ k ];
   }
 
 
@@ -375,7 +388,13 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianInverseTransposed_.mv( x, y );
+    if( mydimension < dimension )
+    {
+      for( int k = 0; k < dimension; ++k )
+        y[ k ] = 0;
+    }
+    for( int k = 0; k < mydimension; ++k )
+      y[ geometryCache_.direction( k ) ] = geometryCache_.hInv_[ k ] * x[ k ];
   }
 
 
@@ -384,7 +403,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mtv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianInverseTransposed_.mtv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ k ] = geometryCache_.hInv_[ k ] * x[ geometryCache_.direction( k ) ];
   }
 
 
@@ -393,7 +413,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianInverseTransposed_.umv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ geometryCache_.direction( k ) ] += geometryCache_.hInv_[ k ] * x[ k ];
   }
 
 
@@ -402,7 +423,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umtv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianInverseTransposed_.umtv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ k ] += geometryCache_.hInv_[ k ] * x[ geometryCache_.direction( k ) ];
   }
 
 
@@ -411,7 +433,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianInverseTransposed_.mmv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ geometryCache_.direction( k ) ] -= geometryCache_.hInv_[ k ] * x[ k ];
   }
 
 
@@ -420,7 +443,8 @@ namespace Dune
   inline void
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmtv ( const X &x, Y &y ) const
   {
-    geometryCache_.jacobianInverseTransposed_.mmtv( x, y );
+    for( int k = 0; k < mydimension; ++k )
+      y[ k ] -= geometryCache_.hInv_[ k ] * x[ geometryCache_.direction( k ) ];
   }
 
 }
