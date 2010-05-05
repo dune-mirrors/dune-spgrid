@@ -84,7 +84,10 @@ namespace Dune
   template< class ct, int dim, int codim >
   struct SPGeometryCache< ct, dim, codim >::JacobianTransposed
   {
-    typedef Dune::FieldMatrix< ctype, mydimension, dimension > FieldMatrix;
+    static const int rows = mydimension;
+    static const int cols = dimension;
+
+    typedef Dune::FieldMatrix< ctype, rows, cols > FieldMatrix;
 
     JacobianTransposed ( const GlobalVector &h, const unsigned int dir );
 
@@ -115,7 +118,10 @@ namespace Dune
   template< class ct, int dim, int codim >
   struct SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
   {
-    typedef Dune::FieldMatrix< ctype, dimension, mydimension > FieldMatrix;
+    static const int rows = dimension;
+    static const int cols = mydimension;
+
+    typedef Dune::FieldMatrix< ctype, rows, cols > FieldMatrix;
 
     JacobianInverseTransposed ( const GlobalVector &h, const unsigned int dir );
 
