@@ -53,6 +53,7 @@ namespace Dune
     Iterator end () const;
 
     bool contains ( const MultiIndex &id, const unsigned int number ) const;
+    const Partition *findPartition ( const MultiIndex &id ) const;
     int volume () const;
 
     bool empty () const;
@@ -197,15 +198,22 @@ namespace Dune
   SPPartitionList< dim >
     ::contains ( const MultiIndex &id, const unsigned int number ) const
   {
+    const Partition *partition = findPartition( id );
+    assert( !partition || (partition->number() == number) );
+    return bool( partition );
+  }
+
+
+  template< int dim >
+  inline const typename SPPartitionList< dim >::Partition *
+  SPPartitionList< dim >::findPartition ( const MultiIndex &id ) const
+  {
     for( const Node *it = head_; it != 0; it = it->next() )
     {
       if( it->partition().contains( id ) )
-      {
-        assert( it->partition().number() == number );
-        return true;
-      }
+        return &(it->partition());
     }
-    return false;
+    return 0;
   }
 
 
