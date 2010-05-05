@@ -7,47 +7,38 @@
 namespace Dune
 {
 
-  // SPGeometryCacheBase
-  // -------------------
+  // SPGeometryPattern
+  // -----------------
 
   template< int dim, int codim >
-  class SPGeometryCacheBase
+  struct SPGeometryPattern
   {
-    typedef SPGeometryCacheBase< dim, codim > This;
+    explicit SPGeometryPattern ( const unsigned int dir );
 
-  protected:
-    explicit SPGeometryCacheBase ( const unsigned int dir );
-
-    int direction ( const int k ) const;
+    int nonzero ( const int k ) const;
+    int zero ( const int k ) const;
 
   private:
-    int direction_[ dim - codim ];
+    int nonzero_[ dim - codim ];
+    int zero_[ codim ];
   };
 
-
-
   template< int dim >
-  class SPGeometryCacheBase< dim, 0 >
+  struct SPGeometryPattern< dim, 0 >
   {
-    typedef SPGeometryCacheBase< dim, 0 > This;
+    explicit SPGeometryPattern ( const unsigned int dir );
 
-  protected:
-    explicit SPGeometryCacheBase ( const unsigned int dir );
-
-    int direction ( const int k ) const;
+    int nonzero ( const int k ) const;
+    int zero ( const int k ) const;
   };
 
-
-
   template< int dim >
-  class SPGeometryCacheBase< dim, dim >
+  struct SPGeometryPattern< dim, dim >
   {
-    typedef SPGeometryCacheBase< dim, dim > This;
+    explicit SPGeometryPattern ( const unsigned int dir );
 
-  protected:
-    explicit SPGeometryCacheBase ( const unsigned int dir );
-
-    int direction ( const int k ) const;
+    int nonzero ( const int k ) const;
+    int zero ( const int k ) const;
   };
 
 
@@ -57,10 +48,8 @@ namespace Dune
 
   template< class ct, int dim, int codim >
   class SPGeometryCache
-  : public SPGeometryCacheBase< dim, codim >
   {
     typedef SPGeometryCache< ct, dim, codim > This;
-    typedef SPGeometryCacheBase< dim, codim > Base;
 
   public:
     typedef ct ctype;
@@ -86,10 +75,8 @@ namespace Dune
     GlobalVector global ( const GlobalVector &origin, const LocalVector &local ) const;
     LocalVector local ( const GlobalVector &origin, const GlobalVector &global ) const;
 
-  protected:
-    using Base::direction;
-
   private:
+    SPGeometryPattern< dimension, codimension > pattern_;
     LocalVector h_;
     LocalVector hInv_;
     ctype volume_;
@@ -153,47 +140,44 @@ namespace Dune
 
 
 
-  // Implementation of SPGeometryCacheBase
-  // -------------------------------------
+  // Implementation of SPGeometryPattern
+  // -----------------------------------
 
   template< int dim, int codim >
-  inline SPGeometryCacheBase< dim, codim >
-    ::SPGeometryCacheBase ( const unsigned int dir )
+  inline SPGeometryPattern< dim, codim >::SPGeometryPattern ( const unsigned int dir )
   {
     int k = 0;
     for( int j = 0; j < dim; ++j )
     {
       if( ((dir >> j) & 1) != 0 )
-        direction_[ k++ ] = j;
+        nonzero_[ k++ ] = j;
+      else
+        zero_[ j - k ] = j;
     }
     assert( k == dim - codim );
   }
 
 
   template< int dim >
-  inline SPGeometryCacheBase< dim, 0 >
-    ::SPGeometryCacheBase ( const unsigned int dir )
+  inline SPGeometryPattern< dim, 0 >::SPGeometryPattern ( const unsigned int dir )
   {}
 
 
   template< int dim >
-  inline SPGeometryCacheBase< dim, dim >
-    ::SPGeometryCacheBase ( const unsigned int dir )
+  inline SPGeometryPattern< dim, dim >::SPGeometryPattern ( const unsigned int dir )
   {}
 
 
   template< int dim, int codim >
-  inline int
-  SPGeometryCacheBase< dim, codim >::direction ( const int k ) const
+  inline int SPGeometryPattern< dim, codim >::nonzero ( const int k ) const
   {
     assert( (k >= 0) && (k < dim - codim) );
-    return direction_[ k ];
+    return nonzero_[ k ];
   }
 
 
   template< int dim >
-  inline int
-  SPGeometryCacheBase< dim, 0 >::direction ( const int k ) const
+  inline int SPGeometryPattern< dim, 0 >::nonzero ( const int k ) const
   {
     assert( (k >= 0) && (k < dim) );
     return k;
@@ -201,10 +185,33 @@ namespace Dune
 
 
   template< int dim >
-  inline int
-  SPGeometryCacheBase< dim, dim >::direction ( const int k ) const
+  inline int SPGeometryPattern< dim, dim >::nonzero ( const int k ) const
   {
     assert( false );
+    return k;
+  }
+
+
+  template< int dim, int codim >
+  inline int SPGeometryPattern< dim, codim >::zero ( const int k ) const
+  {
+    assert( (k >= 0) && (k < codim) );
+    return zero_[ k ];
+  }
+
+
+  template< int dim >
+  inline int SPGeometryPattern< dim, 0 >::zero ( const int k ) const
+  {
+    assert( false );
+    return k;
+  }
+
+
+  template< int dim >
+  inline int SPGeometryPattern< dim, dim >::zero ( const int k ) const
+  {
+    assert( (k >= 0) && (k < dim) );
     return k;
   }
 
@@ -216,18 +223,18 @@ namespace Dune
   template< class ct, int dim, int codim >
   inline SPGeometryCache< ct, dim, codim >
     ::SPGeometryCache ( const GlobalVector &h, const unsigned int dir )
-  : Base( dir ),
+  : pattern_( dir ),
     volume_( 1 ),
     jacobianTransposed_( ctype( 0 ) ),
     jacobianInverseTransposed_( ctype( 0 ) )
   {
     for( int k = 0; k < mydimension; ++k )
     {
-      h_[ k ] = h[ direction( k ) ];
+      h_[ k ] = h[ pattern_.nonzero( k ) ];
       hInv_[ k ] = ctype( 1 ) / h_[ k ];
       volume_ *= h_[ k ];
-      jacobianTransposed_[ k ][ direction( k ) ] = h_[ k ];
-      jacobianInverseTransposed_[ direction( k ) ][ k ] = hInv_[ k ];
+      jacobianTransposed_[ k ][ pattern_.nonzero( k ) ] = h_[ k ];
+      jacobianInverseTransposed_[ pattern_.nonzero( k ) ][ k ] = hInv_[ k ];
     }
   }
 
@@ -263,7 +270,7 @@ namespace Dune
   {
     GlobalVector y( origin );
     for( int k = 0; k < mydimension; ++k )
-      y[ direction( k ) ] += h_[ k ] * local[ k ];
+      y[ pattern_.nonzero( k ) ] += h_[ k ] * local[ k ];
     return y;
   }
 
@@ -275,7 +282,10 @@ namespace Dune
   {
     LocalVector x;
     for( int k = 0; k < mydimension; ++k )
-      x[ k ] = (global[ direction( k ) ] - origin[ direction( k ) ]) / h_[ k ];
+    {
+      const int j = pattern_.nonzero( k );
+      x[ k ] = (global[ j ] - origin[ j ]) / h_[ j ];
+    }
     return x;
   }
 
@@ -305,7 +315,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] = geometryCache_.h_[ k ] * x[ geometryCache_.direction( k ) ];
+      y[ k ] = geometryCache_.h_[ k ] * x[ geometryCache_.pattern_.nonzero( k ) ];
   }
 
 
@@ -320,7 +330,7 @@ namespace Dune
         y[ k ] = 0;
     }
     for( int k = 0; k < mydimension; ++k )
-      y[ geometryCache_.direction( k ) ] = geometryCache_.h_[ k ] * x[ k ];
+      y[ geometryCache_.pattern_.nonzero( k ) ] = geometryCache_.h_[ k ] * x[ k ];
   }
 
 
@@ -330,7 +340,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += geometryCache_.h_[ k ] * x[ geometryCache_.direction( k ) ];
+      y[ k ] += geometryCache_.h_[ k ] * x[ geometryCache_.pattern_.nonzero( k ) ];
   }
 
 
@@ -340,7 +350,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ geometryCache_.direction( k ) ] += geometryCache_.h_[ k ] * x[ k ];
+      y[ geometryCache_.pattern_.nonzero( k ) ] += geometryCache_.h_[ k ] * x[ k ];
   }
 
 
@@ -350,7 +360,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] -= geometryCache_.h_[ k ] * x[ geometryCache_.direction( k ) ];
+      y[ k ] -= geometryCache_.h_[ k ] * x[ geometryCache_.pattern_.nonzero( k ) ];
   }
 
 
@@ -360,7 +370,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ geometryCache_.direction( k ) ] -= geometryCache_.h_[ k ] * x[ k ];
+      y[ geometryCache_.pattern_.nonzero( k ) ] -= geometryCache_.h_[ k ] * x[ k ];
   }
 
 
@@ -394,7 +404,7 @@ namespace Dune
         y[ k ] = 0;
     }
     for( int k = 0; k < mydimension; ++k )
-      y[ geometryCache_.direction( k ) ] = geometryCache_.hInv_[ k ] * x[ k ];
+      y[ geometryCache_.pattern_.nonzero( k ) ] = geometryCache_.hInv_[ k ] * x[ k ];
   }
 
 
@@ -404,7 +414,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] = geometryCache_.hInv_[ k ] * x[ geometryCache_.direction( k ) ];
+      y[ k ] = geometryCache_.hInv_[ k ] * x[ geometryCache_.pattern_.nonzero( k ) ];
   }
 
 
@@ -414,7 +424,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ geometryCache_.direction( k ) ] += geometryCache_.hInv_[ k ] * x[ k ];
+      y[ geometryCache_.pattern_.nonzero( k ) ] += geometryCache_.hInv_[ k ] * x[ k ];
   }
 
 
@@ -424,7 +434,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += geometryCache_.hInv_[ k ] * x[ geometryCache_.direction( k ) ];
+      y[ k ] += geometryCache_.hInv_[ k ] * x[ geometryCache_.pattern_.nonzero( k ) ];
   }
 
 
@@ -434,7 +444,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ geometryCache_.direction( k ) ] -= geometryCache_.hInv_[ k ] * x[ k ];
+      y[ geometryCache_.pattern_.nonzero( k ) ] -= geometryCache_.hInv_[ k ] * x[ k ];
   }
 
 
@@ -444,7 +454,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] -= geometryCache_.hInv_[ k ] * x[ geometryCache_.direction( k ) ];
+      y[ k ] -= geometryCache_.hInv_[ k ] * x[ geometryCache_.pattern_.nonzero( k ) ];
   }
 
 }
