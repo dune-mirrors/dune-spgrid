@@ -12,9 +12,6 @@
 #include <dune/grid/spgrid.hh>
 #include <dune/grid/spgrid/dgfparser.hh>
 
-//#include <dune/grid/utility/hierarchicsearch.hh>
-#include <dune/grid/utility/sphierarchicsearch.hh>
-
 #include <dune/grid/test/gridcheck.cc>
 #include <dune/grid/test/checkintersectionit.cc>
 #include <dune/grid/test/checkgeometryinfather.cc>

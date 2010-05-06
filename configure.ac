@@ -17,11 +17,7 @@ AC_CONFIG_FILES([
   dune/common/Makefile
   dune/grid/Makefile
   dune/grid/extensions/Makefile
-  dune/grid/io/Makefile
-  dune/grid/io/file/Makefile
-  dune/grid/io/file/dgfparser/Makefile
   dune/grid/spgrid/Makefile
-  dune/grid/utility/Makefile
   doc/Makefile
   m4/Makefile
   test/Makefile

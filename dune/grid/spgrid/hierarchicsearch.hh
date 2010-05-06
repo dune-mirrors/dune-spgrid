@@ -1,5 +1,5 @@
-#ifndef DUNE_SPGRID_SPHIERARCHICSEARCH_HH
-#define DUNE_SPGRID_SPHIERARCHICSEARCH_HH
+#ifndef DUNE_SPGRID_HIERARCHICSEARCH_HH
+#define DUNE_SPGRID_HIERARCHICSEARCH_HH
 
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
@@ -205,4 +205,4 @@ namespace Dune
 
 }
 
-#endif // #infdef DUNE_SPGRID_SPHIERARCHICSEARCH_HH
+#endif // #infdef DUNE_SPGRID_HIERARCHICSEARCH_HH
