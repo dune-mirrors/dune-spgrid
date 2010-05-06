@@ -105,6 +105,13 @@ namespace Dune
     ctype det () const;
 
   private:
+    friend class SPGeometryCache< ct, dim, codim >;
+
+    JacobianTransposed ( const JacobianTransposed &other );
+
+    // prohibit assignment
+    JacobianTransposed &operator= ( const JacobianTransposed & );
+
     SPGeometryPattern< dimension, codimension > pattern_;
     LocalVector h_;
     FieldMatrix matrix_;
@@ -139,6 +146,13 @@ namespace Dune
     ctype det () const;
 
   private:
+    friend class SPGeometryCache< ct, dim, codim >;
+
+    JacobianInverseTransposed ( const JacobianInverseTransposed &other );
+
+    // prohibit assignment
+    JacobianInverseTransposed &operator= ( const JacobianInverseTransposed & );
+
     SPGeometryPattern< dimension, codimension > pattern_;
     LocalVector hInv_;
     FieldMatrix matrix_;
@@ -280,6 +294,15 @@ namespace Dune
 
   template< class ct, int dim, int codim >
   inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
+    ::JacobianTransposed ( const JacobianTransposed &other )
+  : pattern_( other.pattern_ ),
+    h_( other.h_ ),
+    matrix_( other.matrix_ )
+  {}
+
+
+  template< class ct, int dim, int codim >
+  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
     ::operator const FieldMatrix & () const
   {
     return matrix_;
@@ -376,6 +399,15 @@ namespace Dune
       matrix_[ j ][ k ] = hInv_[ k ];
     }
   }
+
+
+  template< class ct, int dim, int codim >
+  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+    ::JacobianInverseTransposed ( const JacobianInverseTransposed &other )
+  : pattern_( other.pattern_ ),
+    hInv_( other.hInv_ ),
+    matrix_( other.matrix_ )
+  {}
 
 
   template< class ct, int dim, int codim >
