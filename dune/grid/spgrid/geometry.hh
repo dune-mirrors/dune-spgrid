@@ -43,82 +43,29 @@ namespace Dune
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
 
   protected:
-    SPBasicGeometry ()
-    {}
+    SPBasicGeometry ();
 
   public:
-    GeometryType type () const
-    {
-      return GeometryType( GeometryType::cube, mydimension );
-    }
+    GeometryType type () const;
 
-    int corners () const
-    {
-      return numCorners;
-    }
+    int corners () const;
+    const GlobalVector &operator[] ( const int i ) const;
+    GlobalVector corner ( const int i ) const;
+    GlobalVector center () const;
 
-    const GlobalVector &operator[] ( const int i ) const
-    {
-      DUNE_THROW( NotImplemented, "SPGrid does not implement Geometry::operator[], use Geometry::corner instead." );
-    }
+    bool affine () const;
 
-    GlobalVector corner ( const int i ) const
-    {
-      const Cube &cube = asImpl().cube();
-      return global( cube.corner( i ) );
-    }
+    GlobalVector global ( const LocalVector &local ) const;
+    LocalVector local ( const GlobalVector &global ) const;
 
-    GlobalVector center () const
-    {
-      const Cube &cube = asImpl().cube();
-      return global( cube.center() );
-    }
+    ctype volume () const;
+    ctype integrationElement ( const LocalVector &local ) const;
 
-    bool affine () const
-    {
-      return true;
-    }
-
-    GlobalVector global ( const LocalVector &local ) const
-    {
-      GlobalVector y( asImpl().origin() );
-      asImpl().geometryCache().jacobianTransposed().umtv( local, y );
-      return y;
-    }
-
-    LocalVector local ( const GlobalVector &global ) const
-    {
-      LocalVector x;
-      GlobalVector y = global - asImpl().origin();
-      asImpl().geometryCache().jacobianInverseTransposed().mtv( y, x );
-      return x;
-    }
-
-    ctype volume () const
-    {
-      return asImpl().geometryCache().volume();
-    }
-
-    ctype integrationElement ( const LocalVector &local ) const
-    {
-      return volume();
-    }
-
-    const JacobianTransposed &jacobianTransposed ( const LocalVector &local ) const
-    {
-      return asImpl().geometryCache().jacobianTransposed();
-    }
-
-    const JacobianInverseTransposed &jacobianInverseTransposed ( const LocalVector &local ) const
-    {
-      return asImpl().geometryCache().jacobianInverseTransposed();
-    }
+    const JacobianTransposed &jacobianTransposed ( const LocalVector &local ) const;
+    const JacobianInverseTransposed &jacobianInverseTransposed ( const LocalVector &local ) const;
 
   protected:
-    const Impl &asImpl () const
-    {
-      return static_cast< const Impl & >( *this );
-    }
+    const Impl &asImpl () const;
   };
 
 
@@ -264,6 +211,122 @@ namespace Dune
     GeometryCache geometryCache_;
     GlobalVector origin_;
   };
+
+
+
+  // Implementation of SPBasicGeometry
+  // ---------------------------------
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline SPBasicGeometry< mydim, cdim, Grid, Impl >::SPBasicGeometry ()
+  {}
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline GeometryType SPBasicGeometry< mydim, cdim, Grid, Impl >::type () const
+  {
+    return GeometryType( GeometryType::cube, mydimension );
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline int SPBasicGeometry< mydim, cdim, Grid, Impl >::corners () const
+  {
+    return numCorners;
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline const typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector &
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::operator[] ( const int i ) const
+  {
+    DUNE_THROW( NotImplemented, "SPGrid does not implement Geometry::operator[], use Geometry::corner instead." );
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::corner ( const int i ) const
+  {
+    const Cube &cube = asImpl().cube();
+    return global( cube.corner( i ) );
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::center () const
+  {
+    const Cube &cube = asImpl().cube();
+    return global( cube.center() );
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline bool SPBasicGeometry< mydim, cdim, Grid, Impl >::affine () const
+  {
+    return true;
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::global ( const LocalVector &local ) const
+  {
+    GlobalVector y( asImpl().origin() );
+    asImpl().geometryCache().jacobianTransposed().umtv( local, y );
+    return y;
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::LocalVector
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::local ( const GlobalVector &global ) const
+  {
+    LocalVector x;
+    GlobalVector y = global - asImpl().origin();
+    asImpl().geometryCache().jacobianInverseTransposed().mtv( y, x );
+    return x;
+  }
+
+  
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::ctype
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::volume () const
+  {
+    return asImpl().geometryCache().volume();
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::ctype
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::integrationElement ( const LocalVector &local ) const
+  {
+    return volume();
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline const typename SPBasicGeometry< mydim, cdim, Grid, Impl >::JacobianTransposed &
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianTransposed ( const LocalVector &local ) const
+  {
+    return asImpl().geometryCache().jacobianTransposed();
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline const typename SPBasicGeometry< mydim, cdim, Grid, Impl >::JacobianInverseTransposed &
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianInverseTransposed ( const LocalVector &local ) const
+  {
+    return asImpl().geometryCache().jacobianInverseTransposed();
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline const Impl &SPBasicGeometry< mydim, cdim, Grid, Impl >::asImpl () const
+  {
+    return static_cast< const Impl & >( *this );
+  }
 
 }
 
