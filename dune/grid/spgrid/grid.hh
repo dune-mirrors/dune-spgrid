@@ -846,19 +846,21 @@ namespace Dune
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline typename SPGrid< ct, dim, strategy, Comm >::template Codim< 0 >::EntityPointer
-  SPGrid< ct, dim, strategy, Comm >::findEntity ( const GlobalVector &x, const int level ) const
+  SPGrid< ct, dim, strategy, Comm >
+    ::findEntity ( const GlobalVector &x, const int level ) const
   {
+    typedef typename Traits::template Codim< 0 >::EntityPointerImpl EntityPointerImpl;
     assert( domain().contains( x ) );
     const GridLevel &gLevel = gridLevel( level );
     const PartitionList &partitionList = gLevel.template partition< All_Partition >();
 
-    const GridLevel y = x - domain().origin();
-    GridLevel z;
-    gLevel.template geometryCache< 0 >( 0 ).jacobianInverseTransposed().mv( y, z );
+    const GlobalVector y = x - domain().origin();
+    GlobalVector z;
+    gLevel.template geometryCache< 0 >( (1 << dimension) - 1 ).jacobianInverseTransposed().mv( y, z );
 
     MultiIndex id;
     for( int i = 0; i < dimension; ++i )
-      id[ i ] = int( z[ i ] );
+      id[ i ] = 2*int( z[ i ] ) + 1;
 
     const typename PartitionList::Partition *partition = partitionList.findPartition( id );
     if( partition )
