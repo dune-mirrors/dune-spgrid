@@ -22,9 +22,6 @@ Id Sets:
 Extended Iterators:
  * simplify access
 
-Utitities:
- * specialize hierarchic search (can be implemented faster)
-
 Documentation:
  * main page (introducing SPGrid and its features)
  * design concepts
