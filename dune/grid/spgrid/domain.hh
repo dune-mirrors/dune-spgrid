@@ -31,6 +31,8 @@ namespace Dune
     const GlobalVector &origin () const;
     const GlobalVector &width () const;
 
+    bool contains ( const GlobalVector &x ) const;
+
     bool periodic ( const int i ) const;
     unsigned int periodic () const;
 
@@ -73,6 +75,19 @@ namespace Dune
   SPDomain< ct, dim >::width () const
   {
     return width_;
+  }
+
+
+  template< class ct, int dim >
+  inline bool SPDomain< ct, dim >::contains ( const GlobalVector &x ) const
+  {
+    bool contains = true;
+    for( int i = 0; i < dimension; ++i )
+    {
+      const ctype y = x[ i ] - origin()[ i ];
+      contains &= ((y >= 0) && (y <= width()[ i ]));
+    }
+    return contains;
   }
 
 

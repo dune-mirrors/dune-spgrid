@@ -298,35 +298,14 @@ namespace Dune
 
     template< PartitionIteratorType pitype >
     typename Traits::template Partition< pitype >::LevelGridView
-    levelView ( const int level ) const
-    {
-      typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
-      typedef typename GridView::Traits::GridViewImp GridViewImpl;
-      assert( (level >= 0) && (level <= maxLevel()) );
-      const LevelGridViewImpl &viewImpl = getRealImplementation( levelViews_[ level ] );
-      return GridViewImpl( viewImpl );
-    }
+    levelView ( const int level ) const;
 
     template< PartitionIteratorType pitype >
     typename Traits::template Partition< pitype >::LeafGridView
-    leafView () const
-    {
-      typedef typename Traits::template Partition< pitype >::LeafGridView GridView;
-      typedef typename GridView::Traits::GridViewImp GridViewImpl;
-      const LeafGridViewImpl &viewImpl = getRealImplementation( leafView_ );
-      return GridViewImpl( viewImpl );
-    }
+    leafView () const;
 
-    LevelGridView levelView ( const int level ) const
-    {
-      assert( (level >= 0) && (level <= maxLevel()) );
-      return levelViews_[ level ];
-    }
-
-    LeafGridView leafView () const
-    {
-      return leafView_;
-    }
+    LevelGridView levelView ( const int level ) const;
+    LeafGridView leafView () const;
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
@@ -485,6 +464,8 @@ namespace Dune
 
     size_t numBoundarySegments () const;
 
+    typename Codim< 0 >::EntityPointer findEntity ( const GlobalVector &x, const int level ) const;
+
   private:
     // note: this method ignores the last bit of the macroId
     size_t boundaryIndex ( const MultiIndex &macroId,
@@ -628,6 +609,48 @@ namespace Dune
   {
     createLocalGeometries();
     setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< PartitionIteratorType pitype >
+  typename SPGrid< ct, dim, strategy, Comm >::Traits::template Partition< pitype >::LevelGridView
+  SPGrid< ct, dim, strategy, Comm >::levelView ( const int level ) const
+  {
+    typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
+    typedef typename GridView::Traits::GridViewImp GridViewImpl;
+    assert( (level >= 0) && (level <= maxLevel()) );
+    const LevelGridViewImpl &viewImpl = getRealImplementation( levelViews_[ level ] );
+    return GridViewImpl( viewImpl );
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< PartitionIteratorType pitype >
+  typename SPGrid< ct, dim, strategy, Comm >::Traits::template Partition< pitype >::LeafGridView
+  SPGrid< ct, dim, strategy, Comm >::leafView () const
+  {
+    typedef typename Traits::template Partition< pitype >::LeafGridView GridView;
+    typedef typename GridView::Traits::GridViewImp GridViewImpl;
+    const LeafGridViewImpl &viewImpl = getRealImplementation( leafView_ );
+    return GridViewImpl( viewImpl );
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  typename SPGrid< ct, dim, strategy, Comm >::LevelGridView
+  SPGrid< ct, dim, strategy, Comm >::levelView ( const int level ) const
+  {
+    assert( (level >= 0) && (level <= maxLevel()) );
+    return levelViews_[ level ];
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  typename SPGrid< ct, dim, strategy, Comm >::LeafGridView
+  SPGrid< ct, dim, strategy, Comm >::leafView () const
+  {
+    return leafView_;
   }
 
 
@@ -818,6 +841,30 @@ namespace Dune
   inline size_t SPGrid< ct, dim, strategy, Comm >::numBoundarySegments () const
   {
     return boundarySize_;
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline typename SPGrid< ct, dim, strategy, Comm >::template Codim< 0 >::EntityPointer
+  SPGrid< ct, dim, strategy, Comm >::findEntity ( const GlobalVector &x, const int level ) const
+  {
+    assert( domain().contains( x ) );
+    const GridLevel &gLevel = gridLevel( level );
+    const PartitionList &partitionList = gLevel.template partition< All_Partition >();
+
+    const GridLevel y = x - domain().origin();
+    GridLevel z;
+    gLevel.template geometryCache< 0 >( 0 ).jacobianInverseTransposed().mv( y, z );
+
+    MultiIndex id;
+    for( int i = 0; i < dimension; ++i )
+      id[ i ] = int( z[ i ] );
+
+    const typename PartitionList::Partition *partition = partitionList.findPartition( id );
+    if( partition )
+      return EntityPointerImpl( gLevel, id, partition->number() );
+    else
+      DUNE_THROW( GridError, "Coordinate " << x << " is outside the grid." );
   }
 
 
