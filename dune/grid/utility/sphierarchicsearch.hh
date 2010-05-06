@@ -61,23 +61,11 @@ namespace Dune
   HierarchicSearch< SPGrid< ct, dim, strategy, Comm >, IndexSet >
     ::findEntity ( const GlobalVector &global ) const
   {
-    typedef typename Grid::template Codim< 0 >::LevelIterator LevelIterator;
-    const LevelIterator end = grid_.template lend< 0 >( 0 );
-    for( LevelIterator it = grid_.template lbegin< 0 >( 0 ); it != end; ++it )
-    {
-      const Entity &e = *it;
-      const typename Entity::Geometry &geo = e.geometry();
-
-      LocalVector local = geo.local( global );
-      if( !GenericReferenceElements< double, dim >::general( geo.type() ).checkInside( local ) )
-        continue;
-
-      if( indexSet_.contains( *it ) )
-        return EntityPointer( it );
-      else
-        return hFindEntity( *it, global );
-    }
-    DUNE_THROW( GridError, "Coordinate " << global << " is outside the grid." );
+    EntityPointer ep = grid_.findEntity( global, 0 );
+    if( indexSet_.contains( *ep ) )
+      return ep;
+    else
+      return hFindEntity( *ep, global );
   }
 
 
@@ -93,7 +81,7 @@ namespace Dune
     {
       const Entity &child = *it;
       LocalVector local = child.geometry().local( global );
-      if( GenericReferenceElements< double, dim >::general( child.type() ).checkInside( local ) )
+      if( GenericReferenceElements< double, dim >::cube().checkInside( local ) )
       {
         if( indexSet_.contains( *it ) )
           return EntityPointer( it );
