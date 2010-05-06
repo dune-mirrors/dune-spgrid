@@ -12,6 +12,9 @@
 #include <dune/grid/spgrid.hh>
 #include <dune/grid/spgrid/dgfparser.hh>
 
+//#include <dune/grid/utility/hierarchicsearch.hh>
+#include <dune/grid/utility/sphierarchicsearch.hh>
+
 #include <dune/grid/test/gridcheck.cc>
 #include <dune/grid/test/checkintersectionit.cc>
 #include <dune/grid/test/checkgeometryinfather.cc>
@@ -23,6 +26,35 @@
 
 static const int dimGrid = DIMGRID;
 
+
+template< class GridView >
+void checkHierarchicSearch ( const GridView &gridView )
+{
+  typedef Dune::HierarchicSearch< typename GridView::Grid, typename GridView::IndexSet > HierarchicSearch;
+
+  typedef typename GridView::template Codim< 0 >::EntityPointer EntityPointer;
+  typedef typename EntityPointer::Entity::Geometry Geometry;
+  typedef typename Geometry::ctype ctype;
+  typedef typename Geometry::LocalCoordinate LocalVector;
+  typedef typename Geometry::GlobalCoordinate GlobalVector;
+
+  HierarchicSearch hsearch( gridView.grid(), gridView.indexSet() );
+
+  GlobalVector x = gridView.grid().domain().origin();
+  x.axpy( 0.49, gridView.grid().domain().width() );
+
+  EntityPointer ep = hsearch.findEntity( x );
+  const Geometry &geometry = ep->geometry();
+  const LocalVector xl = geometry.local( x );
+  if( !Dune::GenericReferenceElements< ctype, dimGrid >::cube().checkInside( xl ) )
+  {
+    std::cerr << "Cannot find " << x << " in entity returned by hierarchic search." << std::endl;
+    std::cerr << "Entity:";
+    for( int i = 0; i < geometry.corners(); ++i )
+      std::cerr << "  ( " << geometry.corner( i ) << " )";
+    std::cerr << std::endl;
+  }
+}
 
 
 template< class Grid >
@@ -50,6 +82,9 @@ void performCheck ( Grid &grid, const int maxLevel )
     std::cerr << ">>> Checking communication..." << std::endl;
     checkIdCommunication( grid.leafView() );
     checkCommunication( grid, -1, std::cout );
+
+    std::cerr << ">>> Checking hierarchic search..." << std::endl;
+    checkHierarchicSearch( grid.leafView() );
   }
 
   std::cerr << ">>> Writing out grid..." << std::endl;
