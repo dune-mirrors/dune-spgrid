@@ -4,6 +4,8 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
 
+#include <dune/grid/common/indexidset.hh>
+
 #include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
@@ -14,6 +16,9 @@ namespace Dune
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   class SPGrid;
+
+  template< class Grid >
+  class SPIndexSet;
 
   template< class Grid, class IndexSet >
   class HierarchicSearch;
@@ -27,14 +32,13 @@ namespace Dune
   struct SPHierarchicSearch
   {
     typedef typename Grid::ctype ctype;
+    typedef typename Grid::template Codim< 0 >::Entity Entity;
+    typedef typename Grid::template Codim< 0 >::EntityPointer EntityPointer;
 
     static const int dimension = Grid::dimension;
 
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef GlobalVector LocalVector;
-    
-    typedef typename Grid::template Codim< 0 >::Entity Entity;
-    typedef typename Grid::template Codim< 0 >::EntityPointer EntityPointer;
 
     SPHierarchicSearch ( const Grid &grid, const IndexSet &indexSet );
 
@@ -47,6 +51,50 @@ namespace Dune
     const IndexSet &indexSet_;
   };
 
+
+
+  // SPHierarchicSearch for SPIndexSet
+  // ---------------------------------
+
+  template< class Grid >
+  class SPHierarchicSearch< Grid, SPIndexSet< Grid > >
+  {
+    typedef SPIndexSet< Grid > IndexSet;
+
+  public:
+    typedef typename Grid::ctype ctype;
+    typedef typename Grid::template Codim< 0 >::Entity Entity;
+    typedef typename Grid::template Codim< 0 >::EntityPointer EntityPointer;
+
+    static const int dimension = Grid::dimension;
+
+    typedef FieldVector< ctype, dimension > GlobalVector;
+    typedef GlobalVector LocalVector;
+
+    SPHierarchicSearch ( const Grid &grid, const IndexSet &indexSet );
+
+    EntityPointer findEntity ( const GlobalVector &global ) const;
+    
+  private:
+    const Grid &grid_;
+    const IndexSet &indexSet_;
+  };
+
+
+
+  // SPHierarchicSearch for IndexSet< SPIndexSet >
+  // ---------------------------------------------
+
+  template< class Grid >
+  class SPHierarchicSearch< Grid, IndexSet< Grid, SPIndexSet< Grid >, typename SPIndexSet< Grid >::IndexType > >
+  : public SPHierarchicSearch< Grid, SPIndexSet< Grid > >
+  {
+    typedef SPHierarchicSearch< Grid, SPIndexSet< Grid > > Base;
+    typedef Dune::IndexSet< Grid, SPIndexSet< Grid >, typename SPIndexSet< Grid >::IndexType > IndexSet;
+
+  public:
+    SPHierarchicSearch ( const Grid &grid, const IndexSet &indexSet );
+  };
 
 
 
@@ -112,6 +160,37 @@ namespace Dune
     }
     DUNE_THROW( Exception, "Unexpected internal Error" );
   }
+
+
+
+  // Implementation of SPHierarchicSearch for SPIndexSet
+  // ---------------------------------------------------
+
+  template< class Grid >
+  inline SPHierarchicSearch< Grid, SPIndexSet< Grid > >
+    ::SPHierarchicSearch ( const Grid &grid, const IndexSet &indexSet )
+  : grid_( grid ),
+    indexSet_( indexSet )
+  {}
+
+
+  template< class Grid >
+  inline typename SPHierarchicSearch< Grid, SPIndexSet< Grid > >::EntityPointer
+  SPHierarchicSearch< Grid, SPIndexSet< Grid > >::findEntity ( const GlobalVector &global ) const
+  {
+    return grid_.findEntity( global, indexSet_.gridLevel().level() );
+  }
+
+
+
+  // Implementation of SPHierarchicSearch for IndexSet< SPIndexSet >
+  // ---------------------------------------------------------------
+
+  template< class Grid >
+  inline SPHierarchicSearch< Grid, IndexSet< Grid, SPIndexSet< Grid >, typename SPIndexSet< Grid >::IndexType > >
+    ::SPHierarchicSearch ( const Grid &grid, const IndexSet &indexSet )
+  : Base( grid, static_cast< const SPIndexSet< Grid > & >( indexSet ) )
+  {}
 
 
 
