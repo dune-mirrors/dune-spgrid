@@ -47,6 +47,7 @@ namespace Dune
       }
       else
         entityInfo.down();
+      entityInfo.update();
     }
 
   protected:
