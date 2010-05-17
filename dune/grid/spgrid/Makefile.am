@@ -6,8 +6,8 @@ spgrid_HEADERS = cachedpartitionlist.hh  capabilities.hh  communication.hh \
                  gridview.hh  hierarchiciterator.hh  hierarchicsearch.hh \
                  hindexset.hh  idset.hh  indexset.hh  intersection.hh \
                  intersectioniterator.hh  iterator.hh  linkage.hh  mesh.hh \
-                 misc.hh  multiindex.hh  partition.hh  partitionlist.hh \
-                 partitionpool.hh  refinement.hh  superentityiterator.hh \
-                 version.hh
+                 misc.hh  multiindex.hh  normal.hh  partition.hh \
+                 partitionlist.hh  partitionpool.hh  refinement.hh \
+                 superentityiterator.hh  version.hh
 
 include $(top_srcdir)/am/global-rules

@@ -127,6 +127,7 @@ namespace Dune
 
     int size () const;
 
+    ctype faceVolume ( const int i ) const;
     const GlobalVector &volumeNormal ( const int i ) const;
 
   private:
@@ -150,6 +151,7 @@ namespace Dune
     GlobalVector h_;
     void *geometryCache_[ numDirections ];
     LocalGeometry **geometryInFather_;
+    ctype faceVolume_[ Cube::numFaces ];
     GlobalVector normal_[ Cube::numFaces ];
   };
 
@@ -368,6 +370,15 @@ namespace Dune
 
 
   template< class Grid >
+  inline typename SPGridLevel< Grid >::ctype
+  SPGridLevel< Grid >::faceVolume ( const int i ) const
+  {
+    assert( (i >= 0) && (i < Cube::numFaces) );
+    return faceVolume_[ i ];
+  }
+
+
+  template< class Grid >
   inline const typename SPGridLevel< Grid >::GlobalVector &
   SPGridLevel< Grid >::volumeNormal ( const int i ) const
   {
@@ -411,8 +422,8 @@ namespace Dune
     for( int face = 0; face < Cube::numFaces; ++face )
     {
       normal_[ face ] = cube().normal( face );
-      const ctype hn = std::abs( normal_[ face ] * h_ );
-      normal_[ face ] *= volume / hn;
+      faceVolume_[ face ] = std::abs( volume / (normal_[ face ] * h_) );
+      normal_[ face ] *= faceVolume_[ face ];
     }
   }
 

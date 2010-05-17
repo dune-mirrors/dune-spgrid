@@ -6,6 +6,7 @@
 #include <dune/common/fvector.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
+#include <dune/grid/spgrid/normal.hh>
 
 namespace Dune
 {
@@ -43,6 +44,7 @@ namespace Dune
     static const int dimension = dim;
 
     typedef FieldVector< ctype, dimension > GlobalVector;
+    typedef SPNormalVector< ctype, dimension > NormalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
 
     static const int numCorners = (1 << dimension);
@@ -73,11 +75,21 @@ namespace Dune
       return center_;
     }
 
+    NormalVector normal ( const int i ) const
+    {
+      assert( (i >= 0) && (i < numFaces) );
+      NormalVector normal( i / 2, 2*(i&1)-1 );
+      assert( normal == normal_[ i ] );
+      return normal;
+    }
+
+#if 0
     const GlobalVector &normal ( const int i ) const
     {
       assert( (i >= 0) && (i < numFaces) );
       return normal_[ i ];
     }
+#endif
 
   private:
     void subId ( const unsigned int dimension, const unsigned int codim,

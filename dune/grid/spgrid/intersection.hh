@@ -44,6 +44,8 @@ namespace Dune
     typedef typename Traits::template Codim< 1 >::LocalGeometry LocalGeometry;
 
   private:
+    typedef typename Traits::Cube Cube;
+
     typedef SPEntity< 0, dimension, Grid > EntityImpl;
     typedef SPEntityPointer< 0, Grid > EntityPointerImpl;
     typedef SPGeometry< dimension-1, dimension, Grid > GeometryImpl;
@@ -52,8 +54,8 @@ namespace Dune
     typedef typename EntityImpl::EntityInfo EntityInfo;
     typedef typename EntityImpl::GridLevel GridLevel;
 
-    typedef typename EntityInfo::GlobalVector GlobalVector;
     typedef typename GeometryImpl::LocalVector LocalVector;
+    typedef typename Cube::NormalVector NormalVector;
 
   private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
@@ -138,22 +140,22 @@ namespace Dune
       return face_ ^ 1;
     }
 
-    GlobalVector outerNormal ( const LocalVector &local ) const
+    NormalVector outerNormal ( const LocalVector &local ) const
     {
       return integrationOuterNormal( local );
     }
 
-    GlobalVector integrationOuterNormal ( const LocalVector &local ) const
+    NormalVector integrationOuterNormal ( const LocalVector &local ) const
     {
-      return gridLevel().volumeNormal( face_ );
+      return gridLevel().faceVolume( face_ ) * centerUnitOuterNormal();
     }
 
-    GlobalVector centerUnitOuterNormal () const
+    NormalVector centerUnitOuterNormal () const
     {
       return gridLevel().cube().normal( face_ );
     }
 
-    GlobalVector unitOuterNormal ( const LocalVector &local ) const
+    NormalVector unitOuterNormal ( const LocalVector &local ) const
     {
       return centerUnitOuterNormal();
     }
