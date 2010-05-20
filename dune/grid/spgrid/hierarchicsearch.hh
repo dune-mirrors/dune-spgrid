@@ -143,7 +143,7 @@ namespace Dune
   SPHierarchicSearch< Grid, IndexSet >
     ::hFindEntity ( const Entity &e, const GlobalVector &global ) const
   {
-    typedef typename Grid::template Codim< 0 >::HierarchicIterator HierarchicIterator;
+    typedef typename Grid::HierarchicIterator HierarchicIterator;
 
     const HierarchicIterator end = e.hend( e.level()+1 );
     for( HierarchicIterator it = e.hbegin( e.level()+1 ); it != end; ++it )
