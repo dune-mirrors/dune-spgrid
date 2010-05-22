@@ -6,9 +6,7 @@ Periodicity:
  * support glueing of multiple (fitting) interval blocks
 
 Parallelization:
- * update superentity iterators to partitioning
  * add ghosts
- * adapt local / global id set to partitioning
  * decomposition should just store a std::vector
  * correctly implement overlapSize and ghostSize
  * implement load balance (with selectable number of non-empty processes)
@@ -18,12 +16,13 @@ Refinement techniques:
 
 Id Sets:
  * id set needs to return the same id for each copy of a vertex
+ * adapt local / global id set to partitioning
 
 Extended Iterators:
+ * update superentity iterators to partitioning
  * simplify access
 
 Documentation:
- * main page (introducing SPGrid and its features)
  * design concepts
  * superentity iterators
  * split into modules (e.g., interface / implementation)
