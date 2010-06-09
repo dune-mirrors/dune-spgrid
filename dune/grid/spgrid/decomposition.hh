@@ -163,7 +163,7 @@ namespace Dune
 
   template< int dim >
   inline const typename SPDecomposition< dim >::Mesh &
-  subMesh ( const unsigned int rank ) const
+  SPDecomposition< dim >::subMesh ( const unsigned int rank ) const
   {
     return root_.subMesh( rank );
   }
