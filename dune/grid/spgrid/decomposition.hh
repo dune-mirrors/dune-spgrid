@@ -40,30 +40,14 @@ namespace Dune
     };
 
   public:
-    SPDecomposition ( const Mesh &mesh, const unsigned int size )
-    : root_( mesh, size )
-    {}
+    SPDecomposition ( const Mesh &mesh, const unsigned int size );
+    SPDecomposition ( const MultiIndex &width, const unsigned int size );
 
-    SPDecomposition ( const MultiIndex &width, const unsigned int size )
-    : root_( Mesh( width ), size )
-    {}
-
-    const Mesh &mesh () const
-    {
-      return root_.mesh();
-    }
-
-    const Mesh &subMesh ( const unsigned int rank ) const
-    {
-      return root_.subMesh( rank );
-    }
-
+    const Mesh &mesh () const;
+    const Mesh &subMesh ( const unsigned int rank ) const;
     std::vector< Mesh > subMeshes () const;
 
-    unsigned int size () const
-    {
-      return root_.size();
-    }
+    unsigned int size () const;
 
   private:
     Node root_;
@@ -156,6 +140,36 @@ namespace Dune
   // ---------------------------------
 
   template< int dim >
+  inline SPDecomposition< dim >
+    ::SPDecomposition ( const Mesh &mesh, const unsigned int size )
+  : root_( mesh, size )
+  {}
+
+
+  template< int dim >
+  inline SPDecomposition< dim >
+    ::SPDecomposition ( const MultiIndex &width, const unsigned int size )
+  : root_( Mesh( width ), size )
+  {}
+
+
+  template< int dim >
+  inline const typename SPDecomposition< dim >::Mesh &
+  SPDecomposition< dim >::mesh () const
+  {
+    return root_.mesh();
+  }
+
+
+  template< int dim >
+  inline const typename SPDecomposition< dim >::Mesh &
+  subMesh ( const unsigned int rank ) const
+  {
+    return root_.subMesh( rank );
+  }
+
+
+  template< int dim >
   inline std::vector< typename SPDecomposition< dim >::Mesh >
   SPDecomposition< dim >::subMeshes () const
   {
@@ -163,6 +177,13 @@ namespace Dune
     meshes.reserve( root_.size() );
     root_.subMeshes( meshes );
     return meshes;
+  }
+
+
+  template< int dim >
+  inline unsigned int SPDecomposition< dim >::size () const
+  {
+    return root_.size();
   }
 
 }
