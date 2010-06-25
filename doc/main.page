@@ -13,17 +13,28 @@ several important features (see \ref features for details).
 
 <table>
 <tr><th></th>
-    <th>SGrid</th><th>YaspGrid</th><th>SPGrid</th></tr>
-<tr><th>Provides entities for codimensions</th>
-    <td>all</td><td>0, dim</td><td>all</td></tr>
-<tr><th>Can communicate on codimensions</th>
-    <td>none</td><td>0, dim</td><td>all</td></tr>
-<tr><th>Coordinate type is a template parameter</th>
-    <td>no</td><td>no</td><td>yes</td></tr>
-<tr><th>Supports anisotropic refinement</td>
-    <td>no</td><td>no</td><td>yes</td></tr>
-<tr><th>Supports periodicity</th>
-    <td>no</td><td>no</td><td>yes</td></tr>
+    <th>SGrid</th><th>YaspGrid</th><th>SPGrid</th>
+</tr>
+<tr><th align=left>Provides entities for codimensions</th>
+    <td>all</td><td>0, dim</td><td>all</td>
+</tr>
+<tr><th align=left>Can communicate on codimensions</th>
+    <td>none</td><td>0, dim</td><td>all</td>
+</tr>
+<tr><th align=left>Supported domains</th>
+    <td>\f$\prod [a_i,b_i]\f$</td>
+    <td>\f$\prod [0,b_i]\f$</td>
+    <td>\f$\prod [a_i,b_i]\f$</td>
+</tr>
+<tr><th align=left>Supports periodicity</th>
+    <td>no</td><td>no</td><td>yes</td>
+</tr>
+<tr><th align=left>Supports anisotropic refinement</td>
+    <td>no</td><td>no</td><td>yes</td>
+</tr>
+<tr><th align=left>Coordinate type is a template parameter</th>
+    <td>no</td><td>no</td><td>yes</td>
+</tr>
 </table>
 
 */
