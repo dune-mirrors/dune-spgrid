@@ -157,7 +157,7 @@ namespace Dune
   inline typename SPNormalVector< ct, dim >::field_type
   SPNormalVector< ct, dim >::one_norm () const
   {
-    return two_norm();
+    return std::abs( p_ );
   }
 
 
@@ -181,7 +181,7 @@ namespace Dune
   inline typename SPNormalVector< ct, dim >::field_type
   SPNormalVector< ct, dim >::infinity_norm () const
   {
-    return two_norm();
+    return std::abs( p_ );
   }
 
 }
