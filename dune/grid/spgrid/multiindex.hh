@@ -12,27 +12,50 @@ namespace Dune
   // SPMultiIndex
   // ------------
 
+  /** \class SPMultiIndex
+   *  \brief multiindex
+   *
+   *  A structured grid is most easily addressed using a multiindex, which is
+   *  realized through this class.
+   *
+   *  \todo describe increment, codimension and direction - i.e., numbering concept
+   *
+   *  \tparam  dim  dimension of the multiindex
+   */
   template< int dim >
   class SPMultiIndex
   {
     typedef SPMultiIndex< dim > This;
 
   public:
+    /** \brief dimension of the multiindex */
     static const int dimension = dim;
 
+    /** \brief default constructor
+     *
+     *  \note The default constructor does not initialze the multiindex.
+     */
     SPMultiIndex ()
     {}
 
+    /** \brief constructor from int array
+     *
+     *  \note This constructor defines an implicit conversion.
+     *
+     *  \param[in]  index  int array to copy
+     */
     SPMultiIndex ( const int (&index)[ dimension ] )
     {
       *this = index;
     }
 
+    /** \brief copy constructor */
     SPMultiIndex ( const This &other )
     {
       *this = other;
     }
 
+    /** \brief assignment operator */
     This &operator= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
@@ -40,6 +63,7 @@ namespace Dune
       return *this;
     }
 
+    /** \brief assignment operator from int array */
     This &operator= ( const int (&index)[ dimension ] )
     {
       for( int i = 0; i < dimension; ++i )
@@ -47,6 +71,7 @@ namespace Dune
       return *this;
     }
 
+    /** \brief add another multiindex to this one (vector operation) */
     This &operator+= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
@@ -54,6 +79,7 @@ namespace Dune
       return *this;
     }
 
+    /** \brief subtract another multiindex from this one (vector operation) */
     This &operator-= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
@@ -61,6 +87,7 @@ namespace Dune
       return *this;
     }
 
+    /** \brief scale this multiindex (vector operation) */
     This &operator*= ( const int a )
     {
       for( int i = 0; i < dimension; ++i )
@@ -68,6 +95,7 @@ namespace Dune
       return *this;
     }
 
+    /** \brief scale this multiindex (vector operation) */
     This &operator/= ( const int a )
     {
       for( int i = 0; i < dimension; ++i )
@@ -75,16 +103,19 @@ namespace Dune
       return *this;
     }
 
+    /** \brief access i-th component */
     const int &operator[] ( const int i ) const
     {
       return index_[ i ];
     }
 
+    /** \brief access i-th component */
     int &operator[] ( const int i )
     {
       return index_[ i ];
     }
 
+    /** \brief compare two multiindices for equality */
     bool operator== ( const This &other ) const
     {
       bool equals = true;
@@ -93,6 +124,7 @@ namespace Dune
       return equals;
     }
     
+    /** \brief compare two multiindices for inequality */
     bool operator!= ( const This &other ) const
     {
       bool equals = false;
@@ -101,18 +133,21 @@ namespace Dune
       return equals;
     }
 
+    /** \brief add multiple of a multiindex to this one (vector operation) */
     void axpy( const int a, const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] += a*other.index_[ i ];
     }
 
+    /** \brief initialize to zero */
     void clear ()
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] = 0;
     }
 
+    /** \todo please doc me */
     void increment ( const This &bound, const int k = 1 )
     {
       for( int i = 0; i < dimension; ++i )
@@ -124,6 +159,7 @@ namespace Dune
       }
     }
 
+    /** \todo please doc me */
     int codimension () const
     {
       int codim = dimension;
@@ -132,6 +168,7 @@ namespace Dune
       return codim;
     }
 
+    /** \todo please doc me */
     unsigned int direction () const
     {
       unsigned int dir = 0;
@@ -140,6 +177,7 @@ namespace Dune
       return dir;
     }
 
+    /** \brief obtain the zero multiindex */
     static This zero ()
     {
       This zero;
