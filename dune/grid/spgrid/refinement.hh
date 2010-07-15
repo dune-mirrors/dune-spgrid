@@ -53,6 +53,15 @@ namespace Dune
       return (1 << dimension);
     }
 
+    void father ( MultiIndex &id ) const
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        assert( (id[ i ] & 1) != 0 );
+        id[ i ] = (id[ i ] / factor( i )) | 1;
+      }
+    }
+
     void child ( MultiIndex &id, unsigned int index ) const
     {
       assert( index < numChildren() );
@@ -148,6 +157,15 @@ namespace Dune
     unsigned int numChildren () const
     {
       return (1 << bitCount( refDir_ ));
+    }
+
+    void father ( MultiIndex &id ) const
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        assert( (id[ i ] & 1) != 0 );
+        id[ i ] = (id[ i ] / factor( i )) | 1;
+      }
     }
 
     void child ( MultiIndex &id, unsigned int index ) const
@@ -255,8 +273,6 @@ namespace Dune
     template< class Mesh >
     std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const;
 
-    void father ( MultiIndex &id ) const;
-
     template< class ctype >
     FieldVector< ctype, dim > hInFather () const;
   };
@@ -306,17 +322,6 @@ namespace Dune
     for( size_t i = 0; i < size; ++i )
       fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
     return fineMeshes;
-  }
-
-
-  template< int dim, SPRefinementStrategy strategy >
-  inline void SPRefinement< dim, strategy >::father ( MultiIndex &id ) const
-  {
-    for( int i = 0; i < dimension; ++i )
-    {
-      assert( (id[ i ] & 1) != 0 );
-      id[ i ] = (id[ i ] / factor( i )) | 1;
-    }
   }
 
 
