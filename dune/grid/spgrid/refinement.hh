@@ -28,6 +28,29 @@ namespace Dune
   template< int dim, SPRefinementStrategy strategy >
   struct SPBasicRefinement;
 
+  template< int dim, SPRefinementStrategy strategy >
+  struct SPRefinementPolicy;
+
+
+
+  // SPRefinementPolicy (for SPIsotropicRefinement)
+  // ----------------------------------------------
+
+  template< int dim >
+  class SPBasicRefinementPolicy< dim, SPIsotropicRefinement >
+  {
+  };
+
+
+
+  // SPRefinementPolicy (for SPAnisotropicRefinement)
+  // ------------------------------------------------
+
+  template< int dim >
+  class SPBasicRefinementPolicy< dim, SPAnisotropicRefinement >
+  {
+  };
+
 
 
   // SPBasicRefinement (for SPIsotropicRefinement)
