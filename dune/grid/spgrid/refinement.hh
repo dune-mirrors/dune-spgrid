@@ -86,21 +86,6 @@ namespace Dune
       return false;
     }
 
-    void father ( MultiIndex &id ) const
-    {
-      for( int i = 0; i < dimension; ++i )
-        id[ i ] = (id[ i ] >> 1) | 1;
-    }
-
-    template< class ctype >
-    FieldVector< ctype, dimension > hInFather () const
-    {
-      FieldVector< ctype, dimension > h;
-      for( int i = 0; i < dimension; ++i )
-        h[ i ] = ctype( 1 ) / ctype( factor( i ) );
-      return h;
-    }
-
     template< class ctype >
     FieldVector< ctype, dimension > originInFather ( const unsigned int index ) const
     {
@@ -110,10 +95,7 @@ namespace Dune
       return origin;
     }
 
-    static std::string type ()
-    {
-      return "isotropic";
-    }
+    static std::string type ();
 
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
@@ -210,21 +192,6 @@ namespace Dune
       return false;
     }
 
-    void father ( MultiIndex &id ) const
-    {
-      for( int i = 0; i < dimension; ++i )
-        id[ i ] = (((refDir_ >> i) & 1) != 0 ? (id[ i ] >> 1) | 1 : id[ i ]);
-    }
-
-    template< class ctype >
-    FieldVector< ctype, dimension > hInFather () const
-    {
-      FieldVector< ctype, dimension > h;
-      for( int i = 0; i < dimension; ++i )
-        h[ i ] = ctype( 1 ) / ctype( factor( i ) );
-      return h;
-    }
-
     template< class ctype >
     FieldVector< ctype, dimension > originInFather ( unsigned int index ) const
     {
@@ -238,10 +205,7 @@ namespace Dune
       return origin;
     }
 
-    static std::string type ()
-    {
-      return "anisotropic";
-    }
+    static std::string type ();
 
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
@@ -278,14 +242,45 @@ namespace Dune
     typedef SPBasicRefinement< dim, strategy > Base;
 
   public:
+    static const int dimension = Base::dimension;
+
+    typedef typename Base::MultiIndex MultiIndex;
     //typedef typename Base::Policy Policy;
+
+    using Base::factor;
 
     template< class Mesh >
     Mesh operator() ( const Mesh &mesh ) const;
 
     template< class Mesh >
     std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const;
+
+    void father ( MultiIndex &id ) const;
+
+    template< class ctype >
+    FieldVector< ctype, dim > hInFather () const;
   };
+
+
+  // Implementation of SPRefinement (for SPIsotropicRefinement)
+  // ----------------------------------------------------------
+  
+  template< int dim >
+  inline std::string SPBasicRefinement< dim, SPIsotropicRefinement >::type ()
+  {
+    return "isotropic";
+  }
+
+
+
+  // Implementation of SPRefinement (for SPAnisotropicRefinement)
+  // ------------------------------------------------------------
+  
+  template< int dim >
+  inline std::string SPBasicRefinement< dim, SPAnisotropicRefinement >::type ()
+  {
+    return "anisotropic";
+  }
 
 
 
@@ -311,6 +306,29 @@ namespace Dune
     for( size_t i = 0; i < size; ++i )
       fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
     return fineMeshes;
+  }
+
+
+  template< int dim, SPRefinementStrategy strategy >
+  inline void SPRefinement< dim, strategy >::father ( MultiIndex &id ) const
+  {
+    for( int i = 0; i < dimension; ++i )
+    {
+      assert( (id[ i ] & 1) != 0 );
+      id[ i ] = (id[ i ] / factor( i )) | 1;
+    }
+  }
+
+
+  template< int dim, SPRefinementStrategy strategy >
+  template< class ctype >
+  inline FieldVector< ctype, dim >
+  SPRefinement< dim, strategy >::hInFather () const
+  {
+    FieldVector< ctype, dimension > h;
+    for( int i = 0; i < dimension; ++i )
+      h[ i ] = ctype( 1 ) / ctype( factor( i ) );
+    return h;
   }
 
 
