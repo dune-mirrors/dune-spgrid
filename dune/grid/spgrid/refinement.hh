@@ -26,39 +26,22 @@ namespace Dune
   // -----------------------------
 
   template< int dim, SPRefinementStrategy strategy >
-  struct SPRefinement;
+  struct SPBasicRefinement;
 
 
 
-  // SPRefinement
-  // ------------
+  // SPBasicRefinement (for SPIsotropicRefinement)
+  // ---------------------------------------------
 
   template< int dim >
-  class SPRefinement< dim, SPIsotropicRefinement >
+  class SPBasicRefinement< dim, SPIsotropicRefinement >
   {
-    typedef SPRefinement< dim, SPIsotropicRefinement > This;
+    typedef SPBasicRefinement< dim, SPIsotropicRefinement > This;
 
   public:
     static const int dimension = dim;
 
     typedef SPMultiIndex< dimension > MultiIndex;
-
-    template< class Mesh >
-    Mesh operator() ( const Mesh &mesh ) const
-    {
-      return mesh.refine( *this );
-    }
-
-    template< class Mesh >
-    std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const
-    {
-      std::vector< Mesh > fineMeshes;
-      const size_t size = coarseMeshes.size();
-      fineMeshes.reserve( size );
-      for( size_t i = 0; i < size; ++i )
-        fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
-      return fineMeshes;
-    }
 
     unsigned int factor ( const int i ) const
     {
@@ -150,42 +133,28 @@ namespace Dune
 
 
 
+  // SPBasicRefinement (for SPAnisotropicRefinement)
+  // -----------------------------------------------
+
   template< int dim >
-  class SPRefinement< dim, SPAnisotropicRefinement >
+  class SPBasicRefinement< dim, SPAnisotropicRefinement >
   {
-    typedef SPRefinement< dim, SPAnisotropicRefinement > This;
+    typedef SPBasicRefinement< dim, SPAnisotropicRefinement > This;
 
   public:
     static const int dimension = dim;
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
-    SPRefinement ()
+    SPBasicRefinement ()
     : refDir_( (1 << dimension)-1 )
     {}
 
-    explicit SPRefinement ( const unsigned int refDir )
+    explicit SPBasicRefinement ( const unsigned int refDir )
     : refDir_( refDir )
     {
       if( refDir >= (1 << dimension) )
         DUNE_THROW( GridError, "Trying to create anisotropic refinement from invalid value " << refDir << "." );
-    }
-
-    template< class Mesh >
-    Mesh operator() ( const Mesh &mesh ) const
-    {
-      return mesh.refine( *this );
-    }
-
-    template< class Mesh >
-    std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const
-    {
-      std::vector< Mesh > fineMeshes;
-      const size_t size = coarseMeshes.size();
-      fineMeshes.reserve( size );
-      for( size_t i = 0; i < size; ++i )
-        fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
-      return fineMeshes;
     }
 
     unsigned int factor ( const int i ) const
@@ -295,6 +264,54 @@ namespace Dune
   private:
     unsigned int refDir_;
   };
+
+
+
+  // SPRefinement
+  // ------------
+
+  template< int dim, SPRefinementStrategy strategy >
+  class SPRefinement
+  : public SPBasicRefinement< dim, strategy >
+  {
+    typedef SPRefinement< dim, strategy > This;
+    typedef SPBasicRefinement< dim, strategy > Base;
+
+  public:
+    //typedef typename Base::Policy Policy;
+
+    template< class Mesh >
+    Mesh operator() ( const Mesh &mesh ) const;
+
+    template< class Mesh >
+    std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const;
+  };
+
+
+
+  // Implementation of SPRefinement
+  // ------------------------------
+
+  template< int dim, SPRefinementStrategy strategy >
+  template< class Mesh >
+  inline Mesh SPRefinement< dim, strategy >::operator() ( const Mesh &mesh ) const
+  {
+    return mesh.refine( *this );
+  }
+
+
+  template< int dim, SPRefinementStrategy strategy >
+  template< class Mesh >
+  inline std::vector< Mesh > SPRefinement< dim, strategy >
+    ::operator() ( const std::vector< Mesh > &coarseMeshes ) const
+  {
+    std::vector< Mesh > fineMeshes;
+    const size_t size = coarseMeshes.size();
+    fineMeshes.reserve( size );
+    for( size_t i = 0; i < size; ++i )
+      fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
+    return fineMeshes;
+  }
 
 
 
