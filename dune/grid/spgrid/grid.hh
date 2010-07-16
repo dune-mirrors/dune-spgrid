@@ -75,6 +75,7 @@ namespace Dune
       typedef SPDomain< ct, dim > Domain;
       typedef SPMesh< dim > Mesh;
       typedef SPRefinement< dim, strategy > Refinement;
+      typedef typename Refinement::Policy RefinementPolicy;
 
       typedef typename SPCommunicationTraits< Comm >::CollectiveCommunication CollectiveCommunication;
 
@@ -167,6 +168,7 @@ namespace Dune
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Mesh Mesh;
     typedef typename Traits::Refinement Refinement;
+    typedef typename Traits::RefinementPolicy RefinementPolicy;
 
     typedef typename Cube::ctype ctype;
 
@@ -409,12 +411,12 @@ namespace Dune
     void postAdapt ();
 
     void globalRefine ( const int refCount,
-                        const Refinement &refinement = Refinement() );
+                        const RefinementPolicy &policy = RefinementPolicy() );
 
     template< class DataHandle >
     void globalRefine ( const int refCount,
                         AdaptDataHandleInterface< This, DataHandle > &handle,
-                        const Refinement &refinement = Refinement() );
+                        const RefinementPolicy &policy = RefinementPolicy() );
 
     int overlapSize ( const int level, const int codim ) const
     {
@@ -700,11 +702,11 @@ namespace Dune
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline void SPGrid< ct, dim, strategy, Comm >
-    ::globalRefine ( const int refCount, const Refinement &refinement )
+    ::globalRefine ( const int refCount, const RefinementPolicy &policy )
   {
     for( int i = 0; i < refCount; ++i )
     {
-      gridLevels_.push_back( new GridLevel( leafLevel(), refinement ) );
+      gridLevels_.push_back( new GridLevel( leafLevel(), policy ) );
       levelViews_.push_back( LevelGridViewImpl( leafLevel() ) );
     }
     getRealImplementation( leafView_ ).update( leafLevel() );
@@ -717,13 +719,13 @@ namespace Dune
   inline void SPGrid< ct, dim, strategy, Comm >
     ::globalRefine ( const int refCount,
                      AdaptDataHandleInterface< This, DataHandle > &handle,
-                     const Refinement &refinement )
+                     const RefinementPolicy &policy )
   {
     for( int i = 0; i < refCount; ++i )
     {
       const LevelGridView fatherView = levelView( maxLevel() );
 
-      gridLevels_.push_back( new GridLevel( leafLevel(), refinement ) );
+      gridLevels_.push_back( new GridLevel( leafLevel(), policy ) );
       levelViews_.push_back( LevelGridViewImpl( leafLevel() ) );
 
       hierarchicIndexSet_.update();
@@ -770,7 +772,7 @@ namespace Dune
       ioData.maxLevel = maxLevel();
       ioData.refinements.resize( maxLevel() );
       for( int level = 0; level < maxLevel(); ++level )
-        ioData.refinements[ level ] = gridLevel( level+1 ).refinement();
+        ioData.refinements[ level ] = gridLevel( level+1 ).refinement().policy();
 
       result = int( ioData.write( filename ) );
     }

@@ -24,6 +24,7 @@ namespace Dune
     typedef FieldVector< ctype, dim > Vector;
     typedef SPMultiIndex< dim > MultiIndex;
     typedef SPRefinement< dim, strategy > Refinement;
+    typedef typename Refinement::Policy RefinementPolicy;
 
     std::string name;
     ctype time;
@@ -34,7 +35,7 @@ namespace Dune
     int partitions;
     unsigned int periodic;
     int maxLevel;
-    std::vector< Refinement > refinements;
+    std::vector< RefinementPolicy > refinements;
 
     bool write ( const std::string &filename ) const;
     bool read ( const std::string &filename );
@@ -239,9 +240,9 @@ namespace Dune
       {
         while( lineIn.good() )
         {
-          Refinement refinement;
-          lineIn >> refinement;
-          refinements.push_back( refinement );
+          RefinementPolicy policy;
+          lineIn >> policy;
+          refinements.push_back( policy );
         }
       }
       else

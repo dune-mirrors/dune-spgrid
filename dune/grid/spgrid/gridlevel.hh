@@ -43,6 +43,7 @@ namespace Dune
     typedef typename Traits::Cube Cube;
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Refinement Refinement;
+    typedef typename Traits::RefinementPolicy RefinementPolicy;
 
     typedef typename Cube::ctype ctype;
     static const int dimension = Cube::dimension;
@@ -82,7 +83,7 @@ namespace Dune
   public:
     SPGridLevel ( const Grid &grid, const Decomposition &decomposition );
 
-    SPGridLevel ( const GridLevel &father, const Refinement &refinement );
+    SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy );
 
     SPGridLevel ( const This &other );
 
@@ -95,7 +96,7 @@ namespace Dune
     template< int codim >
     const typename Codim< codim >::Cube &cube () const;
 
-    const Domain &domain () const;
+    const Domain &domain () const { return domain_; }
 
     const Mesh &globalMesh () const;
     const Mesh &localMesh () const;
@@ -112,7 +113,7 @@ namespace Dune
     int level () const;
 
     const GlobalVector &h () const;
-    const Refinement &refinement () const;
+    const Refinement &refinement () const { return refinement_; }
     MultiIndex macroId ( const MultiIndex &id ) const;
 
     size_t boundaryIndex ( const MultiIndex &id,
@@ -179,15 +180,15 @@ namespace Dune
 
   template< class Grid >
   inline SPGridLevel< Grid >
-    ::SPGridLevel ( const GridLevel &father, const Refinement &refinement )
+    ::SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy )
   : grid_( father.grid_ ),
     level_( father.level_ + 1 ),
-    refinement_( refinement ),
-    macroFactor_( father.macroFactor_ * refinement ),
+    refinement_( father.refinement(), policy ),
+    macroFactor_( father.macroFactor_ * refinement_ ),
     domain_( father.domain() ),
-    decomposition_( refinement( father.decomposition_ ) ),
-    localMesh_( refinement( father.localMesh() ) ),
-    partitionPool_( localMesh_, refinement( father.globalMesh() ), overlap(), domain_.periodic() ),
+    decomposition_( refinement_( father.decomposition_ ) ),
+    localMesh_( refinement_( father.localMesh() ) ),
+    partitionPool_( localMesh_, refinement_( father.globalMesh() ), overlap(), domain_.periodic() ),
     linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
   {
     buildGeometry();
@@ -250,14 +251,6 @@ namespace Dune
 
 
   template< class Grid >
-  inline const typename SPGridLevel< Grid >::Domain &
-  SPGridLevel< Grid >::domain () const
-  {
-    return domain_;
-  }
-
-
-  template< class Grid >
   inline const typename SPGridLevel< Grid >::Mesh &
   SPGridLevel< Grid >::globalMesh () const
   {
@@ -314,15 +307,6 @@ namespace Dune
   }
 
 
-  template< class Grid >
-  inline const typename SPGridLevel< Grid >::Refinement &
-  SPGridLevel< Grid >::refinement () const
-  {
-    assert( level() > 0 );
-    return refinement_;
-  }
-
-  
   template< class Grid >
   inline typename SPGridLevel< Grid >::MultiIndex
   SPGridLevel< Grid >::macroId ( const MultiIndex &id ) const
