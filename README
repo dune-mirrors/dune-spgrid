@@ -19,3 +19,16 @@ Can communicate on codimensions       |   none   |  0, dim  |    all
 Coordinate type is template parameter |    no    |    no    |    yes
 Supports anisotropic refinement       |    no    |    no    |    yes
 Supports periodicity                  |    no    |    no    |    yes
+
+
+Preprocessor Magic:
+
+SPGrid can be used through the preprocessor magic. The following table shows how
+to select different variants of SPGrid:
+
+GRIDTYPE           | Refinement
+-------------------+-----------------------
+SPGRID             | Default (Anisotropic)
+SPGRID_ISOTROPIC   | Isotropic
+SPGRID_ANISOTROPIC | Anisotropic
+SPGRID_BISECTION   | Bisection
