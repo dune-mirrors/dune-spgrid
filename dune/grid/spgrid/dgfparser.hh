@@ -215,14 +215,18 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   struct DGFGridInfo< SPGrid< ct, dim, strategy, Comm > >
   {
-    static int refineStepsForHalf ()
+    typedef SPGrid< ct, dim, strategy, Comm > Grid;
+    typedef typename Grid::RefinementPolicy RefinementPolicy;
+
+    static int refineStepsForHalf ( const RefinementPolicy &policy = RefinementPolicy() )
     {
-      return 1;
+      const unsigned int weight = policy.weight();
+      return (dim + weight - 1) / weight;
     }
 
-    static double refineWeight ()
+    static double refineWeight ( const RefinementPolicy &policy = RefinementPolicy() )
     {
-      return 1.0 / double( 1 << dim );
+      return 1.0 / double( 1 << policy.weight() );
     }
   };
 

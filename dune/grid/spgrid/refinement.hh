@@ -45,6 +45,11 @@ namespace Dune
   public:
     static const int dimension = dim;
 
+    unsigned int weight () const
+    {
+      return dimension;
+    }
+
     unsigned int factor ( const int i ) const
     {
       return 2;
@@ -90,6 +95,11 @@ namespace Dune
     {
       if( refDir >= (1 << dimension) )
         DUNE_THROW( GridError, "Trying to create anisotropic refinement policy from invalid value " << refDir << "." );
+    }
+
+    unsigned int weight () const
+    {
+      return bitCount( refDir_ );
     }
 
     unsigned int factor ( const int i ) const
@@ -152,6 +162,11 @@ namespace Dune
     {}
 
   public:
+    unsigned int weight () const
+    {
+      return 1;
+    }
+
     unsigned int factor ( const int i ) const
     {
       assert( (i >= 0) && (i < dimension) );
