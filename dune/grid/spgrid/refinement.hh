@@ -17,7 +17,8 @@ namespace Dune
   enum SPRefinementStrategy
   {
     SPIsotropicRefinement,
-    SPAnisotropicRefinement
+    SPAnisotropicRefinement,
+    SPBisectionRefinement
   };
 
 
@@ -121,6 +122,74 @@ namespace Dune
 
 
 
+  // SPRefinementPolicy (for SPBisectionRefinement)
+  // ----------------------------------------------
+
+  template< int dim >
+  class SPRefinementPolicy< dim, SPBisectionRefinement >
+  {
+    typedef SPRefinementPolicy< dim, SPBisectionRefinement > This;
+
+    friend class SPBasicRefinement< dim, SPBisectionRefinement >;
+
+  public:
+    static const int dimension = dim;
+
+    SPRefinementPolicy ()
+    : dir_( -1 )
+    {}
+
+    explicit SPRefinementPolicy ( const int dir )
+    : dir_( dir )
+    {
+      if( (dir < 0) || (dir >= dimension) )
+        DUNE_THROW( GridError, "Trying to create bisection refinement policy for invalid direction " << dir << "." );
+    }
+
+  private:
+    SPRefinementPolicy ( const This &father, const This &policy )
+    : dir_( policy.dir_ < 0 ? (father.dir_ + 1) % dimension : policy.dir_ )
+    {}
+
+  public:
+    unsigned int factor ( const int i ) const
+    {
+      assert( (i >= 0) && (i < dimension) );
+      return (i == dir_ ? 2 : 1);
+    }
+
+    template< class char_type, class traits >
+    friend std::basic_ostream< char_type, traits > &
+    operator<< ( std::basic_ostream< char_type, traits > &out, const This &policy )
+    {
+      assert( (policy.dir_ >= 0) && (policy.dir_ < dimension) );
+      return out << (1 << policy.dir_);
+    }
+
+    template< class char_type, class traits >
+    friend std::basic_istream< char_type, traits > &
+    operator>> ( std::basic_istream< char_type, traits > &in, This &policy )
+    {
+      unsigned int refDir;
+      in >> refDir;
+      if( !in.fail() )
+      {
+        if( bitCount( refDir ) != 1 )
+          DUNE_THROW( GridError, "Trying to create bisection refinement with multiple refined directions." );
+        int dir = -1;
+        for( ; refDir != 0; ++dir )
+          refDir = refDir >> 1;
+        policy = This( dir );
+      }
+      return in;
+    }
+
+  private:
+    int dir_;
+  };
+
+
+
   // SPBasicRefinement (for SPIsotropicRefinement)
   // ---------------------------------------------
 
@@ -133,10 +202,12 @@ namespace Dune
 
     typedef SPRefinementPolicy< dim, strategy > Policy;
 
+  protected:
     explicit SPDefaultRefinement ( const Policy &policy )
     : policy_( policy )
     {}
 
+  public:
     unsigned int factor ( const int i ) const
     {
       return policy().factor( i );
@@ -168,6 +239,18 @@ namespace Dune
         id[ i ] = ((id[ i ] + (index % factor)) * factor) - (factor - 1);
         index /= alpha;
       }
+    }
+
+    unsigned int childIndex ( const MultiIndex &id ) const
+    {
+      unsigned int index = 0;
+      for( int i = dimension-1; i >= 0; --i )
+      {
+        const unsigned int alpha = factor( i );
+        index = (index * alpha) + ((id[ i ] >> 1) % alpha);
+      }
+      assert( index < numChildren() );
+      return index;
     }
 
     void firstChild ( MultiIndex &id ) const
@@ -241,6 +324,7 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
+  protected:
     SPBasicRefinement ()
     : Base( Policy() )
     {}
@@ -249,25 +333,10 @@ namespace Dune
     : Base( policy )
     {}
 
+  public:
     unsigned int numChildren () const
     {
       return (1 << dimension);
-    }
-
-    void child ( MultiIndex &id, unsigned int index ) const
-    {
-      assert( index < numChildren() );
-      for( int i = 0; i < dimension; ++i )
-        id[ i ] = 2*(id[ i ] + ((index >> i) & 1)) - 1;
-    }
-
-    unsigned int childIndex ( const MultiIndex &id ) const
-    {
-      unsigned int index = 0;
-      for( int i = 0; i < dimension; ++i )
-        index |= (((id[ i ] >> 1) & 1) << i);
-      assert( index < numChildren() );
-      return index;
     }
 
     static std::string type () { return "isotropic"; }
@@ -291,8 +360,7 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-    using Base::policy;
-
+  protected:
     SPBasicRefinement ()
     : Base( Policy() )
     {}
@@ -301,25 +369,94 @@ namespace Dune
     : Base( policy )
     {}
 
+  public:
+    using Base::policy;
+
     unsigned int numChildren () const
     {
       return (1 << bitCount( policy().refDir_ ));
     }
 
+    static std::string type () { return "anisotropic"; }
+  };
+
+
+
+  // SPBasicRefinement (for SPBisectionRefinement)
+  // ---------------------------------------------
+
+  template< int dim >
+  class SPBasicRefinement< dim, SPBisectionRefinement >
+  : public SPDefaultRefinement< dim, SPBisectionRefinement >
+  {
+    typedef SPBasicRefinement< dim, SPBisectionRefinement > This;
+    typedef SPDefaultRefinement< dim, SPBisectionRefinement > Base;
+
+  public:
+    static const int dimension = Base::dimension;
+
+    typedef typename Base::MultiIndex MultiIndex;
+    typedef typename Base::Policy Policy;
+
+  protected:
+    SPBasicRefinement ()
+    : Base( Policy() )
+    {}
+
+    explicit SPBasicRefinement ( const This &father, const Policy &policy )
+    : Base( Policy( father.policy(), policy ) )
+    {}
+
+  public:
+    using Base::policy;
+
+    unsigned int numChildren () const
+    {
+      return 2;
+    }
+
+    void father ( MultiIndex &id ) const
+    {
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      id[ dir ] = (id[ dir ] / 2) | 1;
+    }
+
+    void child ( MultiIndex &id, unsigned int index ) const
+    {
+      assert( index < numChildren() );
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      id[ dir ] = 2*(id[ dir ] + index) - 1;
+    }
+
     unsigned int childIndex ( const MultiIndex &id ) const
     {
-      unsigned int index = 0;
-      for( int i = dimension-1; i >= 0; --i )
-      {
-        const unsigned int b = (policy().refDir_ >> i) & 1;
-        index = (index << b) | ((id[ i ] >> 1) & b);
-      }
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      const unsigned int index = (id[ dir ] >> 1) % 2;
       assert( index < numChildren() );
       return index;
     }
 
-    static std::string type () { return "anisotropic"; }
+    void firstChild ( MultiIndex &id ) const
+    {
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      id[ dir ] = 2*id[ dir ] - 1;
+    }
+
+    bool nextChild ( MultiIndex &id ) const
+    {
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      id[ dir ] ^= 2;
+      return ((id[ dir ] & 2) != 0);
+    }
+
+    static std::string type () { return "bisection"; }
   };
+
 
 
 

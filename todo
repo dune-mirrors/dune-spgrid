@@ -11,9 +11,6 @@ Parallelization:
  * correctly implement overlapSize and ghostSize
  * implement load balance (with selectable number of non-empty processes)
 
-Refinement techniques:
- * implement bisection refinement
-
 Id Sets:
  * id set needs to return the same id for each copy of a vertex
  * adapt local / global id set to partitioning
