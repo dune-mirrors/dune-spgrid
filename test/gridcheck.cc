@@ -84,13 +84,17 @@ void performCheck ( Grid &grid, const int maxLevel )
     checkHierarchicSearch( grid.leafView() );
   }
 
+  std::ostringstream sFilename;
+  sFilename << "gridcheck." << Grid::Refinement::type() << ".spgrid";
+  const std::string filename = sFilename.str();
+
   std::cerr << ">>> Writing out grid..." << std::endl;
-  grid.template writeGrid< Dune::ascii >( "gridcheck.spgrid", 0.0 );
+  grid.template writeGrid< Dune::ascii >( filename, 0.0 );
 
   std::cerr << ">>> Reading back grid..." << std::endl;
   Grid rgrid;
   double time;
-  rgrid.template readGrid< Dune::ascii >( "gridcheck.spgrid", time );
+  rgrid.template readGrid< Dune::ascii >( filename, time );
 
   std::cerr << ">>> Checking grid..." << std::endl;
   gridcheck( rgrid );
@@ -127,6 +131,11 @@ try
   std::cout << "Anisotropic grid" << std::endl;
   Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPAnisotropicRefinement > > anisoGrid( dgfFile );
   performCheck( *anisoGrid, maxLevel );
+
+  std::cout << std::endl;
+  std::cout << "Bisection grid" << std::endl;
+  Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPBisectionRefinement > > bisectionGrid( dgfFile );
+  performCheck( *bisectionGrid, dimGrid*maxLevel );
 
   return 0;
 }
