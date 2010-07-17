@@ -12,30 +12,82 @@ namespace Dune
   // SPDomain
   // --------
 
+  /** \class SPDomain
+   *  \brief description of the computational domain
+   *
+   *  \tparam  ct   coordinate type (e.g., double)
+   *  \tparam  dim  dimension of the domain
+   */
   template< class ct, int dim >
   class SPDomain
   {
     typedef SPDomain< ct, dim > This;
 
   public:
+    /** \brief coordinate type */
     typedef ct ctype;
 
+    /** \brief dimension of the domain */
     static const int dimension = dim;
 
+    /** \brief type of global vectors, i.e., vectors within the domain */
     typedef FieldVector< ctype, dimension > GlobalVector;
+    /** \brief type of multiindices */
     typedef SPMultiIndex< dimension > MultiIndex;
 
+    /** \brief constructor
+     *
+     *  \param[in]  a         one corner of the domain
+     *  \param[in]  b         the opposite corner of the domain
+     *  \param[in]  periodic  bit field specifying which directions should be
+     *                        periodic (defaults to 0)
+     *
+     *  \note The only restriction on the given corners is that they are
+     *        opposite to each other.
+     *        It is not guaranteed, that one of the corners will be returned
+     *        by the method origin.
+     */
     SPDomain ( const GlobalVector &a, const GlobalVector &b,
                const unsigned int periodic = 0 );
 
+    /** \brief obtain lower left corner
+     *
+     *  \returns a reference to the origin of the domain
+     */
     const GlobalVector &origin () const;
+
+    /** \brief obtain width of the domain
+     * 
+     *  \returns a reference to the width of the domain
+     */
     const GlobalVector &width () const;
 
+    /** \brief determine whether the domain contains a point x
+     *
+     *  \param[in]  x  point to consider
+     *
+     *  \returns true, if x is contained in the domain
+     */
     bool contains ( const GlobalVector &x ) const;
 
+    /** \brief determine whether a direction is periodic
+     *
+     *  \param[in]  i  direction (0 <= i < dimension)
+     *
+     *  \returns true, if direction i is periodic
+     */
     bool periodic ( const int i ) const;
+
+    /** \brief obtain the periodicity bit field
+     *
+     *  \returns the bitfield specifying which directions are periodic
+     */
     unsigned int periodic () const;
 
+    /** \brief obtain a domain modelling the unit cube
+     *
+     *  \returns a domain modelling \f$[0,1]^{dim}\f$
+     */
     static This unitCube ();
 
   private:
