@@ -8,6 +8,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
 
+#include <dune/grid/spgrid/topology.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/version.hh>
@@ -21,6 +22,7 @@ namespace Dune
   template< class ctype, int dim, SPRefinementStrategy strategy >
   struct SPGridIOData
   {
+    typedef SPTopology< dim > Topology;
     typedef FieldVector< ctype, dim > Vector;
     typedef SPMultiIndex< dim > MultiIndex;
     typedef SPRefinement< dim, strategy > Refinement;
@@ -28,12 +30,12 @@ namespace Dune
 
     std::string name;
     ctype time;
+    Topology topology;
     Vector origin;
     Vector width;
     MultiIndex cells;
     MultiIndex overlap;
     int partitions;
-    unsigned int periodic;
     int maxLevel;
     std::vector< RefinementPolicy > refinements;
 
@@ -77,7 +79,7 @@ namespace Dune
     fileOut << "periodic";
     for( int i = 0; i < dim; ++i )
     {
-      if( (periodic & (1 << i)) != 0 )
+      if( topology.periodic( i ) )
         fileOut << " " << i;
     }
     fileOut << std::endl << std::endl;
@@ -202,6 +204,7 @@ namespace Dune
       }
       else if( cmd == "periodic" )
       {
+        int periodic;
         while( lineIn.good() )
         {
           int axis;
@@ -213,6 +216,7 @@ namespace Dune
           }
           periodic |= (1 << axis);
         }
+        topology = Topology( periodic );
       }
       else if( cmd == "cells" )
       {

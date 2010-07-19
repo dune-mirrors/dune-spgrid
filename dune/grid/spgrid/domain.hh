@@ -53,7 +53,13 @@ namespace Dune
                const unsigned int periodic = 0 );
 
     /** \todo please doc me */
+    SPDomain ( const Topology &topology, const GlobalVector &a, const GlobalVector &b );
+
+    /** \todo please doc me */
     const Cube &cube () const { return cube_; }
+
+    /** \todo please doc me */
+    const Topology &topology () const { return topology_; }
 
     /** \brief determine whether the domain contains a point x
      *
@@ -154,6 +160,14 @@ namespace Dune
                  const unsigned int periodic )
   : cube_( a, b ),
     topology_( periodic )
+  {}
+
+
+  template< class ct, int dim >
+  inline SPDomain< ct, dim >
+    ::SPDomain ( const Topology &topology, const GlobalVector &a, const GlobalVector &b )
+  : cube_( a, b ),
+    topology_( topology )
   {}
 
 
