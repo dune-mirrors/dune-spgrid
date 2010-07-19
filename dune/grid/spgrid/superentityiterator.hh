@@ -3,7 +3,7 @@
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
-#include <dune/grid/spgrid/cube.hh>
+#include <dune/grid/spgrid/referencecube.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
 
 namespace Dune

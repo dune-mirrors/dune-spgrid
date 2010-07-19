@@ -6,7 +6,7 @@
 
 #include <dune/common/forloop.hh>
 
-#include <dune/grid/spgrid/cube.hh>
+#include <dune/grid/spgrid/referencecube.hh>
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/refinement.hh>
 #include <dune/grid/spgrid/domain.hh>
