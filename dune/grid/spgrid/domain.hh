@@ -32,8 +32,8 @@ namespace Dune
 
     /** \brief type of global vectors, i.e., vectors within the domain */
     typedef FieldVector< ctype, dimension > GlobalVector;
-    /** \brief type of multiindices */
-    typedef SPMultiIndex< dimension > MultiIndex;
+
+    struct Cube;
 
     /** \brief constructor
      *
@@ -54,13 +54,13 @@ namespace Dune
      *
      *  \returns a reference to the origin of the domain
      */
-    const GlobalVector &origin () const;
+    const GlobalVector &origin () const { return cube_.origin(); }
 
     /** \brief obtain width of the domain
      * 
      *  \returns a reference to the width of the domain
      */
-    const GlobalVector &width () const;
+    const GlobalVector &width () const { return cube_.width(); }
 
     /** \brief determine whether the domain contains a point x
      *
@@ -68,7 +68,7 @@ namespace Dune
      *
      *  \returns true, if x is contained in the domain
      */
-    bool contains ( const GlobalVector &x ) const;
+    bool contains ( const GlobalVector &x ) const { return cube_.contains( x ); }
 
     /** \brief determine whether a direction is periodic
      *
@@ -91,8 +91,63 @@ namespace Dune
     static This unitCube ();
 
   private:
-    GlobalVector origin_, width_;
+    Cube cube_;
     unsigned int periodic_;
+  };
+
+
+
+  // SPDomain::Cube
+  // --------------
+
+  template< class ct, int dim >
+  class SPDomain< ct, dim >::Cube
+  {
+    friend class SPDomain< ct, dim >;
+
+    typedef SPDomain< ct, dim > Domain;
+
+  public:
+    /** \brief dimension of the domain */
+    static const int dimension = Domain::dimension;
+
+    /** \brief type of global vectors, i.e., vectors within the domain */
+    typedef Domain::GlobalVector GlobalVector;
+
+    /** \brief constructor
+     *
+     *  \param[in]  a         one corner of the cube
+     *  \param[in]  b         the opposite corner of the cube
+     *
+     *  \note The only restriction on the given corners is that they are
+     *        opposite to each other.
+     *        It is not guaranteed, that one of the corners will be returned
+     *        by the method origin.
+     */
+    Cube ( const GlobalVector &a, const GlobalVector &b );
+
+    /** \brief obtain lower left corner
+     *
+     *  \returns a reference to the origin of the cube
+     */
+    const GlobalVector &origin () const;
+
+    /** \brief obtain width
+     * 
+     *  \returns a reference to the width of the cube
+     */
+    const GlobalVector &width () const;
+
+    /** \brief determine whether the cube contains a point x
+     *
+     *  \param[in]  x  point to consider
+     *
+     *  \returns true, if x is contained in the cube
+     */
+    bool contains ( const GlobalVector &x ) const;
+
+  private:
+    GlobalVector origin_, width_;
   };
 
 
@@ -104,43 +159,9 @@ namespace Dune
   inline SPDomain< ct, dim >
     ::SPDomain ( const GlobalVector &a, const GlobalVector &b,
                  const unsigned int periodic )
-  : periodic_( periodic )
-  {
-    for( int i = 0; i < dimension; ++i )
-    {
-      origin_[ i ] = std::min( a[ i ], b[ i ] );
-      width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
-    }
-  }
-
-
-  template< class ct, int dim >
-  inline const typename SPDomain< ct, dim >::GlobalVector &
-  SPDomain< ct, dim >::origin () const
-  {
-    return origin_;
-  }
-
-
-  template< class ct, int dim >
-  inline const typename SPDomain< ct, dim >::GlobalVector &
-  SPDomain< ct, dim >::width () const
-  {
-    return width_;
-  }
-
-
-  template< class ct, int dim >
-  inline bool SPDomain< ct, dim >::contains ( const GlobalVector &x ) const
-  {
-    bool contains = true;
-    for( int i = 0; i < dimension; ++i )
-    {
-      const ctype y = x[ i ] - origin()[ i ];
-      contains &= ((y >= 0) && (y <= width()[ i ]));
-    }
-    return contains;
-  }
+  : cube_( a, b ),
+    periodic_( periodic )
+  {}
 
 
   template< class ct, int dim >
@@ -169,6 +190,51 @@ namespace Dune
       b = ctype( 1 );
     }
     return This( a, b );
+  }
+
+
+
+  // Implementation of SPDomain::Cube
+  // --------------------------------
+
+  template< class ct, int dim >
+  inline SPDomain< ct, dim >::Cube
+    ::Cube ( const GlobalVector &a, const GlobalVector &b )
+  {
+    for( int i = 0; i < dimension; ++i )
+    {
+      origin_[ i ] = std::min( a[ i ], b[ i ] );
+      width_[ i ] = std::max( a[ i ], b[ i ] ) - origin_[ i ];
+    }
+  }
+
+
+  template< class ct, int dim >
+  inline const typename SPDomain< ct, dim >::Cube::GlobalVector &
+  SPDomain< ct, dim >::Cube::origin () const
+  {
+    return origin_;
+  }
+
+
+  template< class ct, int dim >
+  inline const typename SPDomain< ct, dim >::Cube::GlobalVector &
+  SPDomain< ct, dim >::Cube::width () const
+  {
+    return width_;
+  }
+
+
+  template< class ct, int dim >
+  inline bool SPDomain< ct, dim >::Cube::contains ( const GlobalVector &x ) const
+  {
+    bool contains = true;
+    for( int i = 0; i < dimension; ++i )
+    {
+      const ctype y = x[ i ] - origin()[ i ];
+      contains &= ((y >= 0) && (y <= width()[ i ]));
+    }
+    return contains;
   }
 
 }
