@@ -110,7 +110,7 @@ namespace Dune
     JacobianTransposed ( const JacobianTransposed &other );
 
     // prohibit assignment
-    JacobianTransposed &operator= ( const JacobianTransposed & );
+    const JacobianTransposed &operator= ( const JacobianTransposed & );
 
     SPGeometryPattern< dimension, codimension > pattern_;
     LocalVector h_;
@@ -151,7 +151,7 @@ namespace Dune
     JacobianInverseTransposed ( const JacobianInverseTransposed &other );
 
     // prohibit assignment
-    JacobianInverseTransposed &operator= ( const JacobianInverseTransposed & );
+    const JacobianInverseTransposed &operator= ( const JacobianInverseTransposed & );
 
     SPGeometryPattern< dimension, codimension > pattern_;
     LocalVector hInv_;

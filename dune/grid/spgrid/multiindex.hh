@@ -56,7 +56,7 @@ namespace Dune
     }
 
     /** \brief assignment operator */
-    This &operator= ( const This &other )
+    const This &operator= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] = other.index_[ i ];
@@ -64,7 +64,7 @@ namespace Dune
     }
 
     /** \brief assignment operator from int array */
-    This &operator= ( const int (&index)[ dimension ] )
+    const This &operator= ( const int (&index)[ dimension ] )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] = index[ i ];
@@ -72,7 +72,7 @@ namespace Dune
     }
 
     /** \brief add another multiindex to this one (vector operation) */
-    This &operator+= ( const This &other )
+    const This &operator+= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] += other.index_[ i ];
@@ -80,7 +80,7 @@ namespace Dune
     }
 
     /** \brief subtract another multiindex from this one (vector operation) */
-    This &operator-= ( const This &other )
+    const This &operator-= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] -= other.index_[ i ];

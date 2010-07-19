@@ -157,7 +157,7 @@ namespace Dune
 
     ~SPGridView ();
 
-    This &operator= ( const This &other );
+    const This &operator= ( const This &other );
 
     const Grid &grid () const;
 
@@ -258,7 +258,7 @@ namespace Dune
 
 
   template< class ViewTraits >
-  inline typename SPGridView< ViewTraits >::This &
+  inline const typename SPGridView< ViewTraits >::This &
   SPGridView< ViewTraits >::operator= ( const This &other )
   {
     ++other.indexSet_->second;

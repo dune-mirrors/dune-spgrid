@@ -51,7 +51,7 @@ namespace Dune
     SPEntityPointer ( const EntityImpl &entityImpl );
     SPEntityPointer ( const This &other );
 
-    This &operator= ( const This &other );
+    const This &operator= ( const This &other );
 
     const Entity &operator* () const;
     const Entity *operator-> () const;
@@ -105,7 +105,7 @@ namespace Dune
 
 
   template< int codim, class Grid >
-  inline typename SPEntityPointer< codim, Grid >::This &
+  inline const typename SPEntityPointer< codim, Grid >::This &
   SPEntityPointer< codim, Grid >::operator= ( const This &other )
   {
     Grid::getRealImplementation( entity_ )

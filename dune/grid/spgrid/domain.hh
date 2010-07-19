@@ -3,7 +3,7 @@
 
 #include <dune/common/fvector.hh>
 
-#include <dune/grid/spgrid/multiindex.hh>
+#include <dune/grid/spgrid/topology.hh>
 #include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
@@ -32,6 +32,8 @@ namespace Dune
 
     /** \brief type of global vectors, i.e., vectors within the domain */
     typedef FieldVector< ctype, dimension > GlobalVector;
+
+    typedef SPTopology< dimension > Topology;
 
     struct Cube;
 
@@ -67,13 +69,13 @@ namespace Dune
      *
      *  \returns true, if direction i is periodic
      */
-    bool periodic ( const int i ) const;
+    bool periodic ( const int i ) const { return topology_.periodic( i ); }
 
     /** \brief obtain the periodicity bit field
      *
      *  \returns the bitfield specifying which directions are periodic
      */
-    unsigned int periodic () const;
+    unsigned int periodic () const { return topology_.periodic(); }
 
     /** \brief obtain a domain modelling the unit cube
      *
@@ -83,7 +85,7 @@ namespace Dune
 
   private:
     Cube cube_;
-    unsigned int periodic_;
+    Topology topology_;
   };
 
 
@@ -151,23 +153,8 @@ namespace Dune
     ::SPDomain ( const GlobalVector &a, const GlobalVector &b,
                  const unsigned int periodic )
   : cube_( a, b ),
-    periodic_( periodic )
+    topology_( periodic )
   {}
-
-
-  template< class ct, int dim >
-  inline bool SPDomain< ct, dim >::periodic ( const int i ) const
-  {
-    assert( (i >= 0) && (i < dimension) );
-    return ((periodic_ & (1 << i)) != 0);
-  }
-
-
-  template< class ct, int dim >
-  inline unsigned int SPDomain< ct, dim >::periodic () const
-  {
-    return periodic_;
-  }
 
 
   template< class ct, int dim >

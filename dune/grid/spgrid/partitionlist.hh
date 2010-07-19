@@ -40,14 +40,14 @@ namespace Dune
       delete head_;
     }
 
-    This &operator= ( const This &other )
+    const This &operator= ( const This &other )
     {
       delete head_;
       head_ = (other.head_ != 0 ? new Node( *other.head_ ) : 0);
       return *this;
     }
 
-    This &operator+= ( const Partition &partition );
+    const This &operator+= ( const Partition &partition );
 
     Iterator begin () const;
     Iterator end () const;
@@ -166,7 +166,7 @@ namespace Dune
   // ---------------------------------
 
   template< int dim >
-  inline typename SPPartitionList< dim >::This &
+  inline const typename SPPartitionList< dim >::This &
   SPPartitionList< dim >::operator+= ( const Partition &partition )
   {
     if( head_ != 0 )

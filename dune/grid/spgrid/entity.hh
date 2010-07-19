@@ -62,7 +62,7 @@ namespace Dune
     : geometry_( GeometryImpl( Grid::getRealImplementation( other.geometry() ) ) )
     {}
 
-    This &operator= ( const This &other )
+    const This &operator= ( const This &other )
     {
       Grid::getRealImplementation( geometry_ )
         = Grid::getRealImplementation( other.geometry() );

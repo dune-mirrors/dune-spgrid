@@ -26,8 +26,8 @@ namespace Dune
 
     SPMesh ( const MultiIndex &begin, const MultiIndex &end );
 
-    This &operator+= ( const MultiIndex &shift );
-    This &operator-= ( const MultiIndex &shift );
+    const This &operator+= ( const MultiIndex &shift );
+    const This &operator-= ( const MultiIndex &shift );
 
     const MultiIndex &begin () const;
     const MultiIndex &end () const;
@@ -79,7 +79,7 @@ namespace Dune
 
 
   template< int dim >
-  inline typename SPMesh< dim >::This &
+  inline const typename SPMesh< dim >::This &
   SPMesh< dim >::operator+= ( const MultiIndex &shift )
   {
     for( int b = 0; b < 2; ++b )
@@ -89,7 +89,7 @@ namespace Dune
 
 
   template< int dim >
-  inline typename SPMesh< dim >::This &
+  inline const typename SPMesh< dim >::This &
   SPMesh< dim >::operator-= ( const MultiIndex &shift )
   {
     for( int b = 0; b < 2; ++b )

@@ -38,7 +38,7 @@ namespace Dune
       updateCache();
     }
 
-    This &operator= ( const This &other )
+    const This &operator= ( const This &other )
     {
       *(Base *)this = other;
       updateCache();
