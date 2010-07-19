@@ -24,14 +24,14 @@ namespace Dune
     typedef typename remove_const< Grid >::type::Traits Traits;
 
   public:
-    typedef typename Traits::Cube::ctype ctype;
+    typedef typename Traits::ReferenceCube::ctype ctype;
 
     static const int mydimension = mydim;
     static const int coorddimension = cdim;
-    static const int dimension = Traits::Cube::dimension;
+    static const int dimension = Traits::ReferenceCube::dimension;
     static const int codimension = dimension - mydimension;
 
-    typedef SPCube< ctype, mydimension > Cube;
+    typedef SPReferenceCube< ctype, mydimension > ReferenceCube;
     typedef SPGeometryCache< ctype, dimension, codimension > GeometryCache;
 
     static const int numCorners = (1 << mydimension);
@@ -93,7 +93,7 @@ namespace Dune
     typedef SPEntityInfo< Grid, codimension > EntityInfo;
     typedef typename EntityInfo::GridLevel GridLevel;
 
-    typedef typename Base::Cube Cube;
+    typedef typename Base::ReferenceCube ReferenceCube;
     typedef typename Base::GeometryCache GeometryCache;
 
     typedef typename Base::GlobalVector GlobalVector;
@@ -118,9 +118,9 @@ namespace Dune
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
-    const Cube &cube () const
+    const ReferenceCube &referenceCube () const
     {
-      return gridLevel().template cube< codimension >();
+      return gridLevel().template referenceCube< codimension >();
     }
 
     GlobalVector origin () const
@@ -174,16 +174,17 @@ namespace Dune
     static const int dimension = Base::dimension;
     static const int codimension = Base::codimension;
 
-    typedef typename Base::Cube Cube;
+    typedef typename Base::ReferenceCube ReferenceCube;
     typedef typename Base::GeometryCache GeometryCache;
 
     typedef typename Base::GlobalVector GlobalVector;
     typedef typename Base::LocalVector LocalVector;
 
   public:
-    SPLocalGeometry ( const Cube &cube, const GeometryCache &geometryCache,
+    SPLocalGeometry ( const ReferenceCube &refCube,
+                      const GeometryCache &geometryCache,
                       const GlobalVector &origin )
-    : cube_( &cube ),
+    : refCube_( &refCube ),
       geometryCache_( geometryCache ),
       origin_( origin )
     {}
@@ -191,9 +192,9 @@ namespace Dune
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
-    const Cube &cube () const
+    const ReferenceCube &referenceCube () const
     {
-      return *cube_;
+      return *refCube_;
     }
 
     GlobalVector origin () const
@@ -207,7 +208,7 @@ namespace Dune
     }
 
   private:
-    const Cube *cube_;
+    const ReferenceCube *refCube_;
     GeometryCache geometryCache_;
     GlobalVector origin_;
   };
@@ -248,8 +249,8 @@ namespace Dune
   inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
   SPBasicGeometry< mydim, cdim, Grid, Impl >::corner ( const int i ) const
   {
-    const Cube &cube = asImpl().cube();
-    return global( cube.corner( i ) );
+    const ReferenceCube &refCube = asImpl().referenceCube();
+    return global( refCube.corner( i ) );
   }
 
 
@@ -257,8 +258,8 @@ namespace Dune
   inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
   SPBasicGeometry< mydim, cdim, Grid, Impl >::center () const
   {
-    const Cube &cube = asImpl().cube();
-    return global( cube.center() );
+    const ReferenceCube &refCube = asImpl().referenceCube();
+    return global( refCube.center() );
   }
 
 

@@ -11,7 +11,7 @@
 namespace Dune
 {
 
-  namespace SPCubeHelper
+  namespace SPReferenceCubeHelper
   {
     inline unsigned int
     numSubEntities ( const unsigned int dimension, const unsigned int codim )
@@ -30,13 +30,13 @@ namespace Dune
 
 
 
-  // SPCube
-  // ------
+  // SPReferenceCube
+  // ---------------
 
   template< class ct, int dim >
-  class SPCube
+  class SPReferenceCube
   {
-    typedef SPCube< ct, dim > This;
+    typedef SPReferenceCube< ct, dim > This;
 
   public:
     typedef ct ctype;
@@ -50,7 +50,7 @@ namespace Dune
     static const int numCorners = (1 << dimension);
     static const int numFaces = 2*dimension;
 
-    SPCube ();
+    SPReferenceCube ();
 
     const MultiIndex &subId ( const int codim, const int i ) const
     {
@@ -95,11 +95,12 @@ namespace Dune
     void subId ( const unsigned int dimension, const unsigned int codim,
                  const unsigned int i, MultiIndex &sId ) const
     {
-      assert( i < SPCubeHelper::numSubEntities( dimension, codim ) );
+      using SPReferenceCubeHelper::numSubEntities;
+      assert( i < numSubEntities( dimension, codim ) );
       if( dimension == 0 )
         return;
 
-      const unsigned int n0 = (codim < dimension ? SPCubeHelper::numSubEntities( dimension-1, codim ) : 0);
+      const unsigned int n0 = (codim < dimension ? numSubEntities( dimension-1, codim ) : 0);
       if( i < n0 )
       {
         subId( dimension-1, codim, i, sId );
@@ -107,7 +108,7 @@ namespace Dune
       }
       else
       {
-        const unsigned int n1 = SPCubeHelper::numSubEntities( dimension-1, codim-1 );
+        const unsigned int n1 = numSubEntities( dimension-1, codim-1 );
         subId( dimension-1, codim-1, (i-n0)%n1, sId );
         sId[ dimension-1 ] = 2*((i-n0)/n1) - 1;
       }
@@ -122,11 +123,11 @@ namespace Dune
 
 
   template< class ct, int dim >
-  inline SPCube< ct, dim >::SPCube ()
+  inline SPReferenceCube< ct, dim >::SPReferenceCube ()
   {
     for( int codim = 0; codim <= dimension; ++codim )
     {
-      const unsigned int size = SPCubeHelper::numSubEntities( dimension, codim );
+      const unsigned int size = SPReferenceCubeHelper::numSubEntities( dimension, codim );
       subId_[ codim ].resize( size );
       for( unsigned int i = 0; i < size; ++i )
         subId( dimension, codim, i, subId_[ codim ][ i ] );
@@ -156,13 +157,13 @@ namespace Dune
 
 
 
-  // SPCube (for dim = 0)
-  // --------------------
+  // SPReferenceCube (for dim = 0)
+  // -----------------------------
 
   template< class ct >
-  class SPCube< ct, 0 >
+  class SPReferenceCube< ct, 0 >
   {
-    typedef SPCube< ct, 0 > This;
+    typedef SPReferenceCube< ct, 0 > This;
 
   public:
     typedef ct ctype;
@@ -173,7 +174,7 @@ namespace Dune
 
     static const int numCorners = 1;
 
-    SPCube ()
+    SPReferenceCube ()
     : corner_( ctype( 0 ) )
     {}
 

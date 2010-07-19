@@ -21,7 +21,7 @@ namespace Dune
     typedef typename Intersection::Entity Entity;
     
   private:
-    typedef SPEntity< 0, Traits::Cube::dimension, Grid > EntityImpl;
+    typedef SPEntity< 0, Traits::ReferenceCube::dimension, Grid > EntityImpl;
     typedef SPIntersection< Grid > IntersectionImpl;
 
   public:
@@ -49,7 +49,7 @@ namespace Dune
     void increment ()
     {
       const int face = intersection_.indexInInside();
-      assert( face < GridLevel::Cube::numFaces );
+      assert( face < GridLevel::ReferenceCube::numFaces );
       Grid::getRealImplementation( intersection_ ).setFace( face+1 );
     }
 

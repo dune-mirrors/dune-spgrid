@@ -40,16 +40,16 @@ namespace Dune
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-    typedef typename Traits::Cube Cube;
+    typedef typename Traits::ReferenceCube ReferenceCube;
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Refinement Refinement;
     typedef typename Traits::RefinementPolicy RefinementPolicy;
 
-    typedef typename Cube::ctype ctype;
-    static const int dimension = Cube::dimension;
+    typedef typename ReferenceCube::ctype ctype;
+    static const int dimension = ReferenceCube::dimension;
 
-    typedef typename Cube::GlobalVector GlobalVector;
-    typedef typename Cube::MultiIndex MultiIndex;
+    typedef typename ReferenceCube::GlobalVector GlobalVector;
+    typedef typename ReferenceCube::MultiIndex MultiIndex;
 
     typedef SPDecomposition< dimension > Decomposition;
     typedef SPPartitionPool< dimension > PartitionPool;
@@ -61,12 +61,12 @@ namespace Dune
 
     typedef typename Linkage::Interface CommInterface;
 
-    static const unsigned int numDirections = Cube::numCorners;
+    static const unsigned int numDirections = ReferenceCube::numCorners;
 
     template< int codim >
     struct Codim
     {
-      typedef SPCube< ctype, dimension-codim > Cube;
+      typedef SPReferenceCube< ctype, dimension-codim > ReferenceCube;
       typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
     };
 
@@ -91,10 +91,11 @@ namespace Dune
 
     const Grid &grid () const;
 
-    const Cube &cube () const;
+    const ReferenceCube &referenceCube () const { return grid().referenceCube(); }
 
     template< int codim >
-    const typename Codim< codim >::Cube &cube () const;
+    const typename Codim< codim >::ReferenceCube &
+    referenceCube () const { return grid().template referenceCube< codim >(); }
 
     const Domain &domain () const { return domain_; }
 
@@ -152,8 +153,8 @@ namespace Dune
     GlobalVector h_;
     void *geometryCache_[ numDirections ];
     LocalGeometry **geometryInFather_;
-    ctype faceVolume_[ Cube::numFaces ];
-    GlobalVector normal_[ Cube::numFaces ];
+    ctype faceVolume_[ ReferenceCube::numFaces ];
+    GlobalVector normal_[ ReferenceCube::numFaces ];
   };
 
 
@@ -230,23 +231,6 @@ namespace Dune
   inline const Grid &SPGridLevel< Grid >::grid () const
   {
     return *grid_;
-  }
-
-
-  template< class Grid >
-  inline const typename SPGridLevel< Grid >::Cube &
-  SPGridLevel< Grid >::cube () const
-  {
-    return grid().cube();
-  }
-
-
-  template< class Grid >
-  template< int codim >
-  inline const typename SPGridLevel< Grid >::template Codim< codim >::Cube &
-  SPGridLevel< Grid >::cube () const
-  {
-    return grid().template cube< codim >();
   }
 
 
@@ -357,7 +341,7 @@ namespace Dune
   inline typename SPGridLevel< Grid >::ctype
   SPGridLevel< Grid >::faceVolume ( const int i ) const
   {
-    assert( (i >= 0) && (i < Cube::numFaces) );
+    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
     return faceVolume_[ i ];
   }
 
@@ -366,7 +350,7 @@ namespace Dune
   inline const typename SPGridLevel< Grid >::GlobalVector &
   SPGridLevel< Grid >::volumeNormal ( const int i ) const
   {
-    assert( (i >= 0) && (i < Cube::numFaces) );
+    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
     return normal_[ i ];
   }
 
@@ -396,16 +380,16 @@ namespace Dune
       for( unsigned int index = 0; index < numChildren; ++index )
       {
         const GlobalVector origin = refinement().template originInFather< ctype >( index );
-        geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( cube(), cacheInFather, origin ) );
+        geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( referenceCube(), cacheInFather, origin ) );
       }
     }
 
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
     const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
-    for( int face = 0; face < Cube::numFaces; ++face )
+    for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {
-      normal_[ face ] = cube().normal( face );
+      normal_[ face ] = referenceCube().normal( face );
       faceVolume_[ face ] = std::abs( volume / (normal_[ face ] * h_) );
       normal_[ face ] *= faceVolume_[ face ];
     }

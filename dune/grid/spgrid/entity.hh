@@ -183,7 +183,7 @@ namespace Dune
 
     typedef typename GridLevel::Mesh Mesh;
 
-    static const int numFaces = GridLevel::Cube::numFaces;
+    static const int numFaces = GridLevel::ReferenceCube::numFaces;
 
     typedef SPHierarchicIterator< Grid > HierarchicIteratorImpl;
     typedef SPIntersectionIterator< Grid > IntersectionIteratorImpl;
@@ -201,7 +201,7 @@ namespace Dune
     template< int codim >
     int count () const
     {
-      return gridLevel().cube().count( codim );
+      return gridLevel().referenceCube().count( codim );
     }
 
     template< int codim >
@@ -210,7 +210,7 @@ namespace Dune
       // warning: this is only true for closed partitions
       const unsigned int partitionNumber = entityInfo().partitionNumber();
       MultiIndex id = entityInfo().id();
-      id += gridLevel().cube().subId( codim, i );
+      id += gridLevel().referenceCube().subId( codim, i );
       return SPEntityPointer< codim, Grid >( gridLevel(), id, partitionNumber );
     }
 

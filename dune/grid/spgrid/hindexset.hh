@@ -25,7 +25,7 @@ namespace Dune
   public:
     typedef typename Base::IndexType IndexType;
 
-    static const int dimension = Traits::Cube::dimension;
+    static const int dimension = Traits::ReferenceCube::dimension;
 
     template< int codim >
     struct Codim

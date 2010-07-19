@@ -151,7 +151,7 @@ namespace Dune
   template< class Grid >
   SPSuperEntityIterator< Grid >::SequenceProvider::SequenceProvider ()
   {
-    SPCube< typename Grid::ctype, dimension > cube;
+    SPReferenceCube< typename Grid::ctype, dimension > refCube;
 
     for( unsigned int dir = 0; dir < numDirections; ++dir )
     {
@@ -176,9 +176,9 @@ namespace Dune
           next->fBoundary |= (1 - dirbit) * (1 << (2*i + dbit));
         }
         next->index = -1;
-        for( int k = 0; k < cube.count( codim ); ++k )
+        for( int k = 0; k < refCube.count( codim ); ++k )
         {
-          const MultiIndex &subId = cube.subId( codim, k );
+          const MultiIndex &subId = refCube.subId( codim, k );
           bool found = true;
           for( int i = 0; i < dimension; ++i )
             found &= (next->idAdd[ i ] == -subId[ i ]);

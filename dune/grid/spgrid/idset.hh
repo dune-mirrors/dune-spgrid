@@ -24,7 +24,7 @@ namespace Dune
   public:
     typedef typename Base::IdType IdType;
 
-    static const int dimension = Traits::Cube::dimension;
+    static const int dimension = Traits::ReferenceCube::dimension;
 
     template< int codim >
     struct Codim
@@ -62,7 +62,7 @@ namespace Dune
         = Grid::getRealImplementation( entity ).entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
       MultiIndex sid = entityInfo.id();
-      sid +=  gridLevel.cube().subId( codim, i );
+      sid +=  gridLevel.referenceCube().subId( codim, i );
       return id( gridLevel, sid );
     }
   };

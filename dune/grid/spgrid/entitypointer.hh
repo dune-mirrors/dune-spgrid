@@ -26,7 +26,7 @@ namespace Dune
   public:
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-    static const int dimension = Traits::Cube::dimension;
+    static const int dimension = Traits::ReferenceCube::dimension;
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
 

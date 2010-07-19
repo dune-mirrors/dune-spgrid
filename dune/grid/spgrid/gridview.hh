@@ -375,7 +375,7 @@ namespace Dune
   inline typename SPGridView< ViewTraits >::IntersectionIterator
   SPGridView< ViewTraits >::iend ( const typename Codim< 0 >::Entity &entity ) const
   {
-    return IntersectionIteratorImpl( entity, GridLevel::Cube::numFaces );
+    return IntersectionIteratorImpl( entity, GridLevel::ReferenceCube::numFaces );
   }
 
 

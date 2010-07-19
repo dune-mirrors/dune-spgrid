@@ -31,10 +31,12 @@ namespace Dune
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-  public:
-    typedef typename Traits::Cube::ctype ctype;
+    typedef typename Traits::ReferenceCube ReferenceCube;
 
-    static const int dimension = Traits::Cube::dimension;
+  public:
+    typedef typename ReferenceCube::ctype ctype;
+
+    static const int dimension = ReferenceCube::dimension;
     static const int dimensionworld = dimension;
 
     typedef typename Traits::template Codim< 0 >::Entity Entity;
@@ -44,7 +46,6 @@ namespace Dune
     typedef typename Traits::template Codim< 1 >::LocalGeometry LocalGeometry;
 
   private:
-    typedef typename Traits::Cube Cube;
 
     typedef SPEntity< 0, dimension, Grid > EntityImpl;
     typedef SPEntityPointer< 0, Grid > EntityPointerImpl;
@@ -55,7 +56,7 @@ namespace Dune
     typedef typename EntityImpl::GridLevel GridLevel;
 
     typedef typename GeometryImpl::LocalVector LocalVector;
-    typedef typename Cube::NormalVector NormalVector;
+    typedef typename ReferenceCube::NormalVector NormalVector;
 
   private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
@@ -152,7 +153,7 @@ namespace Dune
 
     NormalVector centerUnitOuterNormal () const
     {
-      return gridLevel().cube().normal( face_ );
+      return gridLevel().referenceCube().normal( face_ );
     }
 
     NormalVector unitOuterNormal ( const LocalVector &local ) const
@@ -174,12 +175,12 @@ namespace Dune
     {
       assert( face >= 0 );
       face_ = face;
-      if( face < GridLevel::Cube::numFaces )
+      if( face < ReferenceCube::numFaces )
       {
         const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
         MultiIndex &id = Grid::getRealImplementation( geometry_ ).entityInfo().id();
         id = inside_->entityInfo().id();
-        id += gridLevel().cube().subId( 1, face );
+        id += gridLevel().referenceCube().subId( 1, face );
         Grid::getRealImplementation( geometry_ ).entityInfo().update( partitionNumber );
       }
     }

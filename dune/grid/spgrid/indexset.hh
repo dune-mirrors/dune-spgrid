@@ -25,7 +25,7 @@ namespace Dune
   public:
     typedef typename Base::IndexType IndexType;
 
-    static const int dimension = Traits::Cube::dimension;
+    static const int dimension = Traits::ReferenceCube::dimension;
 
     template< int codim >
     struct Codim
@@ -208,7 +208,7 @@ namespace Dune
     const typename Codim< 0 >::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
     MultiIndex sid = entityInfo.id();
-    sid += gridLevel().cube().subId( codim, i );
+    sid += gridLevel().referenceCube().subId( codim, i );
     // for the ghost approach, the partition number has to be corrected
     return index( sid, entityInfo.partitionNumber() );
   }

@@ -71,7 +71,7 @@ namespace Dune
     {
       typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
-      typedef SPCube< ct, dim > Cube;
+      typedef SPReferenceCube< ct, dim > ReferenceCube;
       typedef SPDomain< ct, dim > Domain;
       typedef SPMesh< dim > Mesh;
       typedef SPRefinement< dim, strategy > Refinement;
@@ -104,7 +104,7 @@ namespace Dune
       template< int codim >
       struct Codim
       {
-        typedef SPCube< ct, dim-codim > Cube;
+        typedef SPReferenceCube< ct, dim-codim > ReferenceCube;
 
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
 
@@ -164,18 +164,18 @@ namespace Dune
 
     typedef typename GridFamily::Traits Traits;
 
-    typedef typename Traits::Cube Cube;
+    typedef typename Traits::ReferenceCube ReferenceCube;
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Mesh Mesh;
     typedef typename Traits::Refinement Refinement;
     typedef typename Traits::RefinementPolicy RefinementPolicy;
 
-    typedef typename Cube::ctype ctype;
+    typedef typename ReferenceCube::ctype ctype;
 
-    static const int dimension = Cube::dimension;
-    static const int dimensionworld = Cube::dimension;
+    static const int dimension = ReferenceCube::dimension;
+    static const int dimensionworld = ReferenceCube::dimension;
 
-    typedef typename Cube::GlobalVector GlobalVector;
+    typedef typename ReferenceCube::GlobalVector GlobalVector;
 
     typedef typename Traits::GlobalIdSet GlobalIdSet;
     typedef typename Traits::LocalIdSet LocalIdSet;
@@ -186,7 +186,7 @@ namespace Dune
     struct Codim
     : Base::template Codim< codim >
     {
-      typedef typename Traits::template Codim< codim >::Cube Cube;
+      typedef typename Traits::template Codim< codim >::ReferenceCube ReferenceCube;
     };
 
     template< PartitionIteratorType pitype >
@@ -246,16 +246,16 @@ namespace Dune
 
     using Base::getRealImplementation;
 
-    const Cube &cube () const
+    const ReferenceCube &referenceCube () const
     {
-      return cube< 0 >();
+      return referenceCube< 0 >();
     }
 
     template< int codim >
-    const typename Codim< codim >::Cube &cube () const
+    const typename Codim< codim >::ReferenceCube &referenceCube () const
     {
       Int2Type< codim > codimVariable;
-      return cubes_[ codimVariable ];
+      return refCubes_[ codimVariable ];
     }
 
     const Domain &domain () const
@@ -485,15 +485,15 @@ namespace Dune
     static CollectiveCommunication defaultCommunication ();
 
     template< int codim >
-    struct TheCube
-    : public Codim< codim >::Cube
+    struct RefCube
+    : public Codim< codim >::ReferenceCube
     {};
   
     Domain domain_;
     Mesh globalMesh_;
     MultiIndex overlap_;
     std::string name_;
-    GenericGeometry::CodimTable< TheCube, dimension > cubes_;
+    GenericGeometry::CodimTable< RefCube, dimension > refCubes_;
     std::vector< GridLevel * > gridLevels_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;
@@ -503,7 +503,7 @@ namespace Dune
     CollectiveCommunication comm_;
     size_t boundarySize_;
     std::vector< array< size_t, 2*dimension > > boundaryOffset_;
-    const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ Cube::numFaces ];
+    const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ ReferenceCube::numFaces ];
   };
 
 
@@ -908,7 +908,7 @@ namespace Dune
   inline const typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometry &
   SPGrid< ct, dim, strategy, Comm >::localFaceGeometry ( const int face ) const
   {
-    assert( (face >= 0) && (face < Cube::numFaces) );
+    assert( (face >= 0) && (face < ReferenceCube::numFaces) );
     return *localFaceGeometry_[ face ];
   }
 
@@ -933,13 +933,13 @@ namespace Dune
     typedef typename Codim< 1 >::LocalGeometry LocalGeo;
     typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
     const GlobalVector unitH( ctype( 1 ) );
-    for( int face = 0; face < Cube::numFaces; ++face )
+    for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {
       const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
       GlobalVector origin( ctype( 0 ) );
       origin[ face/2 ] = ctype( face & 1 );
       const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-      localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( cube< 1 >(), cache, origin ) );
+      localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( referenceCube< 1 >(), cache, origin ) );
     }
   }
 
