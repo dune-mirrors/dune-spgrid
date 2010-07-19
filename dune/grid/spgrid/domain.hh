@@ -105,7 +105,7 @@ namespace Dune
     static const int dimension = Domain::dimension;
 
     /** \brief type of global vectors, i.e., vectors within the domain */
-    typedef Domain::GlobalVector GlobalVector;
+    typedef typename Domain::GlobalVector GlobalVector;
 
     /** \brief constructor
      *
