@@ -37,8 +37,8 @@ void checkHierarchicSearch ( const GridView &gridView )
 
   HierarchicSearch hsearch( gridView.grid(), gridView.indexSet() );
 
-  GlobalVector x = gridView.grid().domain().origin();
-  x.axpy( 0.49, gridView.grid().domain().width() );
+  GlobalVector x = gridView.grid().domain().cube().origin();
+  x.axpy( 0.49, gridView.grid().domain().cube().width() );
 
   EntityPointer ep = hsearch.findEntity( x );
   const Geometry &geometry = ep->geometry();

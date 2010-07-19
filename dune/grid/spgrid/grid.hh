@@ -763,8 +763,8 @@ namespace Dune
 
       ioData.name = name();
       ioData.time = time;
-      ioData.origin = domain().origin();
-      ioData.width = domain().width();
+      ioData.origin = domain().cube().origin();
+      ioData.width = domain().cube().width();
       ioData.cells = globalMesh_.width();
       ioData.partitions = comm().size();
       ioData.overlap = overlap_;
@@ -856,7 +856,7 @@ namespace Dune
     const GridLevel &gLevel = gridLevel( level );
     const PartitionList &partitionList = gLevel.template partition< All_Partition >();
 
-    const GlobalVector y = x - domain().origin();
+    const GlobalVector y = x - domain().cube().origin();
     GlobalVector z;
     gLevel.template geometryCache< 0 >( (1 << dimension) - 1 ).jacobianInverseTransposed().mv( y, z );
 

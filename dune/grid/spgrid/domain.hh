@@ -50,17 +50,8 @@ namespace Dune
     SPDomain ( const GlobalVector &a, const GlobalVector &b,
                const unsigned int periodic = 0 );
 
-    /** \brief obtain lower left corner
-     *
-     *  \returns a reference to the origin of the domain
-     */
-    const GlobalVector &origin () const { return cube_.origin(); }
-
-    /** \brief obtain width of the domain
-     * 
-     *  \returns a reference to the width of the domain
-     */
-    const GlobalVector &width () const { return cube_.width(); }
+    /** \todo please doc me */
+    const Cube &cube () const { return cube_; }
 
     /** \brief determine whether the domain contains a point x
      *
@@ -68,7 +59,7 @@ namespace Dune
      *
      *  \returns true, if x is contained in the domain
      */
-    bool contains ( const GlobalVector &x ) const { return cube_.contains( x ); }
+    bool contains ( const GlobalVector &x ) const { return cube().contains( x ); }
 
     /** \brief determine whether a direction is periodic
      *

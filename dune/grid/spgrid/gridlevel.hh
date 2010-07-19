@@ -365,7 +365,7 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildGeometry ()
   {
-    const GlobalVector domainWidth = domain().width();
+    const GlobalVector domainWidth = domain().cube().width();
     const MultiIndex meshWidth = globalMesh().width();
     for( int i = 0; i < dimension; ++i )
       h_[ i ] = domainWidth[ i ] / ctype( meshWidth[ i ] );
