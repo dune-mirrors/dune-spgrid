@@ -60,7 +60,6 @@ namespace Dune
 
   private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
-    typedef typename GridLevel::Domain Domain;
 
     typedef typename GridLevel::Mesh Mesh;
     typedef typename GridLevel::PartitionList PartitionList;
