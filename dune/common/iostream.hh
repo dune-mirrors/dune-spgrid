@@ -63,7 +63,7 @@ namespace Dune
       good = !in.fail();
       if( good )
         in.unget();
-      in.setstate( std::ios_base::goodbit );
+      in.clear();
     }
     return good;
   }
