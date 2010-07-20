@@ -52,6 +52,23 @@ namespace Dune
   }
 
 
+  template< class char_type, class traits >
+  inline bool isGood ( std::basic_istream< char_type, traits > &in )
+  {
+    bool good = in.good();
+    if( good )
+    {
+      char_type c;
+      in >> c;
+      good = !in.fail();
+      if( good )
+        in.unget();
+      in.setstate( std::ios_base::goodbit );
+    }
+    return good;
+  }
+
+
   template< class T >
   inline iostream::Match< typename iostream::MatchTraits< T >::Type >
   match ( const T &value )
