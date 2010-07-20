@@ -1,5 +1,5 @@
-#ifndef DUNE_SPGRID_CUBE_HH
-#define DUNE_SPGRID_CUBE_HH
+#ifndef DUNE_SPGRID_REFERENCECUBE_HH
+#define DUNE_SPGRID_REFERENCECUBE_HH
 
 #include <vector>
 
@@ -196,4 +196,4 @@ namespace Dune
 
 }
 
-#endif // #ifndef DUNE_SPGRID_CUBE_HH
+#endif // #ifndef DUNE_SPGRID_REFERENCECUBE_HH
