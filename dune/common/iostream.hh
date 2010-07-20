@@ -10,6 +10,25 @@ namespace Dune
   {
 
     template< class T >
+    struct MatchTraits
+    {
+      typedef T Type;
+    };
+
+    template< class T >
+    struct MatchTraits< const T >
+    {
+      typedef const typename MatchTraits< T >::Type Type;
+    };
+
+    template< int n >
+    struct MatchTraits< char[ n ] >
+    {
+      typedef std::string Type;
+    };
+
+
+    template< class T >
     struct Match
     {
       explicit Match ( const T &value )
@@ -34,9 +53,10 @@ namespace Dune
 
 
   template< class T >
-  iostream::Match< T > match ( const T &value )
+  inline iostream::Match< typename iostream::MatchTraits< T >::Type >
+  match ( const T &value )
   {
-    return iostream::Match< T >( value );
+    return iostream::Match< typename iostream::MatchTraits< T >::Type >( value );
   }
 
 
