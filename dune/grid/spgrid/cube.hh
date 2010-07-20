@@ -24,6 +24,9 @@ namespace Dune
     /** \brief type of global vectors, i.e., vectors within the domain */
     typedef FieldVector< ctype, dimension > GlobalVector;
 
+    /** \brief default constructor */
+    SPCube ();
+
     /** \brief constructor
      *
      *  \param[in]  a         one corner of the cube
@@ -70,6 +73,14 @@ namespace Dune
 
   // Implementation of SPCube
   // ------------------------
+
+  template< class ct, int dim >
+  inline SPCube< ct, dim >::SPCube ()
+  {
+    for( int i = 0; i < dimension; ++i )
+      origin_[ i ] = width_[ i ] = 0;
+  }
+
 
   template< class ct, int dim >
   inline SPCube< ct, dim >
@@ -141,6 +152,26 @@ namespace Dune
     for( int i = 0; i < Cube::dimension; ++i )
       out << (i > 0 ? "x[" : "[") << a[ i ] << "," << b[ i ] << "]";
     return out;
+  }
+
+
+  template< class char_type, class traits, class ct, int dim >
+  inline std::basic_istream< char_type, traits > &
+  operator>> ( std::basic_istream< char_type, traits > &in,
+               SPCube< ct, dim > &cube )
+  {
+    typedef SPCube< ct, dim > Cube;
+    typename Cube::GlobalVector a;
+    typename Cube::GlobalVector b;
+    for( int i = 0; i < Cube::dimension; ++i )
+    {
+      if( i > 0 )
+        in >> match( 'x' );
+      in >> match( '[' ) >> a[ i ] >> match( ',' ) >> b[ i ] >> match( ']' );
+    }
+    if( !in.fail() )
+      cube = Cube( a, b );
+    return in;
   }
 
 }
