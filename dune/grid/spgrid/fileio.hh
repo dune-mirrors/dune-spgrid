@@ -23,16 +23,16 @@ namespace Dune
   struct SPGridIOData
   {
     typedef SPTopology< dim > Topology;
-    typedef FieldVector< ctype, dim > Vector;
+    typedef SPCube< ctype, dim > Cube;
+    typedef typename Cube::GlobalVector GlobalVector;
     typedef SPMultiIndex< dim > MultiIndex;
     typedef SPRefinement< dim, strategy > Refinement;
     typedef typename Refinement::Policy RefinementPolicy;
 
     std::string name;
     ctype time;
+    std::vector< Cube > cubes;
     Topology topology;
-    Vector origin;
-    Vector width;
     MultiIndex cells;
     MultiIndex overlap;
     int partitions;
@@ -73,8 +73,13 @@ namespace Dune
     fileOut << std::endl;
 
     // write domain information
-    fileOut << "origin " << origin << std::endl;
-    fileOut << "width " << width << std::endl;
+    fileOut << "domain";
+    for( typename std::vector< Cube >::const_iterator it = cubes.begin(); it != cubes.end(); ++it )
+      fileOut << " " << *it;
+    fileOut << std::endl;
+
+    fileOut << "origin " << cubes[ 0 ].origin() << std::endl;
+    fileOut << "width " << cubes[ 0 ].width() << std::endl;
 
     fileOut << "periodic";
     for( int i = 0; i < dim; ++i )
@@ -167,6 +172,7 @@ namespace Dune
     partitions = 1;
     overlap = MultiIndex::zero();
     time = ctype( 0 );
+    cubes.push_back( Cube::unitCube() );
 
     const unsigned int flagOrigin = 1;
     const unsigned int flagWidth = 2;
@@ -190,15 +196,25 @@ namespace Dune
         name = readLine( lineIn );
       else if( cmd == "time" )
         lineIn >> time;
+      else if ( cmd == "domain" )
+      {
+        // skip for now
+      }
       else if( cmd == "origin" )
       {
+        GlobalVector origin, width;
         lineIn >> origin;
+        width = cubes[ 0 ].width();
+        cubes[ 0 ] = Cube( origin, origin+width );
         if( lineIn )
           flags |= flagOrigin;
       }
       else if( cmd == "width" )
       {
+        GlobalVector origin, width;
+        origin = cubes[ 0 ].origin();
         lineIn >> width;
+        cubes[ 0 ] = Cube( origin, origin+width );
         if( lineIn )
           flags |= flagWidth;
       }

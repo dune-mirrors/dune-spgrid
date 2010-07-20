@@ -763,9 +763,8 @@ namespace Dune
 
       ioData.name = name();
       ioData.time = time;
+      ioData.cubes.push_back( domain().cube() );
       ioData.topology = domain().topology();
-      ioData.origin = domain().cube().origin();
-      ioData.width = domain().cube().width();
       ioData.cells = globalMesh_.width();
       ioData.partitions = comm().size();
       ioData.overlap = overlap_;
@@ -801,7 +800,7 @@ namespace Dune
                   << " index sets will not coincide." << std::endl;
       }
 
-      domain_ = Domain( ioData.topology, ioData.origin, ioData.origin + ioData.width );
+      domain_ = Domain( ioData.topology, ioData.cubes );
       globalMesh_ = Mesh( ioData.cells );
       overlap_ = ioData.overlap;
       name_ = ioData.name;

@@ -1,6 +1,6 @@
 spgriddir = $(includedir)/dune/grid/spgrid
 spgrid_HEADERS = cachedpartitionlist.hh  capabilities.hh  communication.hh \
-                 decomposition.hh  domain.hh  dgfparser.hh \
+                 cube.hh  decomposition.hh  domain.hh  dgfparser.hh \
                  entity.hh  entityinfo.hh  entitypointer.hh  fileio.hh \
                  geometry.hh  geometrycache.hh  grid.hh  gridlevel.hh \
                  gridview.hh  hierarchiciterator.hh  hierarchicsearch.hh \
