@@ -39,19 +39,16 @@ namespace Dune
      *
      *  \param[in]  a         one corner of the domain
      *  \param[in]  b         the opposite corner of the domain
-     *  \param[in]  periodic  bit field specifying which directions should be
-     *                        periodic (defaults to 0)
      *
      *  \note The only restriction on the given corners is that they are
      *        opposite to each other.
      *        It is not guaranteed, that one of the corners will be returned
      *        by the method origin.
      */
-    SPDomain ( const GlobalVector &a, const GlobalVector &b,
-               const unsigned int periodic = 0 );
+    SPDomain ( const GlobalVector &a, const GlobalVector &b );
 
     /** \todo please doc me */
-    SPDomain ( const Topology &topology, const std::vector< Cube > &cubes );
+    SPDomain ( const std::vector< Cube > &cubes, const Topology &topology );
 
     /** \todo please doc me */
     const Cube &cube () const { return cube_; }
@@ -85,16 +82,15 @@ namespace Dune
 
   template< class ct, int dim >
   inline SPDomain< ct, dim >
-    ::SPDomain ( const GlobalVector &a, const GlobalVector &b,
-                 const unsigned int periodic )
+    ::SPDomain ( const GlobalVector &a, const GlobalVector &b )
   : cube_( a, b ),
-    topology_( periodic )
+    topology_()
   {}
 
 
   template< class ct, int dim >
   inline SPDomain< ct, dim >
-    ::SPDomain ( const Topology &topology, const std::vector< Cube > &cubes )
+    ::SPDomain ( const std::vector< Cube > &cubes, const Topology &topology )
   : cube_( cubes[ 0 ] ),
     topology_( topology )
   {}

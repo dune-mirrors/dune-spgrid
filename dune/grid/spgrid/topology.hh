@@ -30,7 +30,7 @@ namespace Dune
      *  \param[in]  periodic  bit field specifying which directions should be
      *                        periodic (defaults to 0)
      */
-    SPTopology ( const unsigned int periodic = 0 );
+    explicit SPTopology ( const unsigned int periodic = 0 );
 
     SPTopology ( const This &other );
 

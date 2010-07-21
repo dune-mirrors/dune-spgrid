@@ -220,22 +220,16 @@ namespace Dune
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
+    SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
+             const std::string &name = "SPGrid",
+             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
+
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const MultiIndex &overlap,
-             const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
-
-    SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-             const unsigned int periodic,
-             const std::string &name = "SPGrid",
-             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
-
-    SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-             const MultiIndex &overlap, const unsigned int periodic,
              const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
@@ -545,6 +539,23 @@ namespace Dune
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline SPGrid< ct, dim, strategy, Comm >
+    ::SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
+               const std::string &name, const CollectiveCommunication &comm )
+  : domain_( domain ),
+    globalMesh_( cells ),
+    overlap_( overlap ),
+    name_( name ),
+    leafView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const std::string &name, const CollectiveCommunication &comm )
   : domain_( a, b ),
@@ -566,42 +577,6 @@ namespace Dune
                const MultiIndex &overlap,
                const std::string &name, const CollectiveCommunication &comm )
   : domain_( a, b ),
-    globalMesh_( cells ),
-    overlap_( overlap ),
-    name_( name ),
-    leafView_( LeafGridViewImpl() ),
-    hierarchicIndexSet_( *this ),
-    comm_( comm )
-  {
-    createLocalGeometries();
-    setupMacroGrid();
-  }
-
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >
-    ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-               const unsigned int periodic,
-               const std::string &name, const CollectiveCommunication &comm )
-  : domain_( a, b, periodic ),
-    globalMesh_( cells ),
-    overlap_( MultiIndex::zero() ),
-    name_( name ),
-    leafView_( LeafGridViewImpl() ),
-    hierarchicIndexSet_( *this ),
-    comm_( comm )
-  {
-    createLocalGeometries();
-    setupMacroGrid();
-  }
-
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >
-    ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-               const MultiIndex &overlap, const unsigned int periodic,
-               const std::string &name, const CollectiveCommunication &comm )
-  : domain_( a, b, periodic ),
     globalMesh_( cells ),
     overlap_( overlap ),
     name_( name ),
@@ -800,7 +775,7 @@ namespace Dune
                   << " index sets will not coincide." << std::endl;
       }
 
-      domain_ = Domain( ioData.topology, ioData.cubes );
+      domain_ = Domain( ioData.cubes, ioData.topology );
       globalMesh_ = Mesh( ioData.cells );
       overlap_ = ioData.overlap;
       name_ = ioData.name;

@@ -3,7 +3,9 @@
 #include <limits>
 #include <sstream>
 
+#include <dune/common/mpihelper.hh>
 #include <dune/common/iostream.hh>
+
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 #include <dune/grid/spgrid.hh>
 #include <dune/grid/spgrid/decomposition.hh>
@@ -17,12 +19,13 @@ using namespace Dune;
 static const int dimGrid = DIMGRID;
 
 typedef SPMultiIndex< dimGrid > MultiIndex;
+typedef SPTopology< dimGrid > Topology;
 typedef SPPartitionPool< dimGrid > PartitionPool;
 typedef SPPartitionList< dimGrid > PartitionList;
 
 
 template< PartitionIteratorType pitype >
-void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, unsigned int periodic )
+void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, const Topology &topology )
 {
   const unsigned int size = decomposition.size();
 
@@ -30,7 +33,7 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
   int minload = std::numeric_limits< int >::max();
   for( unsigned int rank = 0; rank < size; ++rank )
   {
-    PartitionPool partitionPool( decomposition.subMesh( rank ), decomposition.mesh(), overlap, periodic );
+    PartitionPool partitionPool( decomposition.subMesh( rank ), decomposition.mesh(), overlap, topology );
     const PartitionList &partition = partitionPool.template get< pitype >();
 
     int load = 0;
@@ -69,14 +72,14 @@ void listPartitions ( const SPDecomposition< dimGrid > &decomposition, const Mul
 
 
 template< InterfaceType iftype >
-void listLinkage ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, unsigned int periodic )
+void listLinkage ( const SPDecomposition< dimGrid > &decomposition, const MultiIndex &overlap, const Topology &topology )
 {
   typedef SPLinkage< dimGrid > Linkage;
   typedef typename Linkage::Interface Interface;
   const int size = decomposition.size();
   for( int rank = 0; rank < size; ++rank )
   {
-    PartitionPool localPool( decomposition.subMesh( rank ), decomposition.mesh(), overlap, periodic );
+    PartitionPool localPool( decomposition.subMesh( rank ), decomposition.mesh(), overlap, topology );
     Linkage linkage( rank, localPool, decomposition.subMeshes() );
 
     std::cout << "rank " << rank << ":" << std::endl;
@@ -117,6 +120,8 @@ void listLinkage ( const SPDecomposition< dimGrid > &decomposition, const MultiI
 
 int main ( int argc, char **argv )
 {
+  Dune::MPIHelper::instance( argc, argv );
+
   if( argc < 3 )
   {
     std::cerr << "Usage: " << argv[ 0 ] << " <width> <size> [overlap] [periodic]" << std::endl;
@@ -150,6 +155,7 @@ int main ( int argc, char **argv )
     periodicStream >> dir;
     periodic |= (1 << dir);
   }
+  Topology topology( periodic );
 
   std::cout << "width = " << width << ", size = " << size << ", periodic = " << periodic << std::endl;
   SPDecomposition< dimGrid > decomposition( width, size );
@@ -157,57 +163,59 @@ int main ( int argc, char **argv )
   std::cout << std::endl;
   std::cout << "Interior Partitions:" << std::endl;
   std::cout << "--------------------" << std::endl;
-  listPartitions< Interior_Partition >( decomposition, overlap, periodic );
+  listPartitions< Interior_Partition >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "InteriorBorder Partitions:" << std::endl;
   std::cout << "--------------------------" << std::endl;
-  listPartitions< InteriorBorder_Partition >( decomposition, overlap, periodic );
+  listPartitions< InteriorBorder_Partition >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "Overlap Partitions:" << std::endl;
   std::cout << "-------------------" << std::endl;
-  listPartitions< Overlap_Partition >( decomposition, overlap, periodic );
+  listPartitions< Overlap_Partition >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "OverlapFront Partitions:" << std::endl;
   std::cout << "------------------------" << std::endl;
-  listPartitions< OverlapFront_Partition >( decomposition, overlap, periodic );
+  listPartitions< OverlapFront_Partition >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "All Partitions:" << std::endl;
   std::cout << "---------------" << std::endl;
-  listPartitions< All_Partition >( decomposition, overlap, periodic );
+  listPartitions< All_Partition >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "InteriorBorder InteriorBorder Communication:" << std::endl;
   std::cout << "--------------------------------------------" << std::endl;
-  listLinkage< InteriorBorder_InteriorBorder_Interface >( decomposition, overlap, periodic );
+  listLinkage< InteriorBorder_InteriorBorder_Interface >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "InteriorBorder All Communication:" << std::endl;
   std::cout << "---------------------------------" << std::endl;
-  listLinkage< InteriorBorder_All_Interface >( decomposition, overlap, periodic );
+  listLinkage< InteriorBorder_All_Interface >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "Overlap OverlapFront Communication:" << std::endl;
   std::cout << "-----------------------------------" << std::endl;
-  listLinkage< Overlap_OverlapFront_Interface >( decomposition, overlap, periodic );
+  listLinkage< Overlap_OverlapFront_Interface >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "Overlap All Communication:" << std::endl;
   std::cout << "--------------------------" << std::endl;
-  listLinkage< Overlap_All_Interface >( decomposition, overlap, periodic );
+  listLinkage< Overlap_All_Interface >( decomposition, overlap, topology );
 
   std::cout << std::endl;
   std::cout << "All All Communication:" << std::endl;
   std::cout << "----------------------" << std::endl;
-  listLinkage< All_All_Interface >( decomposition, overlap, periodic );
+  listLinkage< All_All_Interface >( decomposition, overlap, topology );
 
   typedef SPGrid< double, dimGrid > Grid;
   FieldVector< double, dimGrid > a( 0.0 ), b( 1.0 );
   SPDomain< double, dimGrid > domain( a, b );
   Grid grid( domain, width );
+
+  std::cout << "grid created." << std::endl;
 
   std::vector< double > data( grid.size( 0 ) );
   for( unsigned int rank = 0; rank < size; ++rank )

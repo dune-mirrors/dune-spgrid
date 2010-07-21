@@ -113,7 +113,6 @@ try
 {
   Dune::MPIHelper::instance( argc, argv );
 
-
   if( argc < 3 )
   {
     std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;

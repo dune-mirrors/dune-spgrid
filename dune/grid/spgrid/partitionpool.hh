@@ -40,7 +40,6 @@ namespace Dune
 
     const Mesh &globalMesh () const { return globalMesh_; }
     const MultiIndex &overlap () const { return overlap_; }
-    unsigned int periodic () const { return topology().periodic(); }
     const Topology &topology () const { return topology_; }
 
   private:

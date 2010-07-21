@@ -153,13 +153,12 @@ namespace Dune
 
     const Mesh &globalMesh = localPool.globalMesh();
     const MultiIndex &overlap = localPool.overlap();
-    const unsigned int periodic = localPool.periodic();
 
     for( int remoteRank = 0; remoteRank < size; ++remoteRank )
     {
       if( remoteRank == localRank )
         continue;
-      PartitionPool remotePool( decomposition[ remoteRank ], globalMesh, overlap, periodic );
+      PartitionPool remotePool( decomposition[ remoteRank ], globalMesh, overlap, localPool.topology() );
       if( build< All_All_Interface >( localRank, localPool, remoteRank, remotePool ) )
       {
         build< InteriorBorder_InteriorBorder_Interface >( localRank, localPool, remoteRank, remotePool );
