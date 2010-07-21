@@ -67,20 +67,6 @@ namespace Dune
      */
     bool contains ( const GlobalVector &x ) const { return cube().contains( x ); }
 
-    /** \brief determine whether a direction is periodic
-     *
-     *  \param[in]  i  direction (0 <= i < dimension)
-     *
-     *  \returns true, if direction i is periodic
-     */
-    bool periodic ( const int i ) const { return topology_.periodic( i ); }
-
-    /** \brief obtain the periodicity bit field
-     *
-     *  \returns the bitfield specifying which directions are periodic
-     */
-    unsigned int periodic () const { return topology_.periodic(); }
-
     /** \brief obtain a domain modelling the unit cube
      *
      *  \returns a domain modelling \f$[0,1]^{dim}\f$

@@ -5,6 +5,7 @@
 #include <dune/grid/common/exceptions.hh>
 
 #include <dune/grid/spgrid/cachedpartitionlist.hh>
+#include <dune/grid/spgrid/topology.hh>
 
 namespace Dune
 {
@@ -21,13 +22,14 @@ namespace Dune
     static const int dimension = dim;
 
     typedef SPCachedPartitionList< dimension > PartitionList;
+    typedef SPTopology< dimension > Topology;
 
     typedef typename PartitionList::Partition Partition;
     typedef typename PartitionList::MultiIndex MultiIndex;
     typedef typename PartitionList::Mesh Mesh;
     
     SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
-                      const MultiIndex &overlap, unsigned int periodic = 0 );
+                      const MultiIndex &overlap, const Topology &topology );
 
     template< PartitionIteratorType pitype >
     const PartitionList &get () const;
@@ -36,9 +38,10 @@ namespace Dune
     PartitionType
     partitionType ( const MultiIndex &id, const unsigned int number ) const;
 
-    const Mesh &globalMesh () const;
-    const MultiIndex &overlap () const;
-    unsigned int periodic () const;
+    const Mesh &globalMesh () const { return globalMesh_; }
+    const MultiIndex &overlap () const { return overlap_; }
+    unsigned int periodic () const { return topology().periodic(); }
+    const Topology &topology () const { return topology_; }
 
   private:
     Partition makePartition ( const Mesh &localMesh, const unsigned int number,
@@ -46,7 +49,7 @@ namespace Dune
 
     Mesh globalMesh_;
     MultiIndex overlap_;
-    unsigned int periodic_;
+    Topology topology_;
 
     PartitionList interiorList_;
     PartitionList interiorBorderList_;
@@ -64,10 +67,10 @@ namespace Dune
   template< int dim >
   inline SPPartitionPool< dim >
     ::SPPartitionPool ( const Mesh &localMesh, const Mesh &globalMesh,
-                        const MultiIndex &overlap, unsigned int periodic )
+                        const MultiIndex &overlap, const Topology &topology )
   : globalMesh_( globalMesh ),
     overlap_( overlap ),
-    periodic_( periodic )
+    topology_( topology )
   {
     // generate Interior and InteriorBorder
     interiorList_ += makePartition( localMesh, 0, (1 << dimension) - 1 );
@@ -86,7 +89,7 @@ namespace Dune
     for( int i = 0; i < dimension; ++i )
     {
       openOverlap |= (overlap[ i ] > 0 ? (1 << i) : 0);
-      if( (periodic & (1 << i)) == 0 )
+      if( !topology.hasNeighbor( 0, 2*i ) )
         continue;
 
       if( overlapWidth[ i ] >= globalWidth[ i ] )
@@ -182,29 +185,6 @@ namespace Dune
 
 
   template< int dim >
-  inline const typename SPPartitionPool< dim >::Mesh &
-  SPPartitionPool< dim >::globalMesh () const
-  {
-    return globalMesh_;
-  }
-
-
-  template< int dim >
-  inline const typename SPPartitionPool< dim >::MultiIndex &
-  SPPartitionPool< dim >::overlap () const
-  {
-    return overlap_;
-  }
-
-
-  template< int dim >
-  inline unsigned int SPPartitionPool< dim >::periodic () const
-  {
-    return periodic_;
-  }
-
-
-  template< int dim >
   inline typename SPPartitionPool< dim >::Partition
   SPPartitionPool< dim >
     ::makePartition ( const Mesh &localMesh, const unsigned int number,
@@ -228,7 +208,7 @@ namespace Dune
     // deal with self-neighborship (periodicity)
     for( int i = 0; i < dimension; ++i )
     {
-      if( (periodic() & (1 << i)) == 0 )
+      if( !topology().hasNeighbor( 0, 2*i ) )
         continue;
       if( (lbegin[ i ] == gbegin[ i ]) && (lend[ i ] == gend[ i ]) )
         partition.neighbor( 2*i ) = partition.neighbor( 2*i+1 ) = number;

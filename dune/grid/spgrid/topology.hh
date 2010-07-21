@@ -40,6 +40,7 @@ namespace Dune
 
     unsigned int numNodes () const { return data_[ 0 ]; }
 
+    bool hasNeighbor ( const unsigned int node, const int face ) const;
     unsigned int neighbor ( const unsigned int node, const int face ) const;
 
     /** \brief determine whether a direction is periodic
@@ -110,6 +111,13 @@ namespace Dune
       delete[] data_;
     data_ = other.data_;
     return *this;
+  }
+
+
+  template< int dim >
+  inline bool SPTopology< dim >::hasNeighbor ( const unsigned int node, const int face ) const
+  {
+    return (neighbor( node, face ) < numNodes());
   }
 
 

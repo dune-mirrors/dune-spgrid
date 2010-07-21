@@ -172,7 +172,7 @@ namespace Dune
     domain_( grid.domain() ),
     decomposition_( decomposition.subMeshes() ),
     localMesh_( decomposition_[ grid.comm().rank() ] ),
-    partitionPool_( localMesh_, decomposition.mesh(), overlap(), domain_.periodic() ),
+    partitionPool_( localMesh_, decomposition.mesh(), overlap(), domain_.topology() ),
     linkage_( grid.comm().rank(), partitionPool_, decomposition_ )
   {
     buildGeometry();
@@ -189,7 +189,7 @@ namespace Dune
     domain_( father.domain() ),
     decomposition_( refinement_( father.decomposition_ ) ),
     localMesh_( refinement_( father.localMesh() ) ),
-    partitionPool_( localMesh_, refinement_( father.globalMesh() ), overlap(), domain_.periodic() ),
+    partitionPool_( localMesh_, refinement_( father.globalMesh() ), overlap(), domain_.topology() ),
     linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
   {
     buildGeometry();
