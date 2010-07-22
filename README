@@ -20,6 +20,16 @@ Coordinate type is template parameter |    no    |    no    |    yes
 Supports anisotropic refinement       |    no    |    no    |    yes
 Supports periodicity                  |    no    |    no    |    yes
 
+SPGrid supports difference (global) refinement techniques, selected by a
+template parameter. Some refinement techniques allow an optional parameter,
+the refinement policy, to be passed to globalRefine. Currently, isotropic,
+anisotropic and bisection refinement are supported. If no policy is given,
+both, isotropic and anisotropic refinement, split each cube into 2^dim child
+cubes. For anisotropic refinement, a policy may be used to say which directions
+to split. Bisection refinement always split a cube into 2 child cubes; the
+split direction can be given by the policy. If no policy is given, the split
+directions are cycled through. By default, isotropic refinement is used.
+
 
 Preprocessor Magic:
 
