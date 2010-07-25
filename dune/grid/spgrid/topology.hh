@@ -7,7 +7,7 @@ namespace Dune
 {
 
   // SPTopology
-  // --------
+  // ----------
 
   /** \class SPTopology
    *  \brief description of the grid's topology
@@ -156,6 +156,46 @@ namespace Dune
     assert( node < numNodes() );
     assert( (face >= 0) && (face < numFaces) );
     return data_[ node * numFaces + face + 2 ];
+  }
+
+
+
+  // Auxilliary Functions for SPTopology
+  // -----------------------------------
+
+  template< class char_type, class traits, int dim >
+  inline std::basic_ostream< char_type, traits > &
+  operator<< ( std::basic_ostream< char_type, traits > &out,
+               const SPTopology< dim > &topology )
+  {
+    typedef SPTopology< dim > Topology;
+
+    const unsigned int numNodes = topology().numNodes();
+    out << numNodes;
+    for( unsigned int node = 0; node < numNodes; ++node )
+    {
+      out << " [";
+      for( int face = 0; face < Topology::numFaces; ++face )
+      {
+        if( topology.hasNeighbor( node, face ) )
+          out << " " << topology.neighbor( node, face );
+        else
+          out << " *";
+      }
+      out << " ]";
+    }
+    return out;
+  }
+
+
+  template< class char_type, class traits, int dim >
+  inline std::basic_ostream< char_type, traits > &
+  operator>> ( std::basic_istream< char_type, traits > &in,
+               SPTopology< dim > &topology )
+  {
+    //unsigned int numNodes = 0;
+    //in >> numNodes;
+    return in;
   }
 
 }
