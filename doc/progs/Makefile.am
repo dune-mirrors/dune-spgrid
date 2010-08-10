@@ -5,4 +5,6 @@ noinst_PROGRAMS = iterators
 
 iterators_SOURCES = iterators.cc
 
+CLEANFILES = vtu/*.vtu vtu/*.pvtu
+
 include $(top_srcdir)/am/global-rules

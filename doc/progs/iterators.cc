@@ -42,7 +42,7 @@ try
       const IndexSet::IndexType index = indexSet.index( *it );
       values[ index ] = double( 1 );
 
-      VTKWriter vtkWriter( grid.leafView() );
+      VTKWriter vtkWriter( grid.leafView(), Dune::VTK::nonconforming );
       vtkWriter.addCellData( values, "Currect Cell" );
 
       std::ostringstream namestream;
