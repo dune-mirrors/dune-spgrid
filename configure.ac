@@ -19,6 +19,7 @@ AC_CONFIG_FILES([
   dune/grid/extensions/Makefile
   dune/grid/spgrid/Makefile
   doc/Makefile
+  doc/progs/Makefile
   m4/Makefile
   test/Makefile
   dune/grid/spgrid/version.hh

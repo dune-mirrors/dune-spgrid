@@ -1,3 +1,5 @@
+SUBDIRS = progs
+
 SRCDEPEND = -name \*.hh -o -name \*.png
 DOCDEPEND = -name \*.page
 
