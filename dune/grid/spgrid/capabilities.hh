@@ -63,12 +63,6 @@ namespace Dune
     };
 
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct IsUnstructured< SPGrid< ct, dim, strategy, Comm > >
-    {
-      static const bool v = false;
-    };
-
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct threadSafe< SPGrid< ct, dim, strategy, Comm > >
     {
       static const bool v = false;
