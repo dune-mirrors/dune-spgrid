@@ -11,6 +11,8 @@ several important features (see \ref features for details).
 
 \section features Features
 
+The following table shows a comparison of selected features between
+<tt>SGrid</tt>, <tt>YaspGrid</tt>, and <tt>SPGrid</tt>:
 <table>
 <tr><th></th>
     <th>SGrid</th><th>YaspGrid</th><th>SPGrid</th>
@@ -37,6 +39,9 @@ several important features (see \ref features for details).
 </tr>
 <tr><th align=left>Coordinate type is a template parameter</th>
     <td>yes</td><td>no</td><td>yes</td>
+</tr>
+<tr><th align=left>Parallel and serial grid in same program</th>
+    <td>no</tr><td>no</td><td>yes</td>
 </tr>
 </table>
 
