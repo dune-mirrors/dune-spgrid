@@ -206,7 +206,7 @@ namespace Dune
       }
       else if( cmd == "periodic" )
       {
-        int periodic;
+        int periodic = 0;
         while( isGood( lineIn ) )
         {
           int axis;
