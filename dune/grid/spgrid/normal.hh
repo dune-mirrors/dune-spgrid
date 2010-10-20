@@ -73,17 +73,32 @@ namespace Dune
 
 
   template< class ct, int dim >
+  inline bool operator== ( const FieldVector< ct, dim > &a, const SPNormalVector< ct, dim > &b )
+  {
+    return (a == static_cast< FieldVector< ct, dim > >( b ));
+  }
+
+
+  template< class ct, int dim >
+  inline bool operator!= ( const FieldVector< ct, dim > &a, const SPNormalVector< ct, dim > &b )
+  {
+    return (a != static_cast< FieldVector< ct, dim > >( b ));
+  }
+
+
+  template< class ct, int dim >
   inline bool operator== ( const SPNormalVector< ct, dim > &a, const FieldVector< ct, dim > &b )
   {
-    return (b == a);
+    return (static_cast< FieldVector< ct, dim > >( a ) == b);
   }
 
 
   template< class ct, int dim >
   inline bool operator!= ( const SPNormalVector< ct, dim > &a, const FieldVector< ct, dim > &b )
   {
-    return (b != a);
+    return (static_cast< FieldVector< ct, dim > >( a ) != b);
   }
+
 
 
   // Implementation of SPNormalVector

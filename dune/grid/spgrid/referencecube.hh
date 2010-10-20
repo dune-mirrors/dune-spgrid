@@ -83,14 +83,6 @@ namespace Dune
       return normal;
     }
 
-#if 0
-    const GlobalVector &normal ( const int i ) const
-    {
-      assert( (i >= 0) && (i < numFaces) );
-      return normal_[ i ];
-    }
-#endif
-
   private:
     void subId ( const unsigned int dimension, const unsigned int codim,
                  const unsigned int i, MultiIndex &sId ) const
