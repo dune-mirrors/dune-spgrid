@@ -26,3 +26,6 @@ Documentation:
  * split into modules (e.g., interface / implementation)
  * document high-level interface classes
  * document low-level implementation classes
+
+Code Quality:
+ * Do we really need SmallObject ?
