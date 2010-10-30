@@ -26,20 +26,11 @@ namespace Dune
   public:
     typedef typename Grid::template Codim< 0 >::Entity Entity;
 
-    This &operator++ ()
-    {
-      realIterator.increment();
-      return *this;
-    }
+    SuperEntityIterator ( const Implementation &implementation );
 
-    int index () const
-    {
-      return realIterator.index();
-    }
-    
-    SuperEntityIterator ( const Implementation &implementation )
-    : Base( implementation )
-    {}
+    const This &operator++ ();
+
+    int index () const;
 
   protected:
     using Base::realIterator;
@@ -96,6 +87,35 @@ namespace Dune
   };
 
 
+  // Implementation of SuperEntityIterator
+  // -------------------------------------
+
+  template< class Grid, template< class > class SuperEntityIteratorImp >
+  inline SuperEntityIterator< Grid, SuperEntityIteratorImp >
+    ::SuperEntityIterator ( const Implementation &implementation )
+  : Base( implementation )
+  {}
+
+
+  template< class Grid, template< class > class SuperEntityIteratorImp >
+  inline const typename SuperEntityIterator< Grid, SuperEntityIteratorImp >::This &
+  SuperEntityIterator< Grid, SuperEntityIteratorImp >::operator++ ()
+  {
+    realIterator.increment();
+    return *this;
+  }
+
+
+  template< class Grid, template< class > class SuperEntityIteratorImp >
+  inline int SuperEntityIterator< Grid, SuperEntityIteratorImp >::index () const
+  {
+    return realIterator.index();
+  }
+
+
+
+  // Extensions
+  // ----------
 
   namespace Extensions
   {
