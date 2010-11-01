@@ -29,8 +29,9 @@ namespace Dune
   // ------------------
 
   template< class Grid, class IndexSet >
-  struct SPHierarchicSearch
+  class SPHierarchicSearch
   {
+  public:
     typedef typename Grid::ctype ctype;
     typedef typename Grid::template Codim< 0 >::Entity Entity;
     typedef typename Grid::template Codim< 0 >::EntityPointer EntityPointer;

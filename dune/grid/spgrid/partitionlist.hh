@@ -17,7 +17,7 @@ namespace Dune
     typedef SPPartitionList< dim > This;
 
   protected:
-    class Node;
+    struct Node;
 
   public:
     typedef SPPartition< dim > Partition;

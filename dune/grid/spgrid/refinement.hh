@@ -27,10 +27,10 @@ namespace Dune
   // -----------------------------
 
   template< int dim, SPRefinementStrategy strategy >
-  struct SPRefinementPolicy;
+  class SPRefinementPolicy;
 
   template< int dim, SPRefinementStrategy strategy >
-  struct SPBasicRefinement;
+  class SPBasicRefinement;
 
 
 
@@ -251,7 +251,7 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
       {
         const unsigned int alpha = factor( i );
-        id[ i ] = ((id[ i ] + (index % factor)) * factor) - (factor - 1);
+        id[ i ] = ((id[ i ] + (index % alpha)) * alpha) - (alpha - 1);
         index /= alpha;
       }
     }

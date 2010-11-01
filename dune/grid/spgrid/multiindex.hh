@@ -323,11 +323,10 @@ namespace std
   // -------------------------------
 
   template< int dim >
-  class numeric_limits< Dune::SPMultiIndex< dim > >
+  struct numeric_limits< Dune::SPMultiIndex< dim > >
   {
     typedef Dune::SPMultiIndex< dim > MultiIndex;
 
-  public:
     static MultiIndex min ()
     {
       MultiIndex multiIndex;

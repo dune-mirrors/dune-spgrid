@@ -63,8 +63,9 @@ namespace Dune
   // ------------------------
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  struct DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
+  class DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
   {
+  public:
     typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
