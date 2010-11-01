@@ -94,7 +94,7 @@ namespace Dune
     template< class Intersection >
     int boundaryId ( const Intersection &intersection ) const
     {
-      return intersection.boundaryId();
+      return Grid::getRealImplementation( intersection ).boundaryId();
     }
 
     template< int codim >
