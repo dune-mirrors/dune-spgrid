@@ -182,6 +182,11 @@ namespace Dune
       return corner_;
     }
 
+    const GlobalVector &center () const
+    {
+      return corner_;
+    }
+
   private:
     GlobalVector corner_;
   };
