@@ -188,13 +188,13 @@ namespace Dune
     IntersectionIterator ibegin ( const typename Codim< 0 >::Entity &entity ) const;
     IntersectionIterator iend ( const typename Codim< 0 >::Entity &entity ) const;
 
-    template< int codim >
-    typename Codim< codim >::SuperEntityIterator
-    superEntityBegin ( const typename Codim< codim >::Entity &entity ) const;
+    template< class Entity >
+    typename Codim< Entity::codimension >::SuperEntityIterator
+    superEntityBegin ( const Entity &entity ) const;
 
-    template< int codim >
-    typename Codim< codim >::SuperEntityIterator
-    superEntityEnd ( const typename Codim< codim >::Entity &entity ) const;
+    template< class Entity >
+    typename Codim< Entity::codimension >::SuperEntityIterator
+    superEntityEnd ( const Entity &entity ) const;
 
     const CollectiveCommunication &comm () const;
 
@@ -380,19 +380,18 @@ namespace Dune
 
 
   template< class ViewTraits >
-  template< int codim >
-  inline typename SPGridView< ViewTraits >::template Codim< codim >::SuperEntityIterator
-  SPGridView< ViewTraits >::superEntityBegin ( const typename Codim< codim >::Entity &entity ) const
+  template< class Entity >
+  inline typename SPGridView< ViewTraits >::template Codim< Entity::codimension >::SuperEntityIterator
+  SPGridView< ViewTraits >::superEntityBegin ( const Entity &entity ) const
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
     return Impl( Grid::getRealImplementation( entity ), typename Impl::Begin() );
   }
 
-
   template< class ViewTraits >
-  template< int codim >
-  inline typename SPGridView< ViewTraits >::template Codim< codim >::SuperEntityIterator
-  SPGridView< ViewTraits >::superEntityEnd ( const typename Codim< codim >::Entity &entity ) const
+  template< class Entity >
+  inline typename SPGridView< ViewTraits >::template Codim< Entity::codimension >::SuperEntityIterator
+  SPGridView< ViewTraits >::superEntityEnd ( const Entity &entity ) const
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
     return Impl( Grid::getRealImplementation( entity ), typename Impl::End() );
