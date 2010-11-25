@@ -163,6 +163,7 @@ namespace Dune
     static const int dimension = 0;
 
     typedef FieldVector< ctype, 0 > GlobalVector;
+    typedef SPMultiIndex< dimension > MultiIndex;
 
     static const int numCorners = 1;
 
