@@ -36,6 +36,16 @@ namespace Dune
     : intersection_( IntersectionImpl( entityImpl, face ) )
     {}
 
+    SPIntersectionIterator ( const This &other )
+    : intersection_( Grid::getRealImplementation( other.intersection_ ) )
+    {}
+
+    const This &operator= ( const This &other )
+    {
+      Grid::getRealImplementation( intersection_ ) = Grid::getRealImplementation( other.intersection_ );
+      return *this;
+    }
+
     const Intersection &dereference () const
     {
       return intersection_;
