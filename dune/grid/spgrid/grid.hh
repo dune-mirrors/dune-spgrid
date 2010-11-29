@@ -217,20 +217,16 @@ namespace Dune
     SPGrid ( const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const Domain &domain, const MultiIndex &cells,
-             const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
-             const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-             const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const MultiIndex &overlap,
-             const std::string &name = "SPGrid",
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     ~SPGrid ()
@@ -248,7 +244,7 @@ namespace Dune
     template< int codim >
     const typename Codim< codim >::ReferenceCube &referenceCube () const
     {
-      Int2Type< codim > codimVariable;
+      integral_constant< int, codim > codimVariable;
       return refCubes_[ codimVariable ];
     }
 
@@ -260,11 +256,6 @@ namespace Dune
     const MultiIndex &overlap () const
     {
       return overlap_;
-    }
-
-    const std::string &name () const
-    {
-      return name_;
     }
 
     int maxLevel () const
@@ -486,7 +477,6 @@ namespace Dune
     Domain domain_;
     Mesh globalMesh_;
     MultiIndex overlap_;
-    std::string name_;
     GenericGeometry::CodimTable< RefCube, dimension > refCubes_;
     std::vector< GridLevel * > gridLevels_;
     std::vector< LevelGridView > levelViews_;
@@ -510,7 +500,6 @@ namespace Dune
   : domain_( Domain::unitCube() ),
     globalMesh_( Mesh::unitMesh() ),
     overlap_( MultiIndex::zero() ),
-    name_( "SPGrid" ),
     leafView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
@@ -523,11 +512,10 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells,
-               const std::string &name, const CollectiveCommunication &comm )
+               const CollectiveCommunication &comm )
   : domain_( domain ),
     globalMesh_( cells ),
     overlap_( MultiIndex::zero() ),
-    name_( name ),
     leafView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
@@ -540,11 +528,10 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
-               const std::string &name, const CollectiveCommunication &comm )
+               const CollectiveCommunication &comm )
   : domain_( domain ),
     globalMesh_( cells ),
     overlap_( overlap ),
-    name_( name ),
     leafView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
@@ -557,11 +544,10 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-               const std::string &name, const CollectiveCommunication &comm )
+               const CollectiveCommunication &comm )
   : domain_( a, b ),
     globalMesh_( cells ),
     overlap_( MultiIndex::zero() ),
-    name_( name ),
     leafView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
@@ -574,12 +560,10 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline SPGrid< ct, dim, strategy, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-               const MultiIndex &overlap,
-               const std::string &name, const CollectiveCommunication &comm )
+               const MultiIndex &overlap, const CollectiveCommunication &comm )
   : domain_( a, b ),
     globalMesh_( cells ),
     overlap_( overlap ),
-    name_( name ),
     leafView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
@@ -736,7 +720,6 @@ namespace Dune
     {
       SPGridIOData< ctype, dimension, strategy > ioData;
 
-      ioData.name = name();
       ioData.time = time;
       ioData.cubes.push_back( domain().cube() );
       ioData.topology = domain().topology();
@@ -778,7 +761,6 @@ namespace Dune
       domain_ = Domain( ioData.cubes, ioData.topology );
       globalMesh_ = Mesh( ioData.cells );
       overlap_ = ioData.overlap;
-      name_ = ioData.name;
       setupMacroGrid();
 
       for( int level = 0; level < ioData.maxLevel; ++level )

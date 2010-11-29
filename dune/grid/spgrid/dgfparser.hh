@@ -203,13 +203,12 @@ namespace Dune
     }
 
     dgf::SPGridParameterBlock< dim > parameter( input );
-    const std::string gridName = parameter.name( "SPGrid" );
 
     typedef typename Grid::Domain Domain;
     std::vector< typename Domain::Cube > cubes;
     cubes.push_back( typename Domain::Cube( a, b ) );
     Domain domain( cubes, typename Domain::Topology( periodic ) );
-    grid_ = new Grid( domain, cells, parameter.overlap(), gridName );
+    grid_ = new Grid( domain, cells, parameter.overlap() );
   }
 
 
