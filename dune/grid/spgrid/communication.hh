@@ -4,6 +4,7 @@
 #include <dune/common/forloop.hh>
 #include <dune/common/collectivecommunication.hh>
 #include <dune/common/mpicollectivecommunication.hh>
+#include <dune/common/mpitraits.hh>
 
 #include <dune/grid/common/datahandleif.hh>
 
@@ -209,8 +210,8 @@ namespace Dune
   inline void SPCommunication< Grid, DataHandle >::WriteBuffer< T >
    ::send ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
   {
-    MPI_Datatype mpiDataType = Generic_MPI_Datatype< T >::get();
-    MPI_Isend( &(buffer_[ 0 ]), buffer_.size(), mpiDataType, rank, tag, comm, &request_ );
+    MPI_Datatype mpitype = MPITraits< T >::getType();
+    MPI_Isend( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm, &request_ );
   }
 
 
@@ -247,7 +248,7 @@ namespace Dune
     MPI_Status status;
     MPI_Probe( rank, tag, comm, &status );
 
-    MPI_Datatype mpitype = Generic_MPI_Datatype< T >::get();
+    MPI_Datatype mpitype = MPITraits< T >::getType();
 
     int count;
     MPI_Get_count( &status, mpitype, &count );
