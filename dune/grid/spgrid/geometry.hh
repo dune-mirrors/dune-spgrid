@@ -226,7 +226,8 @@ namespace Dune
   template< int mydim, int cdim, class Grid, class Impl >
   inline GeometryType SPBasicGeometry< mydim, cdim, Grid, Impl >::type () const
   {
-    return GeometryType( GeometryType::cube, mydimension );
+    typedef typename GenericGeometry::CubeTopology< mydimension >::type Topology;
+    return GeometryType( Topology() );
   }
 
 

@@ -37,6 +37,7 @@ namespace Dune
     typedef typename ReferenceCube::ctype ctype;
 
     static const int dimension = ReferenceCube::dimension;
+    static const int mydimension = dimension-1;
     static const int dimensionworld = dimension;
 
     typedef typename Traits::template Codim< 0 >::Entity Entity;
@@ -49,7 +50,7 @@ namespace Dune
 
     typedef SPEntity< 0, dimension, Grid > EntityImpl;
     typedef SPEntityPointer< 0, Grid > EntityPointerImpl;
-    typedef SPGeometry< dimension-1, dimension, Grid > GeometryImpl;
+    typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
 
   public:
     typedef typename EntityImpl::EntityInfo EntityInfo;
@@ -127,7 +128,8 @@ namespace Dune
 
     GeometryType type () const
     {
-      return GeometryType( GeometryType::cube, dimension-1 );
+      typedef typename GenericGeometry::CubeTopology< mydimension >::type Topology;
+      return GeometryType( Topology() );
     }
 
     int indexInInside () const

@@ -174,7 +174,11 @@ namespace Dune
   inline void SPIndexSet< Grid >::makeGeomTypes ()
   {
     for( int codim = 0; codim <= dimension; ++codim )
-      geomTypes_[ codim ].push_back( GeometryType( GeometryType::cube, dimension-codim ) );
+    {
+      GeometryType type;
+      type.makeCube( dimension - codim );
+      geomTypes_[ codim ].push_back( type );
+    }
   }
 
 
