@@ -9,6 +9,7 @@
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
+#include <dune/grid/spgrid/entityseed.hh>
 #include <dune/grid/spgrid/gridview.hh>
 #include <dune/grid/spgrid/hierarchiciterator.hh>
 #include <dune/grid/spgrid/idset.hh>
@@ -108,9 +109,10 @@ namespace Dune
 
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
 
+        typedef SPEntitySeed< codim, const Grid > EntitySeed;
+
         typedef SPEntityPointer< codim, const Grid > EntityPointerImpl;
         typedef Dune::EntityPointer< const Grid, EntityPointerImpl > EntityPointer;
-        typedef EntityPointer EntitySeed;
 
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPGeometry > Geometry;
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry >
@@ -440,6 +442,14 @@ namespace Dune
     }
 
     const CollectiveCommunication &comm () const;
+
+    template< class EntitySeed >
+    typename Traits::template Codim< EntitySeed::codimension >::EntityPointer
+    entityPointer ( const EntitySeed &seed ) const
+    {
+      typedef typename Traits::template Codim< EntitySeed::codimension >::EntityPointerImpl EntityPointerImpl;
+      return EntityPointerImpl( gridLevel( seed.level() ), seed.id(), seed.partitionNumber() );
+    }
 
     template< GrapeIOFileFormatType format >
     bool writeGrid ( const std::string &filename, const ctype &time ) const;

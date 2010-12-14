@@ -47,6 +47,7 @@ namespace Dune
     static const int codimension = EntityInfo::codimension;
     static const int mydimension = EntityInfo::mydimension;
 
+    typedef typename Traits::template Codim< codim >::EntitySeed EntitySeed;
     typedef typename Traits::template Codim< codim >::Geometry Geometry;
     typedef typename Traits::template Codim< codim >::LocalGeometry LocalGeometry;
 
@@ -97,6 +98,11 @@ namespace Dune
     bool equals ( const This &other ) const
     {
       return entityInfo().equals( other.entityInfo() );
+    }
+
+    EntitySeed seed () const
+    {
+      return EntitySeed( gridLevel().level(), entityInfo().id(), entityInfo().partitionNumber() );
     }
   
     const EntityInfo &entityInfo () const
