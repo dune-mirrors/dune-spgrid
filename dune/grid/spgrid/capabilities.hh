@@ -3,6 +3,8 @@
 
 #include <dune/grid/common/capabilities.hh>
 
+#include <dune/grid/genericgeometry/topologytypes.hh>
+
 #include <dune/grid/extensions/superentityiterator.hh>
 
 #include <dune/grid/spgrid/refinement.hh>
@@ -23,6 +25,13 @@ namespace Dune
 
   namespace Capabilities
   {
+
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct hasSingleGeometryType< SPGrid< ct, dim, strategy, Comm > >
+    {
+      static const bool v = true;
+      static const unsigned int topologyId = GenericGeometry :: CubeTopology< dim > :: type :: id ;
+    };
 
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
     struct hasEntity< SPGrid< ct, dim, strategy, Comm >, codim >
