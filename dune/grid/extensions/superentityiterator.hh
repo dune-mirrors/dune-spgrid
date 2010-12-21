@@ -11,10 +11,10 @@ namespace Dune
 
   template< class Grid, template< class > class SuperEntityIteratorImp >
   class SuperEntityIterator
-  : public EntityPointer< Grid, SuperEntityIteratorImp< Grid > >
+  : public EntityIterator< 0, Grid, SuperEntityIteratorImp< Grid > >
   {
     typedef SuperEntityIterator< Grid, SuperEntityIteratorImp > This;
-    typedef EntityPointer< Grid, SuperEntityIteratorImp< Grid > > Base;
+    typedef EntityIterator< 0, Grid, SuperEntityIteratorImp< Grid > > Base;
 
     typedef SuperEntityIteratorImp< Grid > Implementation;
 
@@ -47,7 +47,7 @@ namespace Dune
   inline const typename SuperEntityIterator< Grid, SuperEntityIteratorImp >::This &
   SuperEntityIterator< Grid, SuperEntityIteratorImp >::operator++ ()
   {
-    realIterator.increment();
+    ++static_cast< Base & >( *this );
     return *this;
   }
 
