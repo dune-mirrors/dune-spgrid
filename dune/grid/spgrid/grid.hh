@@ -89,7 +89,7 @@ namespace Dune
         LevelIntersectionIterator;
       typedef LevelIntersectionIterator LeafIntersectionIterator;
 
-      typedef Dune::HierarchicIterator< const Grid, SPHierarchicIterator >
+      typedef Dune::EntityIterator< 0, const Grid, SPHierarchicIterator< const Grid > >
         HierarchicIterator;
 
       typedef SPIndexSet< const Grid > LevelIndexSet;
@@ -121,9 +121,9 @@ namespace Dune
         template< PartitionIteratorType pitype >
         struct Partition
         {
-          typedef Dune::LevelIterator< codim, pitype, const Grid, SPIterator >
+          typedef Dune::EntityIterator< codim, const Grid, SPIterator< codim, pitype, const Grid > >
             LevelIterator;
-          typedef Dune::LeafIterator< codim, pitype, const Grid, SPIterator >
+          typedef Dune::EntityIterator< codim, const Grid, SPIterator< codim, pitype, const Grid > >
             LeafIterator;
         };
 
@@ -134,10 +134,8 @@ namespace Dune
       template< PartitionIteratorType pitype >
       struct Partition
       {
-        typedef Dune::GridView< SPLevelGridViewTraits< const Grid, pitype > >
-          LevelGridView;
-        typedef Dune::GridView< SPLeafGridViewTraits< const Grid, pitype > >
-          LeafGridView;
+        typedef Dune::GridView< SPGridViewTraits< const Grid, pitype > > LevelGridView;
+        typedef Dune::GridView< SPGridViewTraits< const Grid, pitype > > LeafGridView;
       };
     };
   };

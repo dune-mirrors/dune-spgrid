@@ -26,13 +26,13 @@ namespace Dune
 
 
 
-  // SPLevelGridViewTraits
-  // ---------------------
+  // SPGridViewTraits
+  // ----------------
 
   template< class G, PartitionIteratorType pitype >
-  struct SPLevelGridViewTraits
+  struct SPGridViewTraits
   {
-    typedef SPGridView< SPLevelGridViewTraits< G, pitype > > GridViewImp;
+    typedef SPGridView< SPGridViewTraits< G, pitype > > GridViewImp;
 
     typedef typename remove_const< G >::type Grid;
 
@@ -43,7 +43,7 @@ namespace Dune
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
-    static const bool conforming = Capabilities::isLevelwiseConforming< Grid >::v;
+    static const bool conforming = true;
 
     template< int codim >
     struct Codim
@@ -57,53 +57,8 @@ namespace Dune
       template< PartitionIteratorType pit >
       struct Partition
       {
-        typedef Dune::LevelIterator< codim, pit, const Grid, SPIterator > Iterator;
         typedef SPIterator< codim, pit, const Grid > IteratorImpl;
-      };
-
-      typedef typename Partition< pitype >::Iterator Iterator;
-      typedef typename Partition< pitype >::IteratorImpl IteratorImpl;
-
-      static const bool hasSuperEntityIterator = true;
-      typedef Dune::SuperEntityIterator< const Grid, SPSuperEntityIterator > SuperEntityIterator;
-    };
-  };
-
-
-
-  // SPLeafGridViewTraits
-  // --------------------
-
-  template< class G, PartitionIteratorType pitype >
-  struct SPLeafGridViewTraits
-  {
-    typedef SPGridView< SPLeafGridViewTraits< G, pitype > > GridViewImp;
-
-    typedef typename remove_const< G >::type Grid;
-
-    typedef SPIndexSet< const Grid > IndexSet;
-    typedef Dune::Intersection< const Grid, SPIntersection > Intersection;
-    typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator, SPIntersection >
-      IntersectionIterator;
-
-    typedef typename Grid::CollectiveCommunication CollectiveCommunication;
-
-    static const bool conforming = Capabilities::isLeafwiseConforming< Grid >::v;
-
-    template< int codim >
-    struct Codim
-    {
-      typedef typename Grid::Traits::template Codim< codim >::Entity Entity;
-      typedef typename Grid::Traits::template Codim< codim >::EntityPointer EntityPointer;
-
-      typedef typename Grid::Traits::template Codim< codim >::Geometry Geometry;
-      typedef typename Grid::Traits::template Codim< codim >::LocalGeometry LocalGeometry;
-
-      template< PartitionIteratorType pit >
-      struct Partition
-      {
-        typedef Dune::LeafIterator< codim, pit, const Grid, SPIterator > Iterator;
-        typedef SPIterator< codim, pit, const Grid > IteratorImpl;
+        typedef Dune::EntityIterator< codim, const Grid, IteratorImpl > Iterator;
       };
 
       typedef typename Partition< pitype >::Iterator Iterator;
