@@ -1,7 +1,7 @@
 #ifndef DUNE_GRID_SUPERENTITYITERATOR_HH
 #define DUNE_GRID_SUPERENTITYITERATOR_HH
 
-#include <dune/grid/common/entitypointer.hh>
+#include <dune/grid/common/entityiterator.hh>
 
 namespace Dune
 {
