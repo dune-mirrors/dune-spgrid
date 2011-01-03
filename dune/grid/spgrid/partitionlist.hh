@@ -1,8 +1,6 @@
 #ifndef DUNE_SPGRID_PARTITIONLIST_HH
 #define DUNE_SPGRID_PARTITIONLIST_HH
 
-#include <dune/common/smallobject.hh>
-
 #include <dune/grid/spgrid/partition.hh>
 
 namespace Dune
@@ -70,7 +68,6 @@ namespace Dune
 
   template< int dim >
   struct SPPartitionList< dim >::Node
-  : public SmallObject
   {
     explicit Node ( const Partition &partition )
     : partition_( partition ),
