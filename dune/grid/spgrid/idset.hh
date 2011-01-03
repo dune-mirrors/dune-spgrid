@@ -62,7 +62,7 @@ namespace Dune
         = Grid::getRealImplementation( entity ).entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
       MultiIndex sid = entityInfo.id();
-      sid +=  gridLevel.referenceCube().subId( codim, i );
+      sid += gridLevel.referenceCube().subId( codim, i );
       return id( gridLevel, sid );
     }
   };
