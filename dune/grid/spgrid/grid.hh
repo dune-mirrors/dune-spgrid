@@ -141,11 +141,11 @@ namespace Dune
 
 
   /** \class SPGrid
-   *  \brief structured, parallel DUNE grid
+   *  \brief structured, parallel <a href="http://www.dune-project.org">%DUNE</a> grid
    *
    *  \tparam  ct        coordinate type (e.g., double)
    *  \tparam  dim       dimension of the grid
-   *  \tparam  strategy  refinement strategy (default is red refinement)
+   *  \tparam  strategy  refinement strategy (default is \ref SPRefinementStrategy "SPIsotropicRefinement")
    *  \tparam  Comm      type of communicator (default depends on HAVE_MPI)
    */
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
