@@ -3,10 +3,11 @@
 
 \section introduction Introduction
 
-The DUNE module <tt>dune-spgrid</tt> provides a structured, parallel grid
-(\ref Dune::SPGrid "SPGrid"). Though the <tt>dune-grid</tt> module already
-contains two structured grids, <tt>SGrid</tt> and <tt>YaspGrid</tt>, both lack
-several important features (see \ref features for details).
+The <a href="http://www.dune-project.org">%DUNE</a> module <tt>dune-spgrid</tt>
+provides a structured, parallel grid (\ref Dune::SPGrid "SPGrid").
+Though the <tt>dune-grid</tt> module already contains two structured grids,
+<tt>SGrid</tt> and <tt>YaspGrid</tt>, both lack several important features
+(see \ref features for details).
 
 
 \section features Features
