@@ -97,10 +97,8 @@ namespace Dune
 
       typedef SPGlobalIdSet< const Grid > GlobalIdSet;
       typedef SPLocalIdSet< const Grid > LocalIdSet;
-      //typedef typename GlobalIdSet::IdType GlobalIdType;
-      //typedef typename LocalIdSet::IdType LocalIdType;
-      typedef unsigned int GlobalIdType;
-      typedef unsigned int LocalIdType;
+      typedef unsigned long GlobalIdType;
+      typedef unsigned long LocalIdType;
 
       template< int codim >
       struct Codim

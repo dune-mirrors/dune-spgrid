@@ -14,10 +14,10 @@ namespace Dune
 
   template< class Grid >
   class SPLocalIdSet
-  : public IdSet< Grid, SPLocalIdSet< Grid >, unsigned int >
+  : public IdSet< Grid, SPLocalIdSet< Grid >, unsigned long >
   {
     typedef SPLocalIdSet< Grid > This;
-    typedef IdSet< Grid, This, unsigned int > Base;
+    typedef IdSet< Grid, This, unsigned long > Base;
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
@@ -38,6 +38,8 @@ namespace Dune
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::Mesh Mesh;
+
+    static const int levelShift = 8*sizeof( IdType ) - 8;
 
     IdType id ( const GridLevel &gridLevel, const MultiIndex &id ) const;
 
@@ -75,15 +77,15 @@ namespace Dune
   {
     const Mesh &globalMesh = gridLevel.globalMesh();
     const unsigned int level = gridLevel.level();
-    
+
     IdType index = 0;
     IdType factor = 1;
     for( int i = 0; i < dimension; ++i )
     {
-      index += id[ i ] * factor;
-      factor *= 2*globalMesh.width( i ) + 1;
+      index += IdType( id[ i ] ) * factor;
+      factor *= IdType( 2*globalMesh.width( i ) + 1 );
     }
-    return index | (level << 26);
+    return index | (IdType( level ) << levelShift);
   }
 
 
