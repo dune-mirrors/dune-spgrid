@@ -13,7 +13,6 @@ Parallelization:
  * support OpenMP parallelized iterators
 
 Id Sets:
- * id set needs to return the same id for each copy of a vertex
  * adapt local / global id set to partitioning
 
 Extended Iterators:

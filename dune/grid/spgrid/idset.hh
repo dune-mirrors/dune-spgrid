@@ -41,7 +41,7 @@ namespace Dune
 
     static const int levelShift = 8*sizeof( IdType ) - 8;
 
-    IdType id ( const GridLevel &gridLevel, const MultiIndex &id ) const;
+    IdType computeId ( const GridLevel &gridLevel, const MultiIndex &id ) const;
 
   public:
     template< class Entity >
@@ -55,7 +55,7 @@ namespace Dune
     {
       const typename Codim< codim >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
-      return id( entityInfo.gridLevel(), entityInfo.id() );
+      return computeId( entityInfo.gridLevel(), entityInfo.id() );
     }
 
     IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const
@@ -65,7 +65,7 @@ namespace Dune
       const GridLevel &gridLevel = entityInfo.gridLevel();
       MultiIndex sid = entityInfo.id();
       sid += gridLevel.referenceCube().subId( codim, i );
-      return id( gridLevel, sid );
+      return computeId( gridLevel, sid );
     }
   };
 
@@ -73,10 +73,18 @@ namespace Dune
   template< class Grid >
   typename SPLocalIdSet< Grid >::IdType
   inline SPLocalIdSet< Grid >
-    ::id ( const GridLevel &gridLevel, const MultiIndex &id ) const
+    ::computeId ( const GridLevel &gridLevel, const MultiIndex &id ) const
   {
-    const Mesh &globalMesh = gridLevel.globalMesh();
     const unsigned int level = gridLevel.level();
+    if( (level > 0) && gridLevel.refinement().isCopy( id ) )
+    {
+      const Grid &grid = gridLevel.grid();
+      MultiIndex fatherId( id );
+      gridLevel.refinement().father( fatherId );
+      return computeId( grid.gridLevel( level-1 ), fatherId );
+    }
+
+    const Mesh &globalMesh = gridLevel.globalMesh();
 
     IdType index = 0;
     IdType factor = 1;

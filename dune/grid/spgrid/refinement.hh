@@ -205,8 +205,8 @@ namespace Dune
 
 
 
-  // SPBasicRefinement (for SPIsotropicRefinement)
-  // ---------------------------------------------
+  // SPDefaultRefinement
+  // -------------------
 
   template< int dim, SPRefinementStrategy strategy >
   struct SPDefaultRefinement
@@ -239,10 +239,7 @@ namespace Dune
     void father ( MultiIndex &id ) const
     {
       for( int i = 0; i < dimension; ++i )
-      {
-        assert( (id[ i ] & 1) != 0 );
-        id[ i ] = (id[ i ] / factor( i )) | 1;
-      }
+        id[ i ] = ((id[ i ] / factor( i )) & ~1) | (id[ i ] & 1);
     }
 
     void child ( MultiIndex &id, unsigned int index ) const
@@ -310,6 +307,14 @@ namespace Dune
         index /= alpha;
       }
       return origin;
+    }
+
+    bool isCopy ( const MultiIndex id ) const
+    {
+      bool copy = true;
+      for( int i = 0; i < dimension; ++i )
+        copy &= (factor( i ) == 1) | ((id[ i ] & 3) == 0);
+      return copy;
     }
 
     const Policy &policy () const
@@ -434,7 +439,7 @@ namespace Dune
     {
       const int dir = policy().dir_;
       assert( dir >= 0 );
-      id[ dir ] = (id[ dir ] / 2) | 1;
+      id[ dir ] = ((id[ dir ] / 2) & ~1) | (id[ dir ] & 1);
     }
 
     void child ( MultiIndex &id, unsigned int index ) const
@@ -467,6 +472,13 @@ namespace Dune
       assert( dir >= 0 );
       id[ dir ] ^= 2;
       return ((id[ dir ] & 2) != 0);
+    }
+
+    bool isCopy ( const MultiIndex id ) const
+    {
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      return ((id[ dir ] & 3) == 0);
     }
 
     static std::string type () { return "bisection"; }
