@@ -3,6 +3,11 @@
 
 #include <limits>
 
+/** \file
+ *  \author Martin Nolte
+ *  \brief  topology of a Cartesian grid
+ */
+
 namespace Dune
 {
 
@@ -11,6 +16,11 @@ namespace Dune
 
   /** \class SPTopology
    *  \brief description of the grid's topology
+   *
+   *  The topology of a Cartesian grid is a set of cubes (called nodes, here)
+   *  and their connectivity.
+   *
+   *  \note Currently, only 1 node is supported.
    *
    *  \tparam  dim  dimension of the grid
    */
@@ -23,6 +33,7 @@ namespace Dune
     /** \brief dimension of the domain */
     static const int dimension = dim;
 
+    /** \brief number of faces of a cube */
     static const int numFaces = 2*dimension;
 
     /** \brief constructor
@@ -38,20 +49,43 @@ namespace Dune
 
     const This &operator= ( const This &other );
 
+    /** \brief number of cubes forming this topology */
     unsigned int numNodes () const { return data_[ 0 ]; }
 
+    /** \brief check whether a node has a neighbor over a face
+     *
+     *  \param[in]  node  index of the node
+     *  \param[in]  face  number of the face
+     *
+     *  \returns true, if there is a neighbor
+     */
     bool hasNeighbor ( const unsigned int node, const int face ) const;
+
+    /** \brief obtain neighbor of a node over a face
+     *
+     *  \param[in]  node  index of the node
+     *  \param[in]  face  number of the face
+     *
+     *  \note The neighboring node will have the given node as neighbor over
+     *        the opposite face.
+     *
+     *  \returns the index of the neighboring node
+     */
     unsigned int neighbor ( const unsigned int node, const int face ) const;
 
     /** \brief determine whether a direction is periodic
      *
      *  \param[in]  i  direction (0 <= i < dimension)
      *
+     *  \note This method only makes sense in case of a single node
+     *
      *  \returns true, if direction i is periodic
      */
     bool periodic ( const int i ) const;
 
     /** \brief obtain the periodicity bit field
+     *
+     *  \note This method only makes sense in case of a single node
      *
      *  \returns the bitfield specifying which directions are periodic
      */

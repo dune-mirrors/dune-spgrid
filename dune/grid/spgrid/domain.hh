@@ -5,6 +5,11 @@
 #include <dune/grid/spgrid/topology.hh>
 #include <dune/grid/spgrid/refinement.hh>
 
+/** \file
+ *  \auther Martin Nolte
+ *  \brief  description of computational domain
+ */
+
 namespace Dune
 {
 
