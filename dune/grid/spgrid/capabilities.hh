@@ -23,35 +23,66 @@ namespace Dune
   // Capabilities
   // ------------
 
+  /** \brief namespace containing all capability */
   namespace Capabilities
   {
 
+    /** \brief Do elements of a grid always have the same geometry type?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct hasSingleGeometryType< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief all elements in \ref Dune::SPGrid "SPGrid" have the same
+       *         geometry type */
       static const bool v = true;
-      static const unsigned int topologyId = GenericGeometry :: CubeTopology< dim > :: type :: id ;
+      /** \brief \ref Dune::SPGrid "SPGrid" has only cube elements */
+      static const unsigned int topologyId = GenericGeometry::CubeTopology< dim >::type::id;
     };
 
+    /** \brief Does a grid implement entities of a codimension?
+     *
+     *  \tparam  Grid   grid for which the information is desired
+     *  \tparam  codim  codimension in question
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
     struct hasEntity< SPGrid< ct, dim, strategy, Comm >, codim >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" implements entities for all
+       *         codimensions */
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
 #if HAVE_MPI
+    /** \brief Does a grid support parallel programs?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy >
     struct isParallel< SPGrid< ct, dim, strategy, MPI_Comm > >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" with MPI_Comm supports
+       *         parallelism */
       static const bool v = true;
     };
 
+    /** \brief Can a parallel grid communicate on a given codimension?
+     *
+     *  \tparam  Grid   grid for which the information is desired
+     *  \tparam  codim  codimension in question
+     *
+     *  \note In order to communicate on a given codimension, the grid has to
+     *        implement entities for that codimension.
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, int codim >
     struct canCommunicate< SPGrid< ct, dim, strategy, MPI_Comm >, codim >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" with MPI_Comm can communicate on
+       *         all codimensions */
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
-#endif
+#endif // #if HAVE_MPI
 
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct isLevelwiseConforming< SPGrid< ct, dim, strategy, Comm > >

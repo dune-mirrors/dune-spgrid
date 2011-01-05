@@ -6,7 +6,7 @@
 #include <dune/grid/spgrid/refinement.hh>
 
 /** \file
- *  \auther Martin Nolte
+ *  \author Martin Nolte
  *  \brief  description of computational domain
  */
 
