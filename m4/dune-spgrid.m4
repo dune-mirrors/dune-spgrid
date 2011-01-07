@@ -1,4 +1,5 @@
 AC_DEFUN([DUNE_SPGRID_CHECKS],[
+  AC_REQUIRE([DUNE_RESOLVED_ABS_TOPSRCDIR])
   DUNE_DEFINE_GRIDTYPE([SPGRID],[GRIDDIM == WORLDDIM],[Dune::SPGrid< double, dimgrid >],[dune/grid/spgrid.hh],[dune/grid/spgrid/dgfparser.hh])
   DUNE_DEFINE_GRIDTYPE([SPGRID_ISOTROPIC],[GRIDDIM == WORLDDIM],[Dune::SPGrid< double, dimgrid, SPIsotropicRefinement >],[dune/grid/spgrid.hh],[dune/grid/spgrid/dgfparser.hh])
   DUNE_DEFINE_GRIDTYPE([SPGRID_ANISOTROPIC],[GRIDDIM == WORLDDIM],[Dune::SPGrid< double, dimgrid, SPAnisotropicRefinement >],[dune/grid/spgrid.hh],[dune/grid/spgrid/dgfparser.hh])
