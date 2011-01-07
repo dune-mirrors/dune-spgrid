@@ -3,6 +3,11 @@
 
 #include <dune/grid/common/entityiterator.hh>
 
+/** \file
+ *  \author Martin Nolte
+ *  \brief  interface classes for superentity iterators
+ */
+
 namespace Dune
 {
 
@@ -63,12 +68,19 @@ namespace Dune
   // Extensions
   // ----------
 
+  /** \brief namespace containing capabilities for extensions */
   namespace Extensions
   {
 
+    /** \brief Does a grid support superentity iterators of a codimension?
+     *
+     *  \tparam  Grid   grid for which the information is desired
+     *  \tparam  codim  codimension in question
+     */
     template< class Grid, int codim >
     struct SuperEntityIterator
     {
+      /** \brief by default, a grid does not support superentity iterators */
       static const bool v = false;
     };
 

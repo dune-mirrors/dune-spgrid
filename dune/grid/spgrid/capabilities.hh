@@ -9,6 +9,11 @@
 
 #include <dune/grid/spgrid/refinement.hh>
 
+/** \file
+ *  \author Martin Nolte
+ *  \brief  capabilities for \ref Dune::SPGrid "SPGrid"
+ */
+
 namespace Dune
 {
 
@@ -23,7 +28,7 @@ namespace Dune
   // Capabilities
   // ------------
 
-  /** \brief namespace containing all capability */
+  /** \brief namespace containing all capabilities */
   namespace Capabilities
   {
 
@@ -84,33 +89,58 @@ namespace Dune
     };
 #endif // #if HAVE_MPI
 
+    /** \brief Are all levels of a grid always conform?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct isLevelwiseConforming< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief All levels of a \ref Dune::SPGrid "SPGrid" are always conform */
       static const bool v = true;
     };
 
+    /** \brief Is the leaf level of a grid always conform?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct isLeafwiseConforming< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief The leaf level of a \ref Dune::SPGrid "SPGrid" are always conform */
       static const bool v = true;
     };
 
+    /** \brief Does a grid provide backup and restore facilities?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct hasBackupRestoreFacilities< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" provides backup and restore facilities */
       static const bool v = true;
     };
 
+    /** \brief Is a grid implementation thread safe?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct threadSafe< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" is not thread safe */
       static const bool v = false;
     };
 
+    /** \brief Is a grid implementation thread safe while not being modified?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct viewThreadSafe< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" is not thread safe */
       static const bool v = false;
     };
 
@@ -132,9 +162,16 @@ namespace Dune
     template< class Grid >
     struct supportsCallbackAdaptation;
 
+    /** Does a grid implementation support callback adaptation?
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     *
+     *  \note This is not a standard dune-grid capability.
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
     struct supportsCallbackAdaptation< SPGrid< ct, dim, strategy, Comm > >
     {
+      /** \brief \ref Dune::SPGrid "SPGrid" supports callback adaptation */
       static const bool v = true;
     };
 
@@ -148,10 +185,17 @@ namespace Dune
   namespace Extensions
   {
 
+    /** \brief Does a grid support superentity iterators of a codimension?
+     *
+     *  \tparam  Grid   grid for which the information is desired
+     *  \tparam  codim  codimension in question
+     */
     template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
     struct SuperEntityIterator< SPGrid< ct, dim, strategy, Comm >, codim >
     {
-      static const bool v = true;
+      /** \brief \ref Dune::SPGrid "SPGrid" supports superentity iterators for all
+       *         codimensions */
+      static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
   }
