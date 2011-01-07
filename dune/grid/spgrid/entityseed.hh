@@ -29,6 +29,7 @@ namespace Dune
     /** \brief type of grid this entity seed belongs to */
     typedef typename remove_const< Grd >::type Grid;
 
+    /** \internal \brief type of reference cube */
     typedef typename Grid::Traits::ReferenceCube ReferenceCube;
 
     /** \brief dimension of the grid */
@@ -43,14 +44,14 @@ namespace Dune
     /** \brief type of the seeded entity */
     typedef typename Grid::Traits::template Codim< codimension >::Entity Entity;
 
+    /** \internal \brief type of multi index */
     typedef typename ReferenceCube::MultiIndex MultiIndex;
 
-    /** \brief constructor
-     *
-     *  \note This constructor is an implementational detail.
+    /** \internal
+     *  \brief constructor
      *
      *  \param[in]  level            level of the seeded entity
-     *  \param[in]  id               internal id of the seeded entity
+     *  \param[in]  id               multi index of the seeded entity
      *  \param[in]  partitionNumber  number of the partition, the seeded entity
      *                               belongs to
      */
@@ -58,9 +59,8 @@ namespace Dune
     : level_( level ), id_( id ), partitionNumber_( partitionNumber )
     {}
 
-    /** \brief obtain level of the seeded entity
-     *
-     *  \note This method is an implementational detail.
+    /** \internal
+     *  \brief obtain level of the seeded entity
      *
      *  \returns the level of the seeded entity
      */
@@ -69,20 +69,18 @@ namespace Dune
       return level_;
     }
 
-    /** \brief obtain the internal id of the seeded entity
+    /** \internal
+     *  \brief obtain the multi index of the seeded entity
      * 
-     *  \note This method is an implementational detail.
-     *
-     *  \returns the internal id of the seeded entity
+     *  \returns the multi index of the seeded entity
      */
     MultiIndex id () const
     {
       return id_;
     }
 
-    /** \brief obtain number of the partition, the seeded entity belongs to
-     *
-     *  \note This method is an implementational detail.
+    /** \internal
+     *  \brief obtain number of the partition, the seeded entity belongs to
      *
      *  \returns the number of the partition, the seeded entity belongs to
      */
