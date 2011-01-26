@@ -85,6 +85,11 @@ namespace Dune
     int shift[ dimension ];
     int dir[ dimension ];
     unsigned int openOverlap = 0;
+
+    // initialize shift
+    for( int i = 0; i < dimension; ++i )
+      shift[ i ] = 0;
+
     for( int i = 0; i < dimension; ++i )
     {
       openOverlap |= (overlap[ i ] > 0 ? (1 << i) : 0);
@@ -101,7 +106,6 @@ namespace Dune
         continue;
       }
 
-      shift[ n ] = 0;
       if( overlapMesh.begin()[ i ] < globalMesh.begin()[ i ] )
         shift[ n ] += globalWidth[ i ];
       if( overlapMesh.end()[ i ] > globalMesh.end()[ i ] )
