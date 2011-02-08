@@ -46,6 +46,26 @@ namespace Dune
       static const unsigned int topologyId = GenericGeometry::CubeTopology< dim >::type::id;
     };
 
+    /** \brief Is the grid Cartesian?
+     *
+     *  Cartesian grids satisfy the following properties:
+     *  - all geometries are affine
+     *  - The unit outer normal can be computed by the following code:
+     *  \code
+     *  FieldVector< ctype, dim > n( 0 );
+     *  n[ face / 2 ] = ctype( 2*(face % 2) - 1 );
+     *  \endcode
+     *  .
+     *
+     *  \tparam  Grid  grid for which the information is desired
+     */
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+    struct isCartesian< SPGrid< ct, dim, strategy, Comm > >
+    {
+      /** \brief \ref Dune::SPGrid "SPGrid" is a Cartesian grid */
+      static const bool v = true;
+    };
+
     /** \brief Does a grid implement entities of a codimension?
      *
      *  \tparam  Grid   grid for which the information is desired
