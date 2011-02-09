@@ -24,6 +24,15 @@ namespace Dune
   // SPIntersection
   // --------------
 
+  /** \class SPIntersection
+   *
+   *  \tparam  Grid  type of the \ref Dune::SPGrid "SPGrid" this intersection
+   *                 belongs to
+   *
+   *  \note The SPIntersection stores a pointer to the inside entity. It is
+   *        assumed that this pointer remains valid during the entire life
+   *        time of the intersection.
+   */
   template< class Grid >
   class SPIntersection
   {
