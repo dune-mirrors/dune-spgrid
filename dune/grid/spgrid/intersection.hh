@@ -56,7 +56,6 @@ namespace Dune
     typedef typename Traits::template Codim< 1 >::LocalGeometry LocalGeometry;
 
   private:
-
     typedef SPEntity< 0, dimension, Grid > EntityImpl;
     typedef SPEntityPointer< 0, Grid > EntityPointerImpl;
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
@@ -78,7 +77,7 @@ namespace Dune
   public:
     SPIntersection ( const EntityImpl &entityImpl, const int face )
     : inside_( &entityImpl ),
-      geometry_( GeometryImpl( entityImpl.gridLevel()) )
+      geometry_( GeometryImpl( entityImpl.gridLevel() ) )
     {
       setFace( face );
     }
@@ -110,7 +109,8 @@ namespace Dune
 
     EntityPointer inside () const
     {
-      return EntityPointer( *inside_ );
+      //return EntityPointer( *inside_ );
+      return EntityPointer( entityInfo() );
     }
 
     EntityPointer outside () const;
@@ -173,12 +173,12 @@ namespace Dune
 
     bool equals ( const This &other ) const
     {
-      return (face_ == other.face_) && inside_->equals( *other.inside_ );
+      return (face_ == other.face_) && entityInfo().equals( other.entityInfo() );
     }
 
     const GridLevel &gridLevel () const
     {
-      return inside_->gridLevel();
+      return entityInfo().gridLevel();
     }
 
     void setFace ( const int face )
@@ -187,15 +187,20 @@ namespace Dune
       face_ = face;
       if( face < ReferenceCube::numFaces )
       {
-        const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
+        const unsigned int partitionNumber = entityInfo().partitionNumber();
         MultiIndex &id = Grid::getRealImplementation( geometry_ ).entityInfo().id();
-        id = inside_->entityInfo().id();
+        id = entityInfo().id();
         id += gridLevel().referenceCube().subId( 1, face );
         Grid::getRealImplementation( geometry_ ).entityInfo().update( partitionNumber );
       }
     }
 
   private:
+    const EntityInfo &entityInfo () const
+    {
+      return inside_->entityInfo();
+    }
+
     const EntityImpl *inside_;
     int face_;
     Geometry geometry_;
@@ -210,7 +215,7 @@ namespace Dune
   inline bool SPIntersection< Grid >::boundary () const
   {
     const Mesh &globalMesh = gridLevel().globalMesh();
-    const MultiIndex &id = inside_->entityInfo().id();
+    const MultiIndex &id = entityInfo().id();
     const int i = face_ >> 1;
     const int j = 2*(face_ & 1) - 1;
     return (id[ i ] + j == 2*globalMesh.bound( face_ & 1 )[ i ]);
@@ -221,8 +226,8 @@ namespace Dune
   inline size_t SPIntersection< Grid >::boundarySegmentIndex () const
   {
     assert( boundary() );
-    const MultiIndex &id = inside_->entityInfo().id();
-    const unsigned int partitionNumber = inside_->entityInfo().partitionNumber();
+    const MultiIndex &id = entityInfo().id();
+    const unsigned int partitionNumber = entityInfo().partitionNumber();
     return gridLevel().boundaryIndex( id, partitionNumber, face_ );
   }
 
@@ -231,9 +236,9 @@ namespace Dune
   inline bool SPIntersection< Grid >::neighbor () const
   {
     const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
-    const Partition &partition = allPartition.partition( inside_->entityInfo().partitionNumber() );
+    const Partition &partition = allPartition.partition( entityInfo().partitionNumber() );
 
-    const MultiIndex &id = inside_->entityInfo().id();
+    const MultiIndex &id = entityInfo().id();
     const int i = face_ >> 1;
     const int j = 2*(face_ & 1) - 1;
     return (partition.hasNeighbor( face_ ) || (j*id[ i ] + 2 <= j*partition.bound( face_ & 1 )[ i ]));
@@ -245,9 +250,9 @@ namespace Dune
   SPIntersection< Grid >::outside () const
   {
     const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
-    const Partition &partition = allPartition.partition( inside_->entityInfo().partitionNumber() );
+    const Partition &partition = allPartition.partition( entityInfo().partitionNumber() );
 
-    MultiIndex id = inside_->entityInfo().id();
+    MultiIndex id = entityInfo().id();
     const int i = face_ >> 1;
     const int j = 2*(face_ & 1) - 1;
     id[ i ] += 2*j;
