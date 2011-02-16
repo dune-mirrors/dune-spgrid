@@ -100,7 +100,7 @@ namespace Dune
 
     int boundaryId () const
     {
-      return 1;
+      return (boundary() ? (indexInInside()+1) : 0);
     }
 
     size_t boundarySegmentIndex () const;
