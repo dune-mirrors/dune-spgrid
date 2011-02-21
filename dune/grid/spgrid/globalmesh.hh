@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_GLOBALMESH_HH
 #define DUNE_SPGRID_GLOBALMESH_HH
 
+#include <cmath>
+
 #include <dune/common/fvector.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
@@ -22,10 +24,21 @@ namespace Dune
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
 
-    explicit GlobalMesh ( const GlobalVector &h, const GlobalVector &origin = GlobalVector( 0 ) )
-    : h_( h ),
-      origin_( origin )
-    {}
+    explicit GlobalMesh ( const GlobalVector &h )
+    : origin_( 0 )
+    {
+      for( int i = 0; i < dimension; ++i )
+        h_[ i ] = std::abs( h[ i ] );
+    }
+
+    GlobalMesh ( const GlobalVector &h, const GlobalVector &origin )
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        h_[ i ] = std::abs( h[ i ] );
+        origin_[ i ] = origin[ i ] - std::floor( origin[ i ] / h_[ i ] ) * h_[ i ];
+      }
+    }
 
     GlobalVector coordinate ( const MultiIndex &id ) const
     {
@@ -33,6 +46,14 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
         coordinate[ i ] += (id[ i ] / 2) * h_[ i ];
       return coordinate;
+    }
+
+    MultiIndex id ( const GlobalVector &x )
+    {
+      MultiIndex id;
+      for( int i = 0; i < dimension; ++i )
+        id[ i ] = 2*std::round( x[ i ] / h_[ i ] );
+      return id;
     }
 
     bool equals ( const This &other, const ctype epsilon ) const
