@@ -35,6 +35,14 @@ namespace Dune
       return coordinate;
     }
 
+    bool equals ( const This &other, const ctype epsilon ) const
+    {
+      const ctype eps2 = epsilon*epsilon;
+      return ((h_ - other.h_).two_norm2() <= eps2) && ((origin_ - other.origin_).two_norm2() <= eps2);
+    }
+
+    const GlobalVector &origin () const { return origin_; }
+
     template< SPRefinementStrategy strategy >
     This refine ( const SPRefinement< dimension, strategy > &refinement ) const
     {
