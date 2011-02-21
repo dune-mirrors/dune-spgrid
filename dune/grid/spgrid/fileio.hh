@@ -39,11 +39,13 @@ namespace Dune
     int maxLevel;
     std::vector< RefinementPolicy > refinements;
 
+    bool write ( std::ostream &stream ) const;
     bool write ( const std::string &filename ) const;
+    bool read ( std::istream &stream, const std::string &info = "" );
     bool read ( const std::string &filename );
 
   private:
-    static std::string readLine ( std::istream &in, unsigned int *count = 0 );
+    static std::string readLine ( std::istream &stream, unsigned int *count = 0 );
   };
 
 
@@ -53,73 +55,72 @@ namespace Dune
 
   template< class ctype, int dim, SPRefinementStrategy strategy >
   inline bool
-  SPGridIOData< ctype, dim, strategy >::write ( const std::string &filename ) const
+  SPGridIOData< ctype, dim, strategy >::write ( std::ostream &stream ) const
   {
-    std::ofstream fileOut( filename.c_str() );
-    if( !fileOut )
-      return false;
-
     // write header
-    fileOut << "SPGrid";
-    fileOut << "  dimension=" << dim;
+    stream << "SPGrid";
+    stream << "  dimension=" << dim;
     const unsigned int versionMajor = SPGridVersion::major;
     const unsigned int versionMinor = SPGridVersion::minor;
-    fileOut << "  version=" << versionMajor << "." << versionMinor;
-    fileOut << std::endl << std::endl;
+    stream << "  version=" << versionMajor << "." << versionMinor;
+    stream << std::endl << std::endl;
 
     // write generic information
-    fileOut << "name " << name << std::endl;
-    fileOut << "time " << time << std::endl;
-    fileOut << std::endl;
+    stream << "name " << name << std::endl;
+    stream << "time " << time << std::endl;
+    stream << std::endl;
 
     // write domain information
-    fileOut << "domain";
+    stream << "domain";
     for( typename std::vector< Cube >::const_iterator it = cubes.begin(); it != cubes.end(); ++it )
-      fileOut << " " << *it;
-    fileOut << std::endl;
+      stream << " " << *it;
+    stream << std::endl;
 
-    fileOut << "periodic";
+    stream << "periodic";
     for( int i = 0; i < dim; ++i )
     {
       if( topology.periodic( i ) )
-        fileOut << " " << i;
+        stream << " " << i;
     }
-    fileOut << std::endl << std::endl;
+    stream << std::endl << std::endl;
 
     // write discretization information
-    fileOut << "cells " << cells << std::endl;
-    fileOut << "partitions " << partitions << std::endl;
-    fileOut << "overlap " << overlap << std::endl;
-    fileOut << std::endl;
+    stream << "cells " << cells << std::endl;
+    stream << "partitions " << partitions << std::endl;
+    stream << "overlap " << overlap << std::endl;
+    stream << std::endl;
 
     // write refinement information
-    fileOut << "maxLevel " << maxLevel << std::endl;
-    fileOut << "refinement " << Refinement::type() << std::endl;
-    fileOut << "refinements";
+    stream << "maxLevel " << maxLevel << std::endl;
+    stream << "refinement " << Refinement::type() << std::endl;
+    stream << "refinements";
     for( unsigned int i = 0; i < refinements.size(); ++i )
-      fileOut << " " << refinements[ i ];
-    fileOut << std::endl;
-
-    fileOut.close();
-    return true;
+      stream << " " << refinements[ i ];
+    stream << std::endl;
+    return bool( stream );
   }
 
 
   template< class ctype, int dim, SPRefinementStrategy strategy >
   inline bool
-  SPGridIOData< ctype, dim, strategy >::read ( const std::string &filename )
+  SPGridIOData< ctype, dim, strategy >::write ( const std::string &filename ) const
   {
-    std::ifstream fileIn( filename.c_str() );
-    if( !fileIn )
-      return false;
+    std::ofstream stream( filename.c_str() );
+    return (stream ? write( stream ) : false);
+  }
 
+
+  template< class ctype, int dim, SPRefinementStrategy strategy >
+  inline bool
+  SPGridIOData< ctype, dim, strategy >::read ( std::istream &stream, const std::string &info )
+  {
     unsigned int lineNr = 0;
-    std::string line = readLine( fileIn, &lineNr );
+    std::string line = readLine( stream, &lineNr );
     std::istringstream lineIn( line );
     lineIn >> match( std::string( "SPGrid" ) );
     if( lineIn.fail() )
     {
-      std::cerr << filename << "[ " << lineNr << " ]: 'SPGrid' expected." << std::endl;
+      std::cerr << info << "[ " << lineNr << " ]: 'SPGrid' expected." << std::endl;
       return false;
     }
 
@@ -141,7 +142,7 @@ namespace Dune
         valueIn >> vMajor >> match( '.' ) >> vMinor;
         if( SPGridVersion::later( vMajor, vMinor ) )
         {
-          std::cerr << filename << "[ " << lineNr << " ]: File was created by newer version of SPGrid." << std::endl;
+          std::cerr << info << "[ " << lineNr << " ]: File was created by newer version of SPGrid." << std::endl;
           return false;
         }
       }
@@ -149,19 +150,19 @@ namespace Dune
         valueIn >> fdim;
       else
       {
-        std::cerr << filename << "[ " << lineNr << " ]: Invalid tag: '" << key << "'." << std::endl;
+        std::cerr << info << "[ " << lineNr << " ]: Invalid tag: '" << key << "'." << std::endl;
         return false;
       }
       if( !valueIn )
       {
-        std::cerr << filename << "[ " << lineNr << " ]: Invalid value for tag '" << key << "'." << std::endl;
+        std::cerr << info << "[ " << lineNr << " ]: Invalid value for tag '" << key << "'." << std::endl;
         return false;
       }
     }
 
     if( fdim != dim )
     {
-      std::cerr << filename << "[ " << lineNr << " ]: File has wrong grid dimension." << std::endl;
+      std::cerr << info << "[ " << lineNr << " ]: File has wrong grid dimension." << std::endl;
       return false;
     }
 
@@ -180,7 +181,7 @@ namespace Dune
 
     while( true )
     {
-      std::string line = readLine( fileIn, &lineNr );
+      std::string line = readLine( stream, &lineNr );
       if( line.empty() )
         break;
       std::istringstream lineIn( line );
@@ -213,7 +214,7 @@ namespace Dune
           lineIn >> axis;
           if( (axis < 0) || (axis >= dim) )
           {
-            std::cerr << filename << "[ " << lineNr << " ]: Invalid periodic axis: " << axis << "." << std::endl;
+            std::cerr << info << "[ " << lineNr << " ]: Invalid periodic axis: " << axis << "." << std::endl;
             return false;
           }
           periodic |= (1 << axis);
@@ -253,19 +254,19 @@ namespace Dune
       }
       else
       {
-        std::cerr << filename << "[ " << lineNr << " ]: Invalid statement: '" << cmd << "'." << std::endl;
+        std::cerr << info << "[ " << lineNr << " ]: Invalid statement: '" << cmd << "'." << std::endl;
         return false;
       }
       if( lineIn.fail() )
       {
-        std::cerr << filename << "[ " << lineNr << " ]: Invalid arguments for '" << cmd << "'." << std::endl;
+        std::cerr << info << "[ " << lineNr << " ]: Invalid arguments for '" << cmd << "'." << std::endl;
         return false;
       }
     }
 
     if( flags != flagAll )
     {
-      std::cerr << filename << ": File misses required field." << std::endl;
+      std::cerr << info << ": File misses required field." << std::endl;
       return false;
     }
     return true;
@@ -273,13 +274,22 @@ namespace Dune
 
 
   template< class ctype, int dim, SPRefinementStrategy strategy >
+  inline bool
+  SPGridIOData< ctype, dim, strategy >::read ( const std::string &filename )
+  {
+    std::ifstream stream( filename.c_str() );
+    return (stream ? read( stream, filename ) : false);
+  }
+
+
+  template< class ctype, int dim, SPRefinementStrategy strategy >
   inline std::string
-  SPGridIOData< ctype, dim, strategy >::readLine ( std::istream &in, unsigned int *count )
+  SPGridIOData< ctype, dim, strategy >::readLine ( std::istream &stream, unsigned int *count )
   {
     std::string line;
-    while( line.empty() && !in.eof() )
+    while( line.empty() && !stream.eof() )
     {
-      std::getline( in, line );
+      std::getline( stream, line );
       if( count != 0 )
         ++(*count);
 
