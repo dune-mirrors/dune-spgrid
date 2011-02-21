@@ -33,35 +33,6 @@ namespace Dune
 
 
 
-  // SPCommunicationTraits
-  // ---------------------
-
-  template< class Comm >
-  struct SPCommunicationTraits
-  {
-    typedef Dune::CollectiveCommunication< Comm > CollectiveCommunication;
-
-    static CollectiveCommunication defaultComm ()
-    {
-      return CollectiveCommunication();
-    }
-  };
-
-#if HAVE_MPI
-  template<>
-  struct SPCommunicationTraits< MPI_Comm >
-  {
-    typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
-
-    static CollectiveCommunication defaultComm ()
-    {
-      return CollectiveCommunication( MPI_COMM_WORLD );
-    }
-  };
-#endif // #if HAVE_MPI
-
-
-
   // SPGridFamily
   // ------------
 

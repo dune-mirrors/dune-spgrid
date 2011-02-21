@@ -3,6 +3,8 @@
 
 #include <dune/common/fvector.hh>
 
+#include <dune/common/iostream.hh>
+
 namespace Dune
 {
 

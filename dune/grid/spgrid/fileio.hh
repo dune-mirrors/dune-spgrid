@@ -8,6 +8,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/exceptions.hh>
 
+#include <dune/grid/spgrid/cube.hh>
 #include <dune/grid/spgrid/topology.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
