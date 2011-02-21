@@ -27,26 +27,145 @@ namespace Dune
 
 
 
+  // SPGeometricGridLevel
+  // ----------------
+
+  template< class Grid >
+  class SPGeometricGridLevel
+  {
+    typedef SPGeometricGridLevel< Grid > This;
+
+  public:
+    typedef typename remove_const< Grid >::type::Traits Traits;
+
+    typedef typename Traits::ReferenceCube ReferenceCube;
+
+    typedef typename ReferenceCube::ctype ctype;
+    static const int dimension = ReferenceCube::dimension;
+
+    typedef typename ReferenceCube::GlobalVector GlobalVector;
+
+    static const unsigned int numDirections = ReferenceCube::numCorners;
+
+    template< int codim >
+    struct Codim
+    {
+      typedef SPReferenceCube< ctype, dimension-codim > ReferenceCube;
+      typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
+    };
+
+  private:
+    template< int codim >
+    struct BuildGeometryCache;
+    template< int codim >
+    struct DestroyGeometryCache;
+
+  public:
+    SPGeometricGridLevel ( const Grid &grid, const GlobalVector &h );
+    SPGeometricGridLevel ( const This &other );
+
+    ~SPGeometricGridLevel ();
+
+    const Grid &grid () const { return *grid_; }
+
+    const ReferenceCube &referenceCube () const { return grid().referenceCube(); }
+
+    template< int codim >
+    const typename Codim< codim >::ReferenceCube &
+    referenceCube () const { return grid().template referenceCube< codim >(); }
+
+    const GlobalVector &h () const { return h_; }
+
+    template< int codim >
+    const typename Codim< codim >::GeometryCache &
+    geometryCache ( const unsigned int dir ) const;
+
+    ctype faceVolume ( const int i ) const;
+    const GlobalVector &volumeNormal ( const int i ) const;
+
+  private:
+    void buildGeometry ();
+
+    const Grid *grid_;
+
+    GlobalVector h_;
+    void *geometryCache_[ numDirections ];
+    ctype faceVolume_[ ReferenceCube::numFaces ];
+    GlobalVector normal_[ ReferenceCube::numFaces ];
+  };
+
+
+
+  // SPGeometricGridLevel::BuildGeometryCache
+  // ------------------------------------
+
+  template< class Grid >
+  template< int codim >
+  struct SPGeometricGridLevel< Grid >::BuildGeometryCache
+  {
+    static void
+    apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
+    {
+      typedef typename Codim< codim >::GeometryCache GeometryCache;
+      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+      {
+        const int mydim = bitCount( dir );
+        if( mydim == dimension - codim )
+          geometryCache[ dir ] = new GeometryCache( h, dir );
+      }
+    }
+  };
+
+
+
+  // SPGeometricGridLevel::DestroyGeometryCache
+  // --------------------------------------
+
+  template< class Grid >
+  template< int codim >
+  struct SPGeometricGridLevel< Grid >::DestroyGeometryCache
+  {
+    static void
+    apply ( void *(&geometryCache)[ 1 << dimension ] )
+    {
+      typedef typename Codim< codim >::GeometryCache GeometryCache;
+      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+      {
+        const int mydim = bitCount( dir );
+        if( mydim == dimension - codim )
+        {
+          delete (GeometryCache *)geometryCache[ dir ];
+          geometryCache[ dir ] = 0;
+        }
+      }
+    }
+  };
+
+
+
   // SPGridLevel
   // -----------
 
   template< class Grid >
   class SPGridLevel
+  : public SPGeometricGridLevel< Grid >
   {
     typedef SPGridLevel< Grid > This;
+    typedef SPGeometricGridLevel< Grid > Base;
 
   public:
     typedef SPGridLevel< Grid > GridLevel;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename Base::Traits Traits;
+    typedef typename Base::ReferenceCube ReferenceCube;
+    typedef typename Base::ctype ctype;
 
-    typedef typename Traits::ReferenceCube ReferenceCube;
+    static const int dimension = Base::dimension;
+    static const unsigned int numDirections = Base::numDirections;
+
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Refinement Refinement;
     typedef typename Traits::RefinementPolicy RefinementPolicy;
-
-    typedef typename ReferenceCube::ctype ctype;
-    static const int dimension = ReferenceCube::dimension;
 
     typedef typename ReferenceCube::GlobalVector GlobalVector;
     typedef typename ReferenceCube::MultiIndex MultiIndex;
@@ -61,43 +180,24 @@ namespace Dune
 
     typedef typename Linkage::Interface CommInterface;
 
-    static const unsigned int numDirections = ReferenceCube::numCorners;
-
-    template< int codim >
-    struct Codim
-    {
-      typedef SPReferenceCube< ctype, dimension-codim > ReferenceCube;
-      typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
-    };
-
     typedef typename Traits::template Codim< 0 >::LocalGeometry LocalGeometry;
 
   private:
     typedef SPLocalGeometry< dimension, dimension, Grid > LocalGeometryImpl;
 
-    template< int codim >
-    struct BuildGeometryCache;
-    template< int codim >
-    struct DestroyGeometryCache;
-
   public:
     SPGridLevel ( const Grid &grid, const Decomposition &decomposition );
-
     SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy );
-
     SPGridLevel ( const This &other );
 
     ~SPGridLevel ();
 
-    const Grid &grid () const;
+    using Base::grid;
+    using Base::referenceCube;
 
-    const ReferenceCube &referenceCube () const { return grid().referenceCube(); }
-
-    template< int codim >
-    const typename Codim< codim >::ReferenceCube &
-    referenceCube () const { return grid().template referenceCube< codim >(); }
-
+    int level () const { return level_; }
     const Domain &domain () const { return domain_; }
+    const Refinement &refinement () const { return refinement_; }
 
     const Mesh &globalMesh () const;
     const Mesh &localMesh () const;
@@ -111,10 +211,6 @@ namespace Dune
 
     const CommInterface &commInterface ( const InterfaceType iftype ) const;
 
-    int level () const;
-
-    const GlobalVector &h () const;
-    const Refinement &refinement () const { return refinement_; }
     MultiIndex macroId ( const MultiIndex &id ) const;
 
     size_t boundaryIndex ( const MultiIndex &id,
@@ -123,25 +219,18 @@ namespace Dune
 
     const LocalGeometry &geometryInFather ( const MultiIndex &id ) const;
 
-    template< int codim >
-    const typename Codim< codim >::GeometryCache &
-    geometryCache ( const unsigned int dir ) const;
-
     int size () const;
 
-    ctype faceVolume ( const int i ) const;
-    const GlobalVector &volumeNormal ( const int i ) const;
-
   private:
-    void buildGeometry ();
+    void buildLocalGeometry ();
 
     static MultiIndex coarseMacroFactor ();
+    static GlobalVector meshWidth ( const Domain &domain, const Mesh &mesh );
 
     MultiIndex overlap () const;
 
-    const Grid *grid_;
-
     int level_;
+
     const Refinement refinement_;
     MultiIndex macroFactor_;
     Domain domain_;
@@ -150,12 +239,82 @@ namespace Dune
     PartitionPool partitionPool_;
     Linkage linkage_;
 
-    GlobalVector h_;
-    void *geometryCache_[ numDirections ];
     LocalGeometry **geometryInFather_;
-    ctype faceVolume_[ ReferenceCube::numFaces ];
-    GlobalVector normal_[ ReferenceCube::numFaces ];
   };
+
+
+
+  // Implementation of SPGeometricGridLevel
+  // ----------------------------------
+
+  template< class Grid >
+  inline SPGeometricGridLevel< Grid >
+    ::SPGeometricGridLevel ( const Grid &grid, const GlobalVector &h )
+  : grid_( &grid ),
+    h_( h )
+  {
+    buildGeometry();
+  }
+
+
+  template< class Grid >
+  inline SPGeometricGridLevel< Grid >::SPGeometricGridLevel ( const This &other )
+  : grid_( other.grid_ ),
+    h_( other.h_ )
+  {
+    buildGeometry();
+  }
+
+
+  template< class Grid >
+  inline SPGeometricGridLevel< Grid >::~SPGeometricGridLevel ()
+  {
+    ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
+  }
+
+
+  template< class Grid >
+  template< int codim >
+  inline const typename SPGeometricGridLevel< Grid >::template Codim< codim >::GeometryCache &
+  SPGeometricGridLevel< Grid >::geometryCache ( const unsigned int dir ) const
+  {
+    typedef typename Codim< codim >::GeometryCache GeometryCache;
+    assert( bitCount( dir ) == dimension - codim );
+    return *((const GeometryCache *)geometryCache_[ dir ]);
+  }
+
+
+  template< class Grid >
+  inline typename SPGeometricGridLevel< Grid >::ctype
+  SPGeometricGridLevel< Grid >::faceVolume ( const int i ) const
+  {
+    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
+    return faceVolume_[ i ];
+  }
+
+
+  template< class Grid >
+  inline const typename SPGeometricGridLevel< Grid >::GlobalVector &
+  SPGeometricGridLevel< Grid >::volumeNormal ( const int i ) const
+  {
+    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
+    return normal_[ i ];
+  }
+
+
+  template< class Grid >
+  inline void SPGeometricGridLevel< Grid >::buildGeometry ()
+  {
+    ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
+    
+    const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
+    for( int face = 0; face < ReferenceCube::numFaces; ++face )
+    {
+      normal_[ face ] = referenceCube().normal( face );
+      faceVolume_[ face ] = std::abs( volume / (normal_[ face ] * h_) );
+      normal_[ face ] *= faceVolume_[ face ];
+    }
+  }
 
 
 
@@ -165,7 +324,7 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >
     ::SPGridLevel ( const Grid &grid, const Decomposition &decomposition )
-  : grid_( &grid ),
+  : Base( grid, meshWidth( grid.domain(), decomposition.mesh() ) ),
     level_( 0 ),
     refinement_(),
     macroFactor_( coarseMacroFactor() ),
@@ -175,15 +334,15 @@ namespace Dune
     partitionPool_( localMesh_, decomposition.mesh(), overlap(), domain_.topology() ),
     linkage_( grid.comm().rank(), partitionPool_, decomposition_ )
   {
-    buildGeometry();
+    buildLocalGeometry();
   }
 
 
   template< class Grid >
   inline SPGridLevel< Grid >
     ::SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy )
-  : grid_( father.grid_ ),
-    level_( father.level_ + 1 ),
+  : Base( father.grid(), meshWidth( father.domain(), Refinement( father.refinement(), policy )( father.globalMesh() ) ) ),
+    level_( father.level() + 1 ),
     refinement_( father.refinement(), policy ),
     macroFactor_( father.macroFactor_ * refinement_ ),
     domain_( father.domain() ),
@@ -192,14 +351,13 @@ namespace Dune
     partitionPool_( localMesh_, refinement_( father.globalMesh() ), overlap(), domain_.topology() ),
     linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
   {
-    buildGeometry();
+    buildLocalGeometry();
   }
 
 
   template< class Grid >
   inline SPGridLevel< Grid >::SPGridLevel ( const This &other )
-  : grid_( other.grid_ ),
-    level_( other.level_ ),
+  : Base( other ),
     refinement_( other.refinement_ ),
     macroFactor_( other.macroFactor_ ),
     domain_( other.domain_ ),
@@ -208,31 +366,21 @@ namespace Dune
     partitionPool_( other.partitionPool_ ),
     linkage_( other.linkage_ )
   {
-    buildGeometry();
+    buildLocalGeometry();
   }
 
 
   template< class Grid >
   inline SPGridLevel< Grid >::~SPGridLevel ()
   {
-    if( geometryInFather_ != 0 )
+    if( geometryInFather_ )
     {
       unsigned int numChildren = refinement().numChildren();
       for( unsigned int index = 0; index < numChildren; ++index )
         delete geometryInFather_[ index ];
       delete geometryInFather_;
     }
-
-    ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
   }
-
-
-  template< class Grid >
-  inline const Grid &SPGridLevel< Grid >::grid () const
-  {
-    return *grid_;
-  }
-
 
   template< class Grid >
   inline const typename SPGridLevel< Grid >::Mesh &
@@ -277,21 +425,6 @@ namespace Dune
 
 
   template< class Grid >
-  inline int SPGridLevel< Grid >::level () const
-  {
-    return level_;
-  }
-
-
-  template< class Grid >
-  inline const typename SPGridLevel< Grid >::GlobalVector &
-  SPGridLevel< Grid >::h () const
-  {
-    return h_;
-  }
-
-
-  template< class Grid >
   inline typename SPGridLevel< Grid >::MultiIndex
   SPGridLevel< Grid >::macroId ( const MultiIndex &id ) const
   {
@@ -327,35 +460,6 @@ namespace Dune
 
 
   template< class Grid >
-  template< int codim >
-  inline const typename SPGridLevel< Grid >::template Codim< codim >::GeometryCache &
-  SPGridLevel< Grid >::geometryCache ( const unsigned int dir ) const
-  {
-    typedef typename Codim< codim >::GeometryCache GeometryCache;
-    assert( bitCount( dir ) == dimension - codim );
-    return *((const GeometryCache *)geometryCache_[ dir ]);
-  }
-
-
-  template< class Grid >
-  inline typename SPGridLevel< Grid >::ctype
-  SPGridLevel< Grid >::faceVolume ( const int i ) const
-  {
-    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
-    return faceVolume_[ i ];
-  }
-
-
-  template< class Grid >
-  inline const typename SPGridLevel< Grid >::GlobalVector &
-  SPGridLevel< Grid >::volumeNormal ( const int i ) const
-  {
-    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
-    return normal_[ i ];
-  }
-
-
-  template< class Grid >
   inline int SPGridLevel< Grid >::size () const
   {
     return globalMesh().volume();
@@ -363,35 +467,20 @@ namespace Dune
 
 
   template< class Grid >
-  inline void SPGridLevel< Grid >::buildGeometry ()
+  inline void SPGridLevel< Grid >::buildLocalGeometry ()
   {
-    const GlobalVector domainWidth = domain().cube().width();
-    const MultiIndex meshWidth = globalMesh().width();
-    for( int i = 0; i < dimension; ++i )
-      h_[ i ] = domainWidth[ i ] / ctype( meshWidth[ i ] );
-
     geometryInFather_ = 0;
     if( level() > 0 )
     {
       const unsigned int numChildren = refinement().numChildren();
       geometryInFather_ = new LocalGeometry *[ numChildren ];
       const GlobalVector hInFather = refinement().template hInFather< ctype >();
-      const typename Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
+      const typename Base::template Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
       for( unsigned int index = 0; index < numChildren; ++index )
       {
         const GlobalVector origin = refinement().template originInFather< ctype >( index );
         geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( referenceCube(), cacheInFather, origin ) );
       }
-    }
-
-    ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
-    
-    const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
-    for( int face = 0; face < ReferenceCube::numFaces; ++face )
-    {
-      normal_[ face ] = referenceCube().normal( face );
-      faceVolume_[ face ] = std::abs( volume / (normal_[ face ] * h_) );
-      normal_[ face ] *= faceVolume_[ face ];
     }
   }
 
@@ -408,6 +497,18 @@ namespace Dune
 
 
   template< class Grid >
+  inline typename SPGridLevel< Grid >::GlobalVector
+  SPGridLevel< Grid >::meshWidth ( const Domain &domain, const Mesh &mesh )
+  {
+    GlobalVector h = domain.cube().width();
+    const MultiIndex meshWidth = mesh.width();
+    for( int i = 0; i < dimension; ++i )
+      h[ i ] /= ctype( meshWidth[ i ] );
+    return h;
+  }
+
+
+  template< class Grid >
   inline typename SPGridLevel< Grid >::MultiIndex
   SPGridLevel< Grid >::overlap () const
   {
@@ -417,48 +518,6 @@ namespace Dune
     return overlap;
   }
 
-
-
-  // SPGridLevel::BuildGeometryCache
-  // -------------------------------
-
-  template< class Grid >
-  template< int codim >
-  struct SPGridLevel< Grid >::BuildGeometryCache
-  {
-    static void
-    apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
-    {
-      typedef typename Codim< codim >::GeometryCache GeometryCache;
-      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-      {
-        const int mydim = bitCount( dir );
-        if( mydim == dimension - codim )
-          geometryCache[ dir ] = new GeometryCache( h, dir );
-      }
-    }
-  };
-
-  template< class Grid >
-  template< int codim >
-  struct SPGridLevel< Grid >::DestroyGeometryCache
-  {
-    static void
-    apply ( void *(&geometryCache)[ 1 << dimension ] )
-    {
-      typedef typename Codim< codim >::GeometryCache GeometryCache;
-      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-      {
-        const int mydim = bitCount( dir );
-        if( mydim == dimension - codim )
-        {
-          delete (GeometryCache *)geometryCache[ dir ];
-          geometryCache[ dir ] = 0;
-        }
-      }
-    }
-  };
-
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_GRIDLEVEL_HH
