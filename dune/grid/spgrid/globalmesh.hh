@@ -44,7 +44,7 @@ namespace Dune
     {
       for( int i = 0; i < dimension; ++i )
       {
-        h_[ i ] = std::abs( (b[ i ] - a[ i ]) / cells[ i ] );
+        h_[ i ] = std::abs( (b[ i ] - a[ i ]) / ctype( cells[ i ] ) );
         origin_[ i ] = a[ i ] - std::floor( a[ i ] / h_[ i ] ) * h_[ i ];
       }
     }
