@@ -40,6 +40,15 @@ namespace Dune
       }
     }
 
+    GlobalMesh ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells )
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        h_[ i ] = std::abs( (b[ i ] - a[ i ]) / cells[ i ] );
+        origin_[ i ] = a[ i ] - std::floor( a[ i ] / h_[ i ] ) * h_[ i ];
+      }
+    }
+
     GlobalVector coordinate ( const MultiIndex &id ) const
     {
       GlobalVector coordinate( origin_ );
