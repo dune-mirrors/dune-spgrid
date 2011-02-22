@@ -186,6 +186,6 @@ namespace Dune
     return root_.size();
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_DECOMPOSITION_HH

@@ -57,6 +57,6 @@ namespace Dune
     int minLevel_, maxLevel_;
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_HITERATOR_HH

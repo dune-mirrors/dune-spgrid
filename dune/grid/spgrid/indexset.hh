@@ -280,6 +280,6 @@ namespace Dune
     return *partitions_;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_INDEXSET_HH

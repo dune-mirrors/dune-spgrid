@@ -67,6 +67,6 @@ namespace Dune
     Intersection intersection_;
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_INTERSECTIONITERATOR_HH

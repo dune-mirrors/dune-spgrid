@@ -490,6 +490,6 @@ namespace Dune
     return det;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_GEOMETRYCACHE_HH

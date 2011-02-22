@@ -57,6 +57,6 @@ namespace Dune
     return (array[ i ] < array[ j ] ? i : j);
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_MISC_HH

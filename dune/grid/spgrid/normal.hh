@@ -199,6 +199,6 @@ namespace Dune
     return std::abs( p_ );
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_NORMAL_HH

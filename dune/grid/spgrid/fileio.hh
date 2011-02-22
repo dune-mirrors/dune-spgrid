@@ -305,6 +305,6 @@ namespace Dune
     return line;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_FILEIO_HH

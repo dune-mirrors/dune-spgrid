@@ -219,6 +219,7 @@ namespace Dune
 
     return partition;
   }
-}
+
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_PARTITIONPOOL_HH

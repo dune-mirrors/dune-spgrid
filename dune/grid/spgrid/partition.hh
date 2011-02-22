@@ -344,6 +344,6 @@ namespace Dune
     return out;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_PARTITION_HH

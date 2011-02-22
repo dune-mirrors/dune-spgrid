@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ENTITYSEED_HH
 #define DUNE_SPGRID_ENTITYSEED_HH
 
+#include <dune/common/typetraits.hh>
+
 /** \file
  *  \author Martin Nolte
  *  \brief  entity seed for \ref Dune::SPGrid "SPGrid"

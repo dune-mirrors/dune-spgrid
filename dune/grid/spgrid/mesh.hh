@@ -267,6 +267,6 @@ namespace Dune
     return copy -= shift;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_MESH_HH

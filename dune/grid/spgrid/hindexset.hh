@@ -145,6 +145,6 @@ namespace Dune
     CodimIndexArray size_;
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_HINDEXSET_HH

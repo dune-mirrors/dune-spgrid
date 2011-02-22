@@ -330,6 +330,6 @@ namespace Dune
     return static_cast< const Impl & >( *this );
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_GEOMETRY_HH

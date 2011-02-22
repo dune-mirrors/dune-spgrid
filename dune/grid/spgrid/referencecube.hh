@@ -13,6 +13,7 @@ namespace Dune
 
   namespace SPReferenceCubeHelper
   {
+
     inline unsigned int
     numSubEntities ( const unsigned int dimension, const unsigned int codim )
     {
@@ -26,7 +27,8 @@ namespace Dune
       else
         return 1;
     }
-  }
+
+  } // namespace SPReferenceCubeHelper
 
 
 
@@ -192,6 +194,6 @@ namespace Dune
     GlobalVector corner_;
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_REFERENCECUBE_HH

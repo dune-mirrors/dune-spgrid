@@ -114,6 +114,6 @@ namespace Dune
     return This( a, b );
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_DOMAIN_HH

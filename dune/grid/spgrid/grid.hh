@@ -925,6 +925,6 @@ namespace Dune
     }
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_GRID_HH

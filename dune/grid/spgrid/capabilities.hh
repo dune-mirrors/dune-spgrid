@@ -1,6 +1,10 @@
 #ifndef DUNE_SPGRID_CAPABILITIES_HH
 #define DUNE_SPGRID_CAPABILITIES_HH
 
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <dune/grid/common/capabilities.hh>
 
 #include <dune/grid/genericgeometry/topologytypes.hh>
@@ -195,7 +199,7 @@ namespace Dune
       static const bool v = true;
     };
 
-  }
+  } // namespace Capabilities
 
 
 
@@ -218,8 +222,8 @@ namespace Dune
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
-  }
+  } // namespace Extensions
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_CAPABILITIES_HH

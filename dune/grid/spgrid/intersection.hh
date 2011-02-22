@@ -265,6 +265,6 @@ namespace Dune
     return EntityPointerImpl( gridLevel(), id, partition.neighbor( face_ ) );
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_INTERSECTION_HH

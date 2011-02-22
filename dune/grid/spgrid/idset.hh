@@ -106,6 +106,6 @@ namespace Dune
   : public SPLocalIdSet< Grid >
   {};
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_IDSET_HH

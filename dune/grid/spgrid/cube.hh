@@ -176,6 +176,6 @@ namespace Dune
     return in;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_CUBE_HH

@@ -344,6 +344,6 @@ namespace std
     }
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_MULTIINDEX_HH

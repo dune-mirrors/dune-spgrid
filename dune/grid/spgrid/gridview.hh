@@ -395,6 +395,6 @@ namespace Dune
     indexSet_->first.update( gridLevel );
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_GRIDVIEW_HH

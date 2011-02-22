@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_TOPOLOGY_HH
 #define DUNE_SPGRID_TOPOLOGY_HH
 
+#include <cassert>
+#include <iostream>
 #include <limits>
 
 /** \file
@@ -232,6 +234,6 @@ namespace Dune
     return in;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_TOPOLOGY_HH

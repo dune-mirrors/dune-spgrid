@@ -180,6 +180,6 @@ namespace Dune
     return Grid::getRealImplementation( entity_ ).gridLevel();
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_ENTITYPOINTER_HH

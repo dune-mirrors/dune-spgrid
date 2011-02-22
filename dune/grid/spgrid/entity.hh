@@ -313,6 +313,6 @@ namespace Dune
     return EntityPointer( fatherInfo );
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_ENTITY_HH

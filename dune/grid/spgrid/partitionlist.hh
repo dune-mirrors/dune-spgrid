@@ -260,6 +260,6 @@ namespace Dune
     return out;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_PARTITIONLIST_HH

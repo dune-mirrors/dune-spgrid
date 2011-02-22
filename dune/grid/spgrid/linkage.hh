@@ -346,6 +346,6 @@ namespace Dune
     partitionList_[ 0 ] = partitionList_[ 1 ] = 0;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_LINKAGE_HH

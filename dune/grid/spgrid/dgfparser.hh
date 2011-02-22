@@ -56,7 +56,8 @@ namespace Dune
       MultiIndex overlap_;
     };
 
-  }
+  } // namespace dgf
+
 
 
   // DGFGridFactory< SPGrid >
@@ -234,6 +235,6 @@ namespace Dune
     }
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_DGFPARSER_HH
