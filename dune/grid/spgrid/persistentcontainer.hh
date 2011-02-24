@@ -25,7 +25,6 @@ namespace Dune
     PersistentContainer ( const Grid &grid, const int codim, const Allocator &allocator = Allocator() )
     : BaseType( grid, codim, grid.hierarchicIndexSet(), 1.1, allocator )
     {
-      std::cout << "SPGrid perst cont " << std::endl;
     }
   };
 
