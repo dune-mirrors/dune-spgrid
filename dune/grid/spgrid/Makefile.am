@@ -8,7 +8,8 @@ spgrid_HEADERS = backuprestore.hh  cachedpartitionlist.hh  capabilities.hh \
                  hindexset.hh  idset.hh  indexset.hh  intersection.hh \
                  intersectioniterator.hh  iterator.hh  linkage.hh  mesh.hh \
                  misc.hh  multiindex.hh  normal.hh  partition.hh \
-                 partitionlist.hh  partitionpool.hh  referencecube.hh \
-                 refinement.hh  superentityiterator.hh  topology.hh  version.hh
+                 partitionlist.hh  partitionpool.hh  persistentcontainer.hh \
+                 referencecube.hh  refinement.hh \
+                 superentityiterator.hh  topology.hh  version.hh
 
 include $(top_srcdir)/am/global-rules
