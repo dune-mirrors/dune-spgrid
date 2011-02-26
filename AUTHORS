@@ -1,7 +1,7 @@
   The DUNE (see www.dune-project.org) module dune-spgrid provides a structured,
   parallel grid satisfying the dune-grid interface.
 
-  Copyright (C) 2009 - 2010 Martin Nolte
+  Copyright (C) 2009 - 2011 Martin Nolte
 
   The dune-spgrid module is free software; you can redistribute it and/or 
   modify it under the terms of the GNU General Public License as 
