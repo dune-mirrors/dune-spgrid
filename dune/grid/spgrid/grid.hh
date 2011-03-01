@@ -211,11 +211,6 @@ namespace Dune
       return referenceCube< 0 >();
     }
 
-    SPDecomposition< dimension > decomposition () const 
-    {
-      return SPDecomposition< dimension > ( globalMesh_, comm().size() );
-    }
-
     template< int codim >
     const typename Codim< codim >::ReferenceCube &referenceCube () const
     {
