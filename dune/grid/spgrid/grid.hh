@@ -802,7 +802,20 @@ namespace Dune
     if( partition )
       return EntityPointerImpl( gLevel, id, partition->number() );
     else
-      DUNE_THROW( GridError, "Coordinate " << x << " is outside the grid." );
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        // check upper bound 
+        if( id[ i ] - 1 == 2*gLevel.localMesh().bound( 1 )[ i ] ) 
+          id[ i ] = 2*int( z[ i ] ) - 1;
+      }
+      const typename PartitionList::Partition *leftPartition = partitionList.findPartition( id );
+
+      if( leftPartition ) 
+        return EntityPointerImpl( gLevel, id, leftPartition->number() );
+      else  
+        DUNE_THROW( GridError, "Coordinate " << x << " is outside the grid." );
+    }
   }
 
 
