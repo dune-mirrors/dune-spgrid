@@ -7,8 +7,19 @@
 namespace Dune
 {
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< class G, template< class > class I >
+  class Intersection;
+
+
+
   namespace dgf
   {
+
+    // SPGridParameterBlock
+    // --------------------
 
     template< int dim >
     struct SPGridParameterBlock
@@ -16,36 +27,7 @@ namespace Dune
     {
       typedef int MultiIndex[ dim ];
 
-      SPGridParameterBlock( std::istream &in )
-      : GridParameterBlock( in )
-      {
-        for( int i = 0; i < dim; ++i )
-          overlap_[ i ] = 0;
-
-        if( findtoken( "overlap" ) )
-        {
-          int i = 0;
-          for( int x; getnextentry( x ); ++i )
-          {
-            if( x < 0 )
-              DUNE_THROW( DGFException, "Negative overlap specified." );
-            if( i < dim )
-              overlap_[ i ] = x;
-          }
-
-          if( i < 1 )
-            dwarn << "GridParameterBlock: Found keyword 'overlap' without valid value, defaulting to no overlap." << std::endl;
-          else if( i == 1 )
-          {
-            for( int i = 1; i < dim; ++i )
-              overlap_[ i ] = overlap_[ 0 ];
-          }
-          else if( i != dim )
-            DUNE_THROW( DGFException, "Invalid argument for parameter 'overlap' specified." );
-        }
-        else
-          dwarn << "GridParameterBlock: Parameter 'overlap' not specified, defaulting to no overlap." << std::endl;
-      }
+      explicit SPGridParameterBlock( std::istream &in );
 
       const MultiIndex &overlap () const
       {
@@ -55,6 +37,43 @@ namespace Dune
     private:
       MultiIndex overlap_;
     };
+
+
+
+    // Implementation of SPGridParameterBlock
+    // --------------------------------------
+
+    template< int dim >
+    inline SPGridParameterBlock< dim >::SPGridParameterBlock( std::istream &in )
+    : GridParameterBlock( in )
+    {
+      for( int i = 0; i < dim; ++i )
+        overlap_[ i ] = 0;
+
+      if( findtoken( "overlap" ) )
+      {
+        int i = 0;
+        for( int x; getnextentry( x ); ++i )
+        {
+          if( x < 0 )
+            DUNE_THROW( DGFException, "Negative overlap specified." );
+          if( i < dim )
+            overlap_[ i ] = x;
+        }
+
+        if( i < 1 )
+          dwarn << "GridParameterBlock: Found keyword 'overlap' without valid value, defaulting to no overlap." << std::endl;
+        else if( i == 1 )
+        {
+          for( int i = 1; i < dim; ++i )
+            overlap_[ i ] = overlap_[ 0 ];
+        }
+        else if( i != dim )
+          DUNE_THROW( DGFException, "Invalid argument for parameter 'overlap' specified." );
+      }
+      else
+        dwarn << "GridParameterBlock: Parameter 'overlap' not specified, defaulting to no overlap." << std::endl;
+    }
 
   } // namespace dgf
 
@@ -99,10 +118,18 @@ namespace Dune
       return Grid::getRealImplementation( intersection ).boundaryId();
     }
 
+    bool haveBoundaryParameters () const { return false; }
+
     template< int codim >
     int numParameters () const
     {
       return 0;
+    }
+
+    template< class G, template< class > class I >
+    const std::vector< double > &parameter ( const Intersection< G, I > &intersection ) const
+    {
+      return parameter_;
     }
 
     template< class Entity >
@@ -116,6 +143,7 @@ namespace Dune
     void generate ( std::istream &input, const CollectiveCommunication &comm );
 
     Grid *grid_;
+    std::vector< double > parameter_;
   };
 
 
