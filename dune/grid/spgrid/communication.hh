@@ -21,6 +21,12 @@ namespace Dune
   {
     typedef Dune::CollectiveCommunication< Comm > CollectiveCommunication;
 
+    template< class C >
+    static CollectiveCommunication comm ( const C & )
+    {
+      return defaultComm();
+    }
+
     static CollectiveCommunication defaultComm ()
     {
       return CollectiveCommunication();
@@ -33,9 +39,14 @@ namespace Dune
   {
     typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
 
+    static CollectiveCommunication comm ( const MPI_Comm &mpiComm )
+    {
+      return CollectiveCommunication( mpiComm );
+    }
+
     static CollectiveCommunication defaultComm ()
     {
-      return CollectiveCommunication( MPI_COMM_WORLD );
+      return comm( MPI_COMM_WORLD );
     }
   };
 #endif // #if HAVE_MPI

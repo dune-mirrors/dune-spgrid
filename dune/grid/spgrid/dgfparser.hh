@@ -70,6 +70,7 @@ namespace Dune
     typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
+    typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
     static const int dimension = Grid::dimension;
     typedef typename Grid::template Codim< 0 >::Entity Element;
@@ -112,7 +113,7 @@ namespace Dune
     }
 
   private:
-    void generate ( std::istream &input );
+    void generate ( std::istream &input, const CollectiveCommunication &comm );
 
     Grid *grid_;
   };
@@ -124,27 +125,28 @@ namespace Dune
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
-    ::DGFGridFactory ( std::istream &input, MPICommunicatorType )
+    ::DGFGridFactory ( std::istream &input, MPICommunicatorType comm )
   {
-    generate( input );
+    generate( input, SPCommunicationTraits< Comm >::comm( comm ) );
   }
 
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
-    ::DGFGridFactory ( const std::string &filename, MPICommunicatorType )
+    ::DGFGridFactory ( const std::string &filename, MPICommunicatorType comm )
   {
     std::ifstream input( filename.c_str() );
     if( !input )
       DUNE_THROW( DGFException, "Unable to open file: " << filename << "." );
-    generate( input );
+    generate( input, SPCommunicationTraits< Comm >::comm( comm ) );
     input.close();
   }
 
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline void
-  DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >::generate ( std::istream &input )
+  DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
+    ::generate ( std::istream &input, const CollectiveCommunication &comm )
   {
     dgf::IntervalBlock intervalBlock( input );
 
@@ -209,7 +211,7 @@ namespace Dune
     std::vector< typename Domain::Cube > cubes;
     cubes.push_back( typename Domain::Cube( a, b ) );
     Domain domain( cubes, typename Domain::Topology( periodic ) );
-    grid_ = new Grid( domain, cells, parameter.overlap() );
+    grid_ = new Grid( domain, cells, parameter.overlap(), comm );
   }
 
 
