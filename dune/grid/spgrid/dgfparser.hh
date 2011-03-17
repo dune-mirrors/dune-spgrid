@@ -7,14 +7,6 @@
 namespace Dune
 {
 
-  // External Forward Declarations
-  // -----------------------------
-
-  template< class G, template< class > class I >
-  class Intersection;
-
-
-
   namespace dgf
   {
 
@@ -126,10 +118,11 @@ namespace Dune
       return 0;
     }
 
-    template< class G, template< class > class I >
-    const std::vector< double > &parameter ( const Intersection< G, I > &intersection ) const
+    template< class Intersection >
+    const typename DGFBoundaryParameter::type &
+    boundaryParameter ( const Intersection &intersection ) const
     {
-      return parameter_;
+      return boundaryParameter_;
     }
 
     template< class Entity >
@@ -143,7 +136,7 @@ namespace Dune
     void generate ( std::istream &input, const CollectiveCommunication &comm );
 
     Grid *grid_;
-    std::vector< double > parameter_;
+    typename DGFBoundaryParameter::type boundaryParameter_;
   };
 
 
@@ -154,6 +147,7 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
     ::DGFGridFactory ( std::istream &input, MPICommunicatorType comm )
+  : boundaryParameter_( DGFBoundaryParameter::defaultValue() )
   {
     generate( input, SPCommunicationTraits< Comm >::comm( comm ) );
   }
@@ -162,6 +156,7 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
     ::DGFGridFactory ( const std::string &filename, MPICommunicatorType comm )
+  : boundaryParameter_( DGFBoundaryParameter::defaultValue() )
   {
     std::ifstream input( filename.c_str() );
     if( !input )
