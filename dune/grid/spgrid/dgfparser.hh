@@ -152,10 +152,10 @@ namespace Dune
         if( data )
           return data->parameter();
         else
-          return boundaryParameter_;
+          return DGFBoundaryParameter::defaultValue();
       }
       else
-        return boundaryParameter_;
+        return DGFBoundaryParameter::defaultValue();
     }
 
     template< class Entity >
@@ -182,7 +182,6 @@ namespace Dune
 
     Grid *grid_;
     BoundaryDomainBlock *boundaryDomainBlock_;
-    typename DGFBoundaryParameter::type boundaryParameter_;
   };
 
 
@@ -193,7 +192,6 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
     ::DGFGridFactory ( std::istream &input, MPICommunicatorType comm )
-  : boundaryParameter_( DGFBoundaryParameter::defaultValue() )
   {
     generate( input, SPCommunicationTraits< Comm >::comm( comm ) );
   }
@@ -202,7 +200,6 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
     ::DGFGridFactory ( const std::string &filename, MPICommunicatorType comm )
-  : boundaryParameter_( DGFBoundaryParameter::defaultValue() )
   {
     std::ifstream input( filename.c_str() );
     if( !input )
