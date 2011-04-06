@@ -118,23 +118,18 @@ namespace Dune
     template< class Intersection >
     int boundaryId ( const Intersection &intersection ) const
     {
-      if( boundaryDomainBlock_->isactive() )
-      {
-        std::vector< Point > corners;
-        getCorners( intersection.geometry(), corners );
-        const dgf::DomainData *data = boundaryDomainBlock_->contains( corners );
-        if( data )
-          return data->id();
-        else
-          return intersection.indexInInside();
-      }
+      std::vector< Point > corners;
+      getCorners( intersection.geometry(), corners );
+      const dgf::DomainData *data = boundaryDomainBlock_->contains( corners );
+      if( data )
+        return data->id();
       else
         return intersection.indexInInside();
     }
 
     bool haveBoundaryParameters () const
     {
-      return boundaryDomainBlock_->isactive();
+      return boundaryDomainBlock_->hasParameter();
     }
 
     template< int codim >
@@ -147,16 +142,11 @@ namespace Dune
     const typename DGFBoundaryParameter::type &
     boundaryParameter ( const Intersection &intersection ) const
     {
-      if( haveBoundaryParameters() )
-      {
-        std::vector< Point > corners;
-        getCorners( intersection.geometry(), corners );
-        const dgf::DomainData *data = boundaryDomainBlock_->contains( corners );
-        if( data )
-          return data->parameter();
-        else
-          return DGFBoundaryParameter::defaultValue();
-      }
+      std::vector< Point > corners;
+      getCorners( intersection.geometry(), corners );
+      const dgf::DomainData *data = boundaryDomainBlock_->contains( corners );
+      if( data )
+        return data->parameter();
       else
         return DGFBoundaryParameter::defaultValue();
     }
