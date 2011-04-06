@@ -132,7 +132,10 @@ namespace Dune
         return intersection.indexInInside();
     }
 
-    bool haveBoundaryParameters () const { return false; }
+    bool haveBoundaryParameters () const
+    {
+      return boundaryDomainBlock_->isactive();
+    }
 
     template< int codim >
     int numParameters () const
@@ -144,7 +147,7 @@ namespace Dune
     const typename DGFBoundaryParameter::type &
     boundaryParameter ( const Intersection &intersection ) const
     {
-      if( boundaryDomainBlock_->isactive() )
+      if( haveBoundaryParameters() )
       {
         std::vector< Point > corners;
         getCorners( intersection.geometry(), corners );
