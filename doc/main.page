@@ -41,9 +41,6 @@ The following table shows a comparison of selected features between
 <tr><th align=left>Coordinate type is a template parameter</th>
     <td>yes</td><td>no</td><td>yes</td>
 </tr>
-<tr><th align=left>Parallel and serial grid in same program</th>
-    <td>no</tr><td>no</td><td>yes</td>
-</tr>
 </table>
 
 */
