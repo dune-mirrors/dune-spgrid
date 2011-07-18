@@ -41,6 +41,7 @@ namespace Dune
 
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
+    typedef JacobianInverseTransposed  Jacobian;
 
   protected:
     SPBasicGeometry ();
