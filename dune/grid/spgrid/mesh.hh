@@ -181,14 +181,14 @@ namespace Dune
 
   template< int dim >
   inline std::pair< typename SPMesh< dim >::This, typename SPMesh< dim >::This >
-  SPMesh< dim >::split ( const int dir, const int leftWeight, const int rightWeight ) const
+  SPMesh< dim >::split ( const int dir, const int leftFraction, const int rightFraction ) const
   {
     const MultiIndex &lbegin = begin();
     const MultiIndex &rend = end();
 
     assert( (dir >= 0) && (dir < dimension) );
     const int width = (rend[ dir ] - lbegin[ dir ]);
-    const int leftWidth = (leftWeight * width) / (leftWeight + rightWeight);
+    const int leftWidth = (leftFraction * width) / (leftFraction + rightFraction);
 
     MultiIndex lend = rend;
     MultiIndex rbegin = lbegin;
