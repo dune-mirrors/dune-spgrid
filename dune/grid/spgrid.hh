@@ -5,20 +5,28 @@
 #include <dune/grid/spgrid/hierarchicsearch.hh>
 #include <dune/grid/spgrid/persistentcontainer.hh>
 
-#if HAVE_DUNE_FEM 
-#include <dune/fem/quadrature/caching/twistutility.hh>
+namespace Dune
+{
 
-namespace Dune { 
+  // External Forward Declarations
+  // -----------------------------
 
-  // Specialization for SPGrid
-  //
-  template< class ct, int dim, SPRefinementStrategy strategy , class Comm > 
+  template< class Grid >
+  struct TwistFreeTwistUtility;
+
+  template< class Grid >
+  struct TwistUtility;
+
+
+
+  // TwistUtility for SPGrid
+  // -----------------------
+
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm > 
   struct TwistUtility< SPGrid< ct, dim, strategy, Comm > > 
-    : public TwistFreeTwistUtility< SPGrid< ct, dim, strategy, Comm > > 
-  {
-  };
-}
+  : public TwistFreeTwistUtility< SPGrid< ct, dim, strategy, Comm > >
+  {};
 
-#endif // #if HAVE_DUNE_FEM 
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_HH
