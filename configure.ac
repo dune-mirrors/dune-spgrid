@@ -17,6 +17,7 @@ AC_CONFIG_FILES([
   dune/common/Makefile
   dune/grid/Makefile
   dune/grid/extensions/Makefile
+  dune/grid/freiburg/Makefile
   dune/grid/spgrid/Makefile
   doc/Makefile
   doc/progs/Makefile

@@ -6,7 +6,7 @@
 
 #include <dune/grid/common/gridview.hh>
 
-#include <dune/grid/extensions/superentityiterator.hh>
+#include <dune/grid/freiburg/implcast.hh>
 
 namespace Dune
 {
@@ -83,11 +83,8 @@ namespace Dune
         ++count[ indexSet.subIndex( entity, i, codim ) ];
     }
 
-    typedef SuperEntityIteratorExtension< GridView > ExtGridView;
-    ExtGridView extGridView( gridView );
-
     typedef typename GridView::template Codim< codim >::Iterator CodimIterator;
-    typedef typename ExtGridView::template Codim< codim >::SuperEntityIterator SEIterator;
+    typedef typename ImplType< GridView >::Type::template Codim< codim >::SuperEntityIterator SEIterator;
 
     const CodimIterator codimEnd = gridView.template end< codim >();
     for( CodimIterator codimIt = gridView.template begin< codim >(); codimIt != codimEnd; ++codimIt )
@@ -95,8 +92,8 @@ namespace Dune
       const typename CodimIterator::Entity &entity = *codimIt;
 
       int cnt = 0;
-      const SEIterator seEnd = extGridView.superEntityEnd( entity );
-      for( SEIterator seIt = extGridView.superEntityBegin( entity ); seIt != seEnd; ++seIt )
+      const SEIterator seEnd = impl_cast( gridView ).superEntityEnd( entity );
+      for( SEIterator seIt = impl_cast( gridView ).superEntityBegin( entity ); seIt != seEnd; ++seIt )
       {
         const typename SEIterator::Entity &element = *seIt;
 
