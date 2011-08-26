@@ -1,6 +1,8 @@
 #ifndef DUNE_FREIBURG_IMPLCAST_HH
 #define DUNE_FREIBURG_IMPLCAST_HH
 
+#include <dune/grid/common/grid.hh>
+
 namespace Dune
 {
 
