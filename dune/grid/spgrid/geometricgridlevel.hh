@@ -14,15 +14,15 @@ namespace Dune
   // SPGeometricGridLevel
   // --------------------
 
-  template< class Grid >
+  template< class ct, int dim >
   class SPGeometricGridLevel
   {
-    typedef SPGeometricGridLevel< Grid > This;
+    typedef SPGeometricGridLevel< ct, dim > This;
 
   public:
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef SPReferenceCubeContainer< ct, dim > ReferenceCubeContainer;
 
-    typedef typename Traits::ReferenceCube ReferenceCube;
+    typedef typename ReferenceCubeContainer::ReferenceCube ReferenceCube;
 
     typedef typename ReferenceCube::ctype ctype;
     static const int dimension = ReferenceCube::dimension;
@@ -34,7 +34,7 @@ namespace Dune
     template< int codim >
     struct Codim
     {
-      typedef SPReferenceCube< ctype, dimension-codim > ReferenceCube;
+      typedef typename ReferenceCubeContainer::template Codim< codim >::ReferenceCube ReferenceCube;
       typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
     };
 
@@ -45,18 +45,16 @@ namespace Dune
     struct DestroyGeometryCache;
 
   public:
-    SPGeometricGridLevel ( const Grid &grid, const GlobalVector &h );
+    SPGeometricGridLevel ( const ReferenceCubeContainer &refCubes, const GlobalVector &h );
     SPGeometricGridLevel ( const This &other );
 
     ~SPGeometricGridLevel ();
 
-    const Grid &grid () const { return *grid_; }
-
-    const ReferenceCube &referenceCube () const { return grid().referenceCube(); }
+    const ReferenceCube &referenceCube () const { return refCubes_.get(); }
 
     template< int codim >
     const typename Codim< codim >::ReferenceCube &
-    referenceCube () const { return grid().template referenceCube< codim >(); }
+    referenceCube () const { return refCubes_.template get< codim >(); }
 
     const GlobalVector &h () const { return h_; }
 
@@ -70,7 +68,7 @@ namespace Dune
   private:
     void buildGeometry ();
 
-    const Grid *grid_;
+    const ReferenceCubeContainer &refCubes_;
 
     GlobalVector h_;
     void *geometryCache_[ numDirections ];
@@ -83,9 +81,9 @@ namespace Dune
   // SPGeometricGridLevel::BuildGeometryCache
   // ----------------------------------------
 
-  template< class Grid >
+  template< class ct, int dim >
   template< int codim >
-  struct SPGeometricGridLevel< Grid >::BuildGeometryCache
+  struct SPGeometricGridLevel< ct, dim >::BuildGeometryCache
   {
     static void
     apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
@@ -105,9 +103,9 @@ namespace Dune
   // SPGeometricGridLevel::DestroyGeometryCache
   // ------------------------------------------
 
-  template< class Grid >
+  template< class ct, int dim >
   template< int codim >
-  struct SPGeometricGridLevel< Grid >::DestroyGeometryCache
+  struct SPGeometricGridLevel< ct, dim >::DestroyGeometryCache
   {
     static void
     apply ( void *(&geometryCache)[ 1 << dimension ] )
@@ -130,36 +128,36 @@ namespace Dune
   // Implementation of SPGeometricGridLevel
   // --------------------------------------
 
-  template< class Grid >
-  inline SPGeometricGridLevel< Grid >
-    ::SPGeometricGridLevel ( const Grid &grid, const GlobalVector &h )
-  : grid_( &grid ),
+  template< class ct, int dim >
+  inline SPGeometricGridLevel< ct, dim >
+    ::SPGeometricGridLevel ( const ReferenceCubeContainer &refCubes, const GlobalVector &h )
+  : refCubes_( refCubes ),
     h_( h )
   {
     buildGeometry();
   }
 
 
-  template< class Grid >
-  inline SPGeometricGridLevel< Grid >::SPGeometricGridLevel ( const This &other )
-  : grid_( other.grid_ ),
+  template< class ct, int dim >
+  inline SPGeometricGridLevel< ct, dim >::SPGeometricGridLevel ( const This &other )
+  : refCubes_( other.refCubes_ ),
     h_( other.h_ )
   {
     buildGeometry();
   }
 
 
-  template< class Grid >
-  inline SPGeometricGridLevel< Grid >::~SPGeometricGridLevel ()
+  template< class ct, int dim >
+  inline SPGeometricGridLevel< ct, dim >::~SPGeometricGridLevel ()
   {
     ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
   }
 
 
-  template< class Grid >
+  template< class ct, int dim >
   template< int codim >
-  inline const typename SPGeometricGridLevel< Grid >::template Codim< codim >::GeometryCache &
-  SPGeometricGridLevel< Grid >::geometryCache ( const unsigned int dir ) const
+  inline const typename SPGeometricGridLevel< ct, dim >::template Codim< codim >::GeometryCache &
+  SPGeometricGridLevel< ct, dim >::geometryCache ( const unsigned int dir ) const
   {
     typedef typename Codim< codim >::GeometryCache GeometryCache;
     assert( bitCount( dir ) == dimension - codim );
@@ -167,26 +165,26 @@ namespace Dune
   }
 
 
-  template< class Grid >
-  inline typename SPGeometricGridLevel< Grid >::ctype
-  SPGeometricGridLevel< Grid >::faceVolume ( const int i ) const
+  template< class ct, int dim >
+  inline typename SPGeometricGridLevel< ct, dim >::ctype
+  SPGeometricGridLevel< ct, dim >::faceVolume ( const int i ) const
   {
     assert( (i >= 0) && (i < ReferenceCube::numFaces) );
     return faceVolume_[ i ];
   }
 
 
-  template< class Grid >
-  inline const typename SPGeometricGridLevel< Grid >::GlobalVector &
-  SPGeometricGridLevel< Grid >::volumeNormal ( const int i ) const
+  template< class ct, int dim >
+  inline const typename SPGeometricGridLevel< ct, dim >::GlobalVector &
+  SPGeometricGridLevel< ct, dim >::volumeNormal ( const int i ) const
   {
     assert( (i >= 0) && (i < ReferenceCube::numFaces) );
     return normal_[ i ];
   }
 
 
-  template< class Grid >
-  inline void SPGeometricGridLevel< Grid >::buildGeometry ()
+  template< class ct, int dim >
+  inline void SPGeometricGridLevel< ct, dim >::buildGeometry ()
   {
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     

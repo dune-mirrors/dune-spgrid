@@ -43,7 +43,8 @@ namespace Dune
     {
       typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
-      typedef SPReferenceCube< ct, dim > ReferenceCube;
+      typedef SPReferenceCubeContainer< ct, dim > ReferenceCubeContainer;
+      typedef typename ReferenceCubeContainer::ReferenceCube ReferenceCube;
       typedef SPDomain< ct, dim > Domain;
       typedef SPMesh< dim > Mesh;
       typedef SPRefinement< dim, strategy > Refinement;
@@ -74,7 +75,7 @@ namespace Dune
       template< int codim >
       struct Codim
       {
-        typedef SPReferenceCube< ct, dim-codim > ReferenceCube;
+        typedef typename ReferenceCubeContainer::template Codim< codim >::ReferenceCube ReferenceCube;
 
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
 
@@ -134,6 +135,7 @@ namespace Dune
 
     typedef typename GridFamily::Traits Traits;
 
+    typedef typename Traits::ReferenceCubeContainer ReferenceCubeContainer;
     typedef typename Traits::ReferenceCube ReferenceCube;
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Mesh Mesh;
@@ -208,14 +210,13 @@ namespace Dune
 
     const ReferenceCube &referenceCube () const
     {
-      return referenceCube< 0 >();
+      return refCubes_.get();
     }
 
     template< int codim >
     const typename Codim< codim >::ReferenceCube &referenceCube () const
     {
-      integral_constant< int, codim > codimVariable;
-      return refCubes_[ codimVariable ];
+      return refCubes_.template get< codim >();
     }
 
     const Domain &domain () const
@@ -446,16 +447,11 @@ namespace Dune
     void setupBoundaryIndices ();
 
     static CollectiveCommunication defaultCommunication ();
-
-    template< int codim >
-    struct RefCube
-    : public Codim< codim >::ReferenceCube
-    {};
   
     Domain domain_;
     Mesh globalMesh_;
     MultiIndex overlap_;
-    GenericGeometry::CodimTable< RefCube, dimension > refCubes_;
+    ReferenceCubeContainer refCubes_;
     std::vector< GridLevel * > gridLevels_;
     std::vector< LevelGridView > levelViews_;
     LeafGridView leafView_;

@@ -29,20 +29,21 @@ namespace Dune
 
   template< class Grid >
   class SPGridLevel
-  : public SPGeometricGridLevel< Grid >
+  : public SPGeometricGridLevel< typename remove_const< Grid >::type::ctype, remove_const< Grid >::type::dimension >
   {
     typedef SPGridLevel< Grid > This;
-    typedef SPGeometricGridLevel< Grid > Base;
+    typedef SPGeometricGridLevel< typename remove_const< Grid >::type::ctype, remove_const< Grid >::type::dimension > Base;
 
   public:
     typedef SPGridLevel< Grid > GridLevel;
 
-    typedef typename Base::Traits Traits;
     typedef typename Base::ReferenceCube ReferenceCube;
     typedef typename Base::ctype ctype;
 
     static const int dimension = Base::dimension;
     static const unsigned int numDirections = Base::numDirections;
+
+    typedef typename remove_const< Grid >::type::Traits Traits;
 
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Refinement Refinement;
@@ -73,9 +74,9 @@ namespace Dune
 
     ~SPGridLevel ();
 
-    using Base::grid;
     using Base::referenceCube;
 
+    const Grid &grid () const { return *grid_; }
     int level () const { return level_; }
     const Domain &domain () const { return domain_; }
     const Refinement &refinement () const { return refinement_; }
@@ -110,6 +111,7 @@ namespace Dune
 
     MultiIndex overlap () const;
 
+    const Grid *grid_;
     int level_;
 
     const Refinement refinement_;
@@ -131,7 +133,8 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >
     ::SPGridLevel ( const Grid &grid, const Decomposition &decomposition )
-  : Base( grid, meshWidth( grid.domain(), decomposition.mesh() ) ),
+  : Base( grid.refCubes_, meshWidth( grid.domain(), decomposition.mesh() ) ),
+    grid_( &grid ),
     level_( 0 ),
     refinement_(),
     macroFactor_( coarseMacroFactor() ),
@@ -148,7 +151,8 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >
     ::SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy )
-  : Base( father.grid(), meshWidth( father.domain(), Refinement( father.refinement(), policy )( father.globalMesh() ) ) ),
+  : Base( father.grid().refCubes_, meshWidth( father.domain(), Refinement( father.refinement(), policy )( father.globalMesh() ) ) ),
+    grid_( father.grid_ ),
     level_( father.level() + 1 ),
     refinement_( father.refinement(), policy ),
     macroFactor_( father.macroFactor_ * refinement_ ),
@@ -165,6 +169,7 @@ namespace Dune
   template< class Grid >
   inline SPGridLevel< Grid >::SPGridLevel ( const This &other )
   : Base( other ),
+    grid_( other.grid_ ),
     refinement_( other.refinement_ ),
     macroFactor_( other.macroFactor_ ),
     domain_( other.domain_ ),

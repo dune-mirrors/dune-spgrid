@@ -194,6 +194,54 @@ namespace Dune
     GlobalVector corner_;
   };
 
+
+
+  // SPReferenceCubeContainer
+  // ------------------------
+
+  template< class ct, int dim >
+  class SPReferenceCubeContainer
+  {
+    typedef SPReferenceCubeContainer< ct, dim > This;
+
+    // friend class SPIntersection< const This >;
+    // friend class SPGridLevel< const This >;
+
+  public:
+    typedef SPReferenceCube< ct, dim > ReferenceCube;
+
+    typedef typename ReferenceCube::ctype ctype;
+
+    static const int dimension = ReferenceCube::dimension;
+
+    template< int codim >
+    struct Codim
+    {
+      typedef SPReferenceCube< ct, dim-codim > ReferenceCube;
+    };
+
+  public:
+    const ReferenceCube &get () const
+    {
+      return get< 0 >();
+    }
+
+    template< int codim >
+    const typename Codim< codim >::ReferenceCube &get () const
+    {
+      integral_constant< int, codim > codimVariable;
+      return refCubes_[ codimVariable ];
+    }
+
+  private:
+    template< int codim >
+    struct RefCube
+    : public Codim< codim >::ReferenceCube
+    {};
+  
+    GenericGeometry::CodimTable< RefCube, dimension > refCubes_;
+  };
+
 } // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_REFERENCECUBE_HH
