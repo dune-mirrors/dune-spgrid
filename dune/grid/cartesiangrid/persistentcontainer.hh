@@ -1,27 +1,28 @@
 #ifndef DUNE_CARTESIANGRID_PERSISTENTCONTAINER_HH
 #define DUNE_CARTESIANGRID_PERSISTENTCONTAINER_HH
 
-#include <dune/grid/freiburg/persistentcontainerwrapper.hh>
+#include <dune/grid/utility/persistentcontainerwrapper.hh>
 
 namespace Dune
 {
+
   // PersistentContainer for CartesianGrid
   // -------------------------------------
 
-  template< class HostGrid, class DataImp, class Allocator >
-  class PersistentContainer< CartesianGrid< HostGrid >, DataImp, Allocator >
-    : public PersistentContainerWrapper< CartesianGrid< HostGrid >, DataImp, Allocator >
+  template< class HostGrid, class T, class Allocator >
+  class PersistentContainer< CartesianGrid< HostGrid >, T, Allocator >
+  : public PersistentContainerWrapper< CartesianGrid< HostGrid >, T, Allocator >
   {
-    typedef CartesianGrid< HostGrid > Grid ;
-    typedef PersistentContainerWrapper< Grid,  DataImp, Allocator > Base ;
-  public:
-    //! Constructor filling the container with values using the default constructor 
-    //! Depending on the implementation this could be achieved without allocating memory
-    PersistentContainer ( const Grid &grid, const int codim, const Allocator &allocator = Allocator() )
-      : Base( grid, codim, allocator )
-    {
-    }
-  };
-} // end namespace Dune
+    typedef PersistentContainerWrapper< CartesianGrid< HostGrid >, T, Allocator > Base;
 
-#endif // end DUNE_CARTESIANGRID_PERSISTENTCONTAINER_HH
+  public:
+    typedef typename Base::Grid Grid;
+
+    PersistentContainer ( const Grid &grid, const int codim, const Allocator &allocator = Allocator() )
+    : Base( grid, codim, allocator )
+    {}
+  };
+
+} // namespace Dune
+
+#endif // #ifndef DUNE_CARTESIANGRID_PERSISTENTCONTAINER_HH

@@ -22,8 +22,9 @@
 #include <dune/grid/cartesiangrid/datahandle.hh>
 #include <dune/grid/cartesiangrid/adaptcallback.hh>
 #include <dune/grid/cartesiangrid/backuprestore.hh>
+#include <dune/grid/cartesiangrid/persistentcontainer.hh>
 
-#include <dune/grid/geometrygrid/identity.hh>
+//#include <dune/grid/geometrygrid/identity.hh>
 #include <dune/grid/spgrid/geometricgridlevel.hh>
 
 namespace Dune
@@ -1043,6 +1044,6 @@ namespace Dune
 
 } // namespace Dune
 
-#include <dune/grid/cartesiangrid/persistentcontainer.hh>
 #include <dune/grid/cartesiangrid/twistutility.hh>
+
 #endif // #ifndef DUNE_CARTESIANGRID_GRID_HH
