@@ -106,6 +106,6 @@ namespace Dune
     }
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_CARTESIANGRID_HOSTGRIDACCESS_HH
