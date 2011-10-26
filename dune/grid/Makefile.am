@@ -1,6 +1,6 @@
 griddir = $(includedir)/dune/grid
-grid_HEADERS = spgrid.hh
+grid_HEADERS = cartesiangrid.hh  spgrid.hh
 
-SUBDIRS = extensions  freiburg  spgrid
+SUBDIRS = cartesiangrid  extensions  freiburg  spgrid  test
 
 include $(top_srcdir)/am/global-rules
