@@ -8,6 +8,7 @@ INTERVAL
 
 PERIODICFACETRANSFORMATION
 1 0, 0 1 + 1 0  % make periodic in x-direction
+1 0, 0 1 + 0 1  % make periodic in y-direction
 #
 
 BOUNDARYDOMAIN
@@ -15,7 +16,6 @@ DEFAULT 1
 #
 
 GRIDPARAMETER
-NAME 2d-cube
 OVERLAP 1
 #
 

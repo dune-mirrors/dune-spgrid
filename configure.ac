@@ -25,7 +25,6 @@ AC_CONFIG_FILES([
   doc/Makefile
   doc/progs/Makefile
   m4/Makefile
-  test/Makefile
   dune/grid/spgrid/version.hh
   doc/Doxyfile
   doc/footer.html

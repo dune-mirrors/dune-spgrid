@@ -18,8 +18,8 @@ fi
 
 if test "$1" = "gdb" ; then
   shift 1
-  xterm -e gdb --eval-command=run --args ./gridcheck "$@"
+  xterm -e gdb --eval-command=run --args ./test-spgrid "$@"
 else
   mkdir -p $base/mpiout
-  ./gridcheck "$@" &> $base/mpiout/gridcheck-$size-$vpid
+  ./test-spgrid "$@" &> $base/mpiout/gridcheck-$size-$vpid
 fi
