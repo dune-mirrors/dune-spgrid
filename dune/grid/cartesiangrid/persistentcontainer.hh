@@ -6,6 +6,14 @@
 namespace Dune
 {
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< class >
+  class CartesianGrid;
+
+
+
   // PersistentContainer for CartesianGrid
   // -------------------------------------
 

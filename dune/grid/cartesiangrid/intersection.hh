@@ -2,6 +2,7 @@
 #define DUNE_CARTESIANGRID_INTERSECTION_HH
 
 #include <dune/grid/cartesiangrid/entitypointer.hh>
+#include <dune/grid/cartesiangrid/geometry.hh>
 #include <dune/grid/cartesiangrid/hostgridinfo.hh>
 
 namespace Dune

@@ -2,7 +2,7 @@
 #define DUNE_CARTESIANGRID_CAPABILITIES_HH
 
 #include <dune/grid/common/capabilities.hh>
-
+#include <dune/grid/genericgeometry/topologytypes.hh>
 
 namespace Dune
 {
@@ -116,11 +116,11 @@ namespace Dune
     template< class HostGrid >
     struct hasHierarchicIndexSet< CartesianGrid< HostGrid > >
     {
-      static const bool v = false ; //hasHierarchicIndexSet< HostGrid >::v;
+      static const bool v = false;
     };
 
-  }
+  } // namespace Capabilities
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_CARTESIANGRID_CAPABILITIES_HH

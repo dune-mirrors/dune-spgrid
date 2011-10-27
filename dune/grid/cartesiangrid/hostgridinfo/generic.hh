@@ -1,6 +1,10 @@
 #ifndef DUNE_CARTESIANGRID_HOSTGRIDINFO_GENERIC_HH
 #define DUNE_CARTESIANGRID_HOSTGRIDINFO_GENERIC_HH
 
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+
 namespace Dune
 {
 

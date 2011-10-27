@@ -6,9 +6,14 @@
 #include <dune/grid/common/grid.hh>
 
 #include <dune/grid/cartesiangrid/capabilities.hh>
+#include <dune/grid/cartesiangrid/entity.hh>
 
 namespace Dune
 {
+
+  // CartesianGridEntityProxy
+  // ------------------------
+
   template< class Grid, class HostEntity >
   struct CartesianGridEntityProxy
   {
@@ -90,8 +95,10 @@ namespace Dune
     WrappedHandle &wrappedHandle_;
   };
 
+
+
   // CartesianGridWrappedDofManager
-  // ----------------
+  // ------------------------------
 
   template< class Grid, class WrappedHandle >
   class CartesianGridWrappedDofManager
@@ -99,10 +106,10 @@ namespace Dune
     typedef typename remove_const< Grid >::type::Traits Traits;
     typedef typename Traits::ExtraData ExtraData;
 
-    typedef typename Grid :: HostGrid HostGrid ;
-    typedef typename Grid :: InStreamType   InStreamType ;
-    typedef typename Grid :: OutStreamType  OutStreamType ;
-    typedef typename HostGrid :: template Codim< 0 > :: Entity  HostElement;
+    typedef typename Grid::HostGrid HostGrid;
+    typedef typename Grid::InStreamType InStreamType;
+    typedef typename Grid::OutStreamType OutStreamType;
+    typedef typename HostGrid::template Codim< 0 >::Entity HostElement;
 
   public:
     CartesianGridWrappedDofManager( ExtraData data, WrappedHandle &handle )
@@ -132,6 +139,6 @@ namespace Dune
     WrappedHandle &wrappedHandle_;
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_CARTESIANGRID_DATAHANDLE_HH

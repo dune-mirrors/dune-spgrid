@@ -7,8 +7,8 @@
 namespace Dune
 {
 
-  // SPLocalGeometry
-  // ---------------
+  // CartesianGridGeometry
+  // ---------------------
 
   template< int mydim, int cdim, class Grid >
   class CartesianGridGeometry
@@ -34,20 +34,17 @@ namespace Dune
     typedef typename Base::LocalVector LocalVector;
 
   public:
-    template <class GeometricGridLevel, class OriginVector > 
+    template< class GeometricGridLevel, class OriginVector >
     CartesianGridGeometry ( const GeometricGridLevel& gridLevel,
                             const unsigned int dir,
-                            const OriginVector& origin )
+                            const OriginVector &origin )
     : refCube_( &gridLevel.template referenceCube< codimension >() ),
       geometryCache_( &gridLevel.template geometryCache< codimension >( dir ) ),
       origin_()
     {
-      // copy by hand since type of OriginVector 
-      // could be something else then GlobalVector 
-      for( int i=0; i<GlobalVector::dimension; ++i )
-      {
+      // copy by hand, since OriginVector could differ from GlobalVector
+      for( int i=0; i < GlobalVector::dimension; ++i )
         origin_[ i ] = origin[ i ]; 
-      }
     }
 
     using Base::jacobianTransposed;
@@ -75,6 +72,7 @@ namespace Dune
     const GeometryCache *geometryCache_; 
     GlobalVector origin_;
   };
-}
+
+} // namespace Dune
 
 #endif // #ifndef DUNE_CARTESIANGRID_GEOMETRY_HH

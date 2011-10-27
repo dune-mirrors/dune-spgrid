@@ -6,6 +6,9 @@
 namespace Dune
 {
 
+  // CartesianGridEntitySeed
+  // -----------------------
+
   template< int codim, class Grd >
   class CartesianGridEntitySeed
   {
