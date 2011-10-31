@@ -6,8 +6,6 @@
 
 #include <dune/grid/common/gridview.hh>
 
-#include <dune/grid/freiburg/implcast.hh>
-
 namespace Dune
 {
 
@@ -84,7 +82,7 @@ namespace Dune
     }
 
     typedef typename GridView::template Codim< codim >::Iterator CodimIterator;
-    typedef typename ImplType< GridView >::Type::template Codim< codim >::SuperEntityIterator SEIterator;
+    typedef typename GridView::Implementation::template Codim< codim >::SuperEntityIterator SEIterator;
 
     const CodimIterator codimEnd = gridView.template end< codim >();
     for( CodimIterator codimIt = gridView.template begin< codim >(); codimIt != codimEnd; ++codimIt )
@@ -92,8 +90,8 @@ namespace Dune
       const typename CodimIterator::Entity &entity = *codimIt;
 
       int cnt = 0;
-      const SEIterator seEnd = impl_cast( gridView ).superEntityEnd( entity );
-      for( SEIterator seIt = impl_cast( gridView ).superEntityBegin( entity ); seIt != seEnd; ++seIt )
+      const SEIterator seEnd = gridView.impl().superEntityEnd( entity );
+      for( SEIterator seIt = gridView.impl().superEntityBegin( entity ); seIt != seEnd; ++seIt )
       {
         const typename SEIterator::Entity &element = *seIt;
 
