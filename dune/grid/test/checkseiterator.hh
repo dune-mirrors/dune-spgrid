@@ -64,6 +64,7 @@ namespace Dune
   inline void CheckSuperEntityIterator< VT >::Codim< codim >::Check< b >
     ::apply ( const GridView &gridView )
   {
+#if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
     typedef typename GridView::IndexSet IndexSet;
     std::cout << ">>> Checking SuperEntityIterator for codimension "
               << codim << "..." << std::endl;
@@ -131,6 +132,11 @@ namespace Dune
                   << std::endl;
       }
     }
+#else // #if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
+    std::cerr << ">>> Skipping check for SuperEntityIterator for codimension "
+              << codim << ", because experimental grid extensions are disabled."
+              << std::endl;
+#endif // #else // #if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
   }
 
 }
