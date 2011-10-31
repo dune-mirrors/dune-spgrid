@@ -19,7 +19,6 @@ AC_CONFIG_FILES([
   dune/grid/cartesiangrid/Makefile
   dune/grid/cartesiangrid/hostgridinfo/Makefile
   dune/grid/extensions/Makefile
-  dune/grid/freiburg/Makefile
   dune/grid/spgrid/Makefile
   dune/grid/test/Makefile
   doc/Makefile
