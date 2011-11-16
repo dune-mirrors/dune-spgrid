@@ -4,6 +4,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/normal.hh>
 
 namespace Dune
@@ -15,7 +16,9 @@ namespace Dune
   template< int dim, int codim >
   struct SPGeometryPattern
   {
-    explicit SPGeometryPattern ( const unsigned int dir );
+    typedef SPDirection< dim > Direction;
+
+    explicit SPGeometryPattern ( Direction dir );
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;
@@ -28,7 +31,9 @@ namespace Dune
   template< int dim >
   struct SPGeometryPattern< dim, 0 >
   {
-    explicit SPGeometryPattern ( const unsigned int dir );
+    typedef SPDirection< dim > Direction;
+
+    explicit SPGeometryPattern ( Direction dir ) {}
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;
@@ -37,7 +42,9 @@ namespace Dune
   template< int dim >
   struct SPGeometryPattern< dim, dim >
   {
-    explicit SPGeometryPattern ( const unsigned int dir );
+    typedef SPDirection< dim > Direction;
+
+    explicit SPGeometryPattern ( Direction dir ) {}
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;
@@ -46,7 +53,9 @@ namespace Dune
   template<>
   struct SPGeometryPattern< 0, 0 >
   {
-    explicit SPGeometryPattern ( const unsigned int dir );
+    typedef SPDirection< 0 > Direction;
+
+    explicit SPGeometryPattern ( Direction dir ) {}
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;
@@ -69,6 +78,8 @@ namespace Dune
     static const int codimension = codim;
     static const int mydimension = dimension - codimension;
 
+    typedef SPDirection< dimension > Direction;
+
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef FieldVector< ctype, mydimension > LocalVector;
 
@@ -78,7 +89,7 @@ namespace Dune
     struct MatrixStorage
       : public Pattern
     {
-      explicit MatrixStorage ( unsigned int dir ) : Pattern( dir ) {}
+      explicit MatrixStorage ( Direction dir ) : Pattern( dir ) {}
 
       LocalVector h;
     };
@@ -87,7 +98,11 @@ namespace Dune
     struct JacobianTransposed;
     struct JacobianInverseTransposed;
 
-    SPGeometryCache ( const GlobalVector &h, const unsigned int dir );
+    SPGeometryCache ( const GlobalVector &h, Direction dir )
+      : jacobianTransposed_( h, dir ),
+        jacobianInverseTransposed_( h, dir ),
+        volume_( jacobianTransposed_.det() )
+    {}
 
     const ctype &volume () const;
     const JacobianTransposed &jacobianTransposed () const;
@@ -117,7 +132,7 @@ namespace Dune
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
-    JacobianTransposed ( const GlobalVector &h, unsigned int dir )
+    JacobianTransposed ( const GlobalVector &h, Direction dir )
       : storage_( dir )
     {
       for( int k = 0; k < mydimension; ++k )
@@ -175,7 +190,7 @@ namespace Dune
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
-    JacobianInverseTransposed ( const GlobalVector &h, unsigned int dir )
+    JacobianInverseTransposed ( const GlobalVector &h, Direction dir )
       : storage_( dir )
     {
       for( int k = 0; k < mydimension; ++k )
@@ -220,32 +235,18 @@ namespace Dune
   // -----------------------------------
 
   template< int dim, int codim >
-  inline SPGeometryPattern< dim, codim >::SPGeometryPattern ( const unsigned int dir )
+  inline SPGeometryPattern< dim, codim >::SPGeometryPattern ( Direction dir )
   {
     int k = 0;
     for( int j = 0; j < dim; ++j )
     {
-      if( ((dir >> j) & 1) != 0 )
+      if( dir[ j ] != 0 )
         nonzero_[ k++ ] = j;
       else
         zero_[ j - k ] = j;
     }
     assert( k == dim - codim );
   }
-
-
-  template< int dim >
-  inline SPGeometryPattern< dim, 0 >::SPGeometryPattern ( const unsigned int dir )
-  {}
-
-
-  template< int dim >
-  inline SPGeometryPattern< dim, dim >::SPGeometryPattern ( const unsigned int dir )
-  {}
-
-
-  inline SPGeometryPattern< 0, 0 >::SPGeometryPattern ( const unsigned int dir )
-  {}
 
 
   template< int dim, int codim >
@@ -313,15 +314,6 @@ namespace Dune
 
   // Implementation of SPGeometryCache
   // ---------------------------------
-
-  template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >
-    ::SPGeometryCache ( const GlobalVector &h, const unsigned int dir )
-  : jacobianTransposed_( h, dir ),
-    jacobianInverseTransposed_( h, dir ),
-    volume_( jacobianTransposed_.det() )
-  {}
-
 
   template< class ct, int dim, int codim >
   inline const typename SPGeometryCache< ct, dim, codim >::ctype &

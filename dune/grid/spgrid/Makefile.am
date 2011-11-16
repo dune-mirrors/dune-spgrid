@@ -8,6 +8,7 @@ spgrid_HEADERS = \
 	cube.hh \
 	declaration.hh \
 	decomposition.hh \
+	direction.hh \
 	domain.hh \
 	dgfparser.hh \
 	entity.hh \

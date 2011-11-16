@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
 
@@ -29,6 +30,8 @@ namespace Dune
 
     typedef SPPartitionList< dimension > PartitionList;
 
+    typedef typename EntityInfo::Direction Direction;
+
     static const unsigned int numDirections = GridLevel::numDirections;
 
     struct Begin {};
@@ -36,6 +39,8 @@ namespace Dune
 
   protected:
     typedef typename EntityInfo::MultiIndex MultiIndex;
+
+    typedef SPDirectionIterator< dimension, codimension > DirectionIterator;
 
   public:
     using Base::entityInfo;
@@ -54,8 +59,8 @@ namespace Dune
     void increment ();
 
   private:
-    int begin ( const int i, const unsigned int dir ) const;
-    int end ( const int i, const unsigned int dir ) const;
+    int begin ( int i, Direction dir ) const;
+    int end ( int i, Direction dir ) const;
 
     void init ();
 
@@ -117,13 +122,12 @@ namespace Dune
       id[ i ] = begin( i, entityInfo().direction() );
     }
 
-    unsigned int dir = entityInfo().direction()+1;
-    const unsigned int mydim = mydimension;
-    for( ; (dir < numDirections) && ((bitCount( dir ) != mydim) || partition_->empty( dir )); ++dir );
-    if( dir < numDirections )
+    DirectionIterator dirIt( entityInfo().direction() );
+    ++dirIt;
+    if( dirIt )
     {
       for( int i = 0; i < dimension; ++i )
-        id[ i ] = begin( i, dir );
+        id[ i ] = begin( i, *dirIt );
       entityInfo().update();
     }
     else
@@ -135,40 +139,34 @@ namespace Dune
 
 
   template< int codim, class Grid >
-  inline int
-  SPPartitionIterator< codim, Grid >::begin ( const int i, const unsigned int dir ) const
+  inline int SPPartitionIterator< codim, Grid >::begin ( int i, Direction dir ) const
   {
     const unsigned int s = (sweepDirection_ >> i) & 1;
-    const unsigned int d = (dir >> i) & 1;
-    return partition_->bound( s, i, d );
+    return partition_->bound( s, i, dir[ i ] );
   }
 
 
   template< int codim, class Grid >
-  inline int
-  SPPartitionIterator< codim, Grid >::end ( const int i, const unsigned int dir ) const
+  inline int SPPartitionIterator< codim, Grid >::end ( int i, Direction dir ) const
   {
     const unsigned int s = (sweepDirection_ >> i) & 1;
-    const unsigned int d = (dir >> i) & 1;
-    const int bnd = partition_->bound( 1-s, i, d );
+    const int bnd = partition_->bound( 1-s, i, dir[ i ] );
     return bnd + 2*(2*(1-s) - 1);
   }
 
 
   template< int codim, class Grid >
-  inline void
-  SPPartitionIterator< codim, Grid >::init ()
+  inline void SPPartitionIterator< codim, Grid >::init ()
   {
     MultiIndex &id = entityInfo().id();
     if( partition_ )
     {
-      unsigned int dir = 0;
-      const unsigned int mydim = mydimension;
-      for( ; (dir < numDirections) && ((bitCount( dir ) != mydim) || partition_->empty( dir )); ++dir );
-      if( dir < numDirections )
+      DirectionIterator dirIt;
+      for( ; dirIt && partition_->empty( *dirIt ); ++dirIt );
+      if( dirIt )
       {
         for( int i = 0; i < dimension; ++i )
-          id[ i ] = begin( i, dir );
+          id[ i ] = begin( i, *dirIt );
         entityInfo().update( partition_->number() );
       }
       else

@@ -7,6 +7,7 @@
 
 #include <dune/grid/common/gridenums.hh>
 
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/gridlevel.hh>
 
 namespace Dune
@@ -23,6 +24,8 @@ namespace Dune
     {
       typedef BasicEntityInfo< Grid, dim, codim > This;
 
+      typedef SPEntityDirection< dim, dim - codim > EntityDirection;
+
     public:
       typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
@@ -31,29 +34,29 @@ namespace Dune
       typedef typename GridLevel::MultiIndex MultiIndex;
       typedef typename GridLevel::GlobalVector GlobalVector;
 
+      typedef typename EntityDirection::Direction Direction;
+
       BasicEntityInfo () : gridLevel_( nullptr ) {}
 
       BasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
 
       BasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
-        : gridLevel_( &gridLevel ),
-          id_( id ),
-          direction_( id.direction() )
+        : gridLevel_( &gridLevel ), id_( id ), direction_( id )
       {}
 
-      unsigned int direction () const { return direction_; }
+      Direction direction () const { return direction_; }
 
       const MultiIndex &id () const { return id_; }
       MultiIndex &id () { return id_; }
 
       const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
 
-      void update () { direction_ = id_.direction(); }
+      void update () { direction_ = EntityDirection( id() ); }
 
     private:
       const GridLevel *gridLevel_;
       MultiIndex id_;
-      unsigned int direction_;
+      EntityDirection direction_;
     };
 
 
@@ -66,6 +69,8 @@ namespace Dune
     {
       typedef BasicEntityInfo< Grid, dim, 0 > This;
 
+      typedef SPEntityDirection< dim, dim > EntityDirection;
+
     public:
       typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
@@ -74,19 +79,20 @@ namespace Dune
       typedef typename GridLevel::MultiIndex MultiIndex;
       typedef typename GridLevel::GlobalVector GlobalVector;
 
+      typedef typename EntityDirection::Direction Direction;
+
       BasicEntityInfo () : gridLevel_( nullptr ) {}
       BasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
+      BasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id ) : gridLevel_( &gridLevel ), id_( id ), direction_( id ) {}
 
-      BasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id ) : gridLevel_( &gridLevel ), id_( id ) {}
-
-      unsigned int direction () const { return (1 << dimension) - 1; }
+      Direction direction () const { return direction_; }
 
       const MultiIndex &id () const { return id_; }
       MultiIndex &id () { return id_; }
 
       const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
 
-      void update () { assert( (id_.direction() == direction()) ); }
+      void update () { direction_ = EntityDirection( id() ); }
 
       void down ()
       {
@@ -112,41 +118,7 @@ namespace Dune
     private:
       const GridLevel *gridLevel_;
       MultiIndex id_;
-    };
-
-
-
-    // BasicEntityInfo (for codim = dim)
-    // ---------------------------------
-
-    template< class Grid, int dim >
-    class BasicEntityInfo< Grid, dim, dim >
-    {
-      typedef BasicEntityInfo< Grid, dim, dim > This;
-
-    public:
-      typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
-
-      typedef typename GridLevel::MultiIndex MultiIndex;
-      typedef typename GridLevel::GlobalVector GlobalVector;
-
-      BasicEntityInfo () : gridLevel_( nullptr ) {}
-      BasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
-
-      BasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id ) : gridLevel_( &gridLevel ), id_( id ) {}
-
-      unsigned int direction () const { return 0; }
-
-      const MultiIndex &id () const { return id_; }
-      MultiIndex &id () { return id_; }
-
-      const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
-
-      void update () { assert( (id_.direction() == direction()) ); }
-
-    private:
-      const GridLevel *gridLevel_;
-      MultiIndex id_;
+      EntityDirection direction_;
     };
 
 

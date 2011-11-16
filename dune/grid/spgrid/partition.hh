@@ -25,6 +25,8 @@ namespace Dune
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
+    typedef SPDirection< dimension > Direction;
+
     SPBasicPartition ( const MultiIndex &begin, const MultiIndex &end );
 
     const MultiIndex &begin () const;
@@ -39,7 +41,7 @@ namespace Dune
     bool contains ( const MultiIndex &id ) const;
 
     bool empty () const;
-    bool empty ( const unsigned int dir ) const;
+    bool empty ( Direction dir ) const;
 
     int volume () const;
     MultiIndex width () const;
@@ -173,11 +175,11 @@ namespace Dune
 
 
   template< int dim >
-  inline bool SPBasicPartition< dim >::empty ( const unsigned int dir ) const
+  inline bool SPBasicPartition< dim >::empty ( Direction dir ) const
   {
     bool empty = false;
     for( int i = 0; i < dimension; ++i )
-      empty |= (bound( 0, i, (dir >> i) & 1 ) > bound( 1, i, (dir >> i) & 1 ));
+      empty |= (bound( 0, i, dir[ i ] ) > bound( 1, i, dir[ i ] ));
     return empty;
   }
 

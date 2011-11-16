@@ -58,7 +58,8 @@ namespace Dune
 
       const GlobalVector y = global - grid_.domain().cube().origin();
       GlobalVector z;
-      gridLevel.template geometryCache< 0 >( (1 << dimension) - 1 ).jacobianInverseTransposed().mv( y, z );
+      SPDirectionIterator< dimension, 0 > dirIt;
+      gridLevel.template geometryCache< 0 >( *dirIt ).jacobianInverseTransposed().mv( y, z );
 
       typename GridLevel::MultiIndex id;
       for( int i = 0; i < dimension; ++i )

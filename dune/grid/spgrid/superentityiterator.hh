@@ -3,6 +3,8 @@
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
+#include <dune/grid/spgrid/direction.hh>
+#include <dune/grid/spgrid/entity.hh>
 #include <dune/grid/spgrid/referencecube.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
 
@@ -56,8 +58,7 @@ namespace Dune
     : Base( entityImpl.gridLevel() ),
       fBoundary_( 0 )
     {
-      const unsigned int direction = entityImpl.entityInfo().direction();
-      sequence_ = SequenceProvider::sequence( direction, be );
+      sequence_ = SequenceProvider::sequence( entityImpl.entityInfo().direction().bits(), be );
 
       MultiIndex &id = entityInfo().id();
 

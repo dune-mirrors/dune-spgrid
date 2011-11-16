@@ -5,8 +5,9 @@
 
 #include <dune/common/forloop.hh>
 
-#include <dune/grid/spgrid/referencecube.hh>
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
+#include <dune/grid/spgrid/referencecube.hh>
 
 namespace Dune
 {
@@ -30,6 +31,8 @@ namespace Dune
     typedef typename ReferenceCube::GlobalVector GlobalVector;
 
     static const unsigned int numDirections = ReferenceCube::numCorners;
+
+    typedef SPDirection< dimension > Direction;
 
     template< int codim >
     struct Codim
@@ -59,8 +62,7 @@ namespace Dune
     const GlobalVector &h () const { return h_; }
 
     template< int codim >
-    const typename Codim< codim >::GeometryCache &
-    geometryCache ( const unsigned int dir ) const;
+    const typename Codim< codim >::GeometryCache &geometryCache ( Direction dir ) const;
 
     ctype faceVolume ( const int i ) const;
     const GlobalVector &volumeNormal ( const int i ) const;
@@ -85,16 +87,11 @@ namespace Dune
   template< int codim >
   struct SPGeometricGridLevel< ct, dim >::BuildGeometryCache
   {
-    static void
-    apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
+    static void apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
     {
       typedef typename Codim< codim >::GeometryCache GeometryCache;
-      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
-      {
-        const int mydim = bitCount( dir );
-        if( mydim == dimension - codim )
-          geometryCache[ dir ] = new GeometryCache( h, dir );
-      }
+      for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
+        geometryCache[ dirIt->bits() ] = new GeometryCache( h, *dirIt );
     }
   };
 
@@ -107,8 +104,7 @@ namespace Dune
   template< int codim >
   struct SPGeometricGridLevel< ct, dim >::DestroyGeometryCache
   {
-    static void
-    apply ( void *(&geometryCache)[ 1 << dimension ] )
+    static void apply ( void *(&geometryCache)[ 1 << dimension ] )
     {
       typedef typename Codim< codim >::GeometryCache GeometryCache;
       for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
@@ -116,8 +112,8 @@ namespace Dune
         const int mydim = bitCount( dir );
         if( mydim == dimension - codim )
         {
-          delete (GeometryCache *)geometryCache[ dir ];
-          geometryCache[ dir ] = 0;
+          delete static_cast< GeometryCache * >( geometryCache[ dir ] );
+          geometryCache[ dir ] = nullptr;
         }
       }
     }
@@ -157,11 +153,11 @@ namespace Dune
   template< class ct, int dim >
   template< int codim >
   inline const typename SPGeometricGridLevel< ct, dim >::template Codim< codim >::GeometryCache &
-  SPGeometricGridLevel< ct, dim >::geometryCache ( const unsigned int dir ) const
+  SPGeometricGridLevel< ct, dim >::geometryCache ( Direction dir ) const
   {
     typedef typename Codim< codim >::GeometryCache GeometryCache;
-    assert( bitCount( dir ) == dimension - codim );
-    return *((const GeometryCache *)geometryCache_[ dir ]);
+    assert( dir.mydimension() == dimension - codim );
+    return *static_cast< const GeometryCache * >( geometryCache_[ dir.bits() ] );
   }
 
 
@@ -188,7 +184,8 @@ namespace Dune
   {
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
-    const ctype volume = geometryCache< 0 >( numDirections-1 ).volume();
+    SPDirectionIterator< dimension, 0 > dirIt;
+    const ctype volume = geometryCache< 0 >( *dirIt ).volume();
     for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {
       normal_[ face ] = referenceCube().normal( face );

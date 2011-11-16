@@ -11,6 +11,7 @@
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/entityseed.hh>
 #include <dune/grid/spgrid/gridview.hh>
 #include <dune/grid/spgrid/hierarchiciterator.hh>
@@ -774,7 +775,12 @@ namespace Dune
     const GlobalVector unitH( ctype( 1 ) );
     for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {
-      const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
+      MultiIndex id;
+      for( int i = 0; i < dimension; ++i )
+        id[ i ] = 1;
+      id += referenceCube().subId( 1, face );
+      const SPDirection< dimension > direction( id );
+      //const unsigned int direction = ((1 << dimension) - 1) ^ (1 << (face/2));
       GlobalVector origin( ctype( 0 ) );
       origin[ face/2 ] = ctype( face & 1 );
       const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );

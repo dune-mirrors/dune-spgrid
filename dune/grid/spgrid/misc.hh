@@ -30,6 +30,27 @@ namespace Dune
 
 
   /**
+   * \brief count the number of set bits within an integer
+   *
+   * \param[in]  i        integer whose set bits shall be counted
+   * \param[in]  numBits  maximal number of used bits (starting from bit 0) in i
+   *
+   *  \returns number of set bits in the integer i
+   */
+  inline unsigned int bitCount ( unsigned int i, unsigned int numBits )
+  {
+    unsigned int bitCount = 0;
+    for( unsigned int k = 0; k < numBits; ++k )
+    {
+      bitCount += (i & 1);
+      i /= 2;
+    }
+    assert( i == 0 );
+    return bitCount;
+  }
+
+
+  /**
    * \brief copy a vector, performing an operation on each element
    *
    * \param[in]  in  vector of input data

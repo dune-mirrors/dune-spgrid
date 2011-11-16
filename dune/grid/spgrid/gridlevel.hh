@@ -4,6 +4,7 @@
 #include <cassert>
 #include <vector>
 
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/geometricgridlevel.hh>
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/refinement.hh>
@@ -305,7 +306,8 @@ namespace Dune
       const unsigned int numChildren = refinement().numChildren();
       geometryInFather_ = new LocalGeometryImpl *[ numChildren ];
       const GlobalVector hInFather = refinement().template hInFather< ctype >();
-      const typename Base::template Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
+      SPDirectionIterator< dimension, 0 > dirIt;
+      const typename Base::template Codim< 0 >::GeometryCache cacheInFather( hInFather, *dirIt );
       for( unsigned int index = 0; index < numChildren; ++index )
       {
         const GlobalVector origin = refinement().template originInFather< ctype >( index );
