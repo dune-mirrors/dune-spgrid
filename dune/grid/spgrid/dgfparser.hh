@@ -87,22 +87,11 @@ namespace Dune
     typedef typename Grid::template Codim< 0 >::Entity Element;
     typedef typename Grid::template Codim< dimension >::Entity Vertex;
 
-  private:
-    typedef FieldVector< double, dimension > Point;
-
-    typedef dgf::BoundaryDomBlock BoundaryDomainBlock;
-
-  public:
     explicit DGFGridFactory ( std::istream &input,
                               MPICommunicatorType comm = MPIHelper::getCommunicator() );
 
     explicit DGFGridFactory ( const std::string &filename,
                               MPICommunicatorType comm = MPIHelper::getCommunicator() );
-
-    ~DGFGridFactory ()
-    {
-      delete boundaryDomainBlock_;
-    }
 
     Grid *grid () const
     {
@@ -118,37 +107,13 @@ namespace Dune
     template< class Intersection >
     int boundaryId ( const Intersection &intersection ) const
     {
-      std::vector< Point > corners;
-      getCorners( intersection.geometry(), corners );
-      const dgf::DomainData *data = boundaryDomainBlock_->contains( corners );
-      if( data )
-        return data->id();
-      else
-        return intersection.indexInInside();
-    }
-
-    bool haveBoundaryParameters () const
-    {
-      return boundaryDomainBlock_->hasParameter();
+      return Grid::getRealImplementation( intersection ).boundaryId();
     }
 
     template< int codim >
     int numParameters () const
     {
       return 0;
-    }
-
-    template< class Intersection >
-    const typename DGFBoundaryParameter::type &
-    boundaryParameter ( const Intersection &intersection ) const
-    {
-      std::vector< Point > corners;
-      getCorners( intersection.geometry(), corners );
-      const dgf::DomainData *data = boundaryDomainBlock_->contains( corners );
-      if( data )
-        return data->parameter();
-      else
-        return DGFBoundaryParameter::defaultValue();
     }
 
     template< class Entity >
@@ -161,20 +126,7 @@ namespace Dune
   private:
     void generate ( std::istream &input, const CollectiveCommunication &comm );
 
-    template< class Geometry >
-    static void getCorners ( const Geometry &geometry, std::vector< Point > &corners )
-    {
-      corners.resize( geometry.corners() );
-      for( int i = 0; i < geometry.corners(); ++i )
-      {
-        const typename Geometry::GlobalCoordinate corner = geometry.corner( i );
-        for( int j = 0; j < dimension; ++j )
-          corners[ i ][ j ] = corner[ j ];
-      }
-    }
-
     Grid *grid_;
-    BoundaryDomainBlock *boundaryDomainBlock_;
   };
 
 
@@ -271,8 +223,6 @@ namespace Dune
     cubes.push_back( typename Domain::Cube( a, b ) );
     Domain domain( cubes, typename Domain::Topology( periodic ) );
     grid_ = new Grid( domain, cells, parameter.overlap(), comm );
-
-    boundaryDomainBlock_ = new BoundaryDomainBlock( input, dimension );
   }
 
 
