@@ -2,15 +2,48 @@
 #define DUNE_SPGRID_GEOMETRY_HH
 
 #include <dune/common/typetraits.hh>
-#include <dune/common/geometrytype.hh>
 
-#include <dune/grid/common/genericreferenceelements.hh>
+#include <dune/geometry/type.hh>
+#include <dune/geometry/referenceelements.hh>
 
 #include <dune/grid/spgrid/referencecube.hh>
 #include <dune/grid/spgrid/entityinfo.hh>
 
 namespace Dune
 {
+
+  // Internal Forward Declarations
+  // -----------------------------
+
+  template< int mydim, int cdim, class Grid >
+  class SPGeometry;
+
+  template< int mydim, int cdim, class Grid >
+  class SPLocalGeometry;
+
+
+
+  // FacadeOptions
+  // -------------
+
+  namespace FacadeOptions
+  {
+
+    template< int mydim, int cdim, class Grid >
+    struct StoreGeometryReference< mydim, cdim, Grid, SPGeometry >
+    {
+      static const bool v = false;
+    };
+
+    template< int mydim, int cdim, class Grid >
+    struct StoreGeometryReference< mydim, cdim, Grid, SPLocalGeometry >
+    {
+      static const bool v = true;
+    };
+
+  } // namespace FacadeOptions
+
+
 
   // SPBasicGeometry
   // ---------------
@@ -38,6 +71,10 @@ namespace Dune
 
     typedef typename GeometryCache::GlobalVector GlobalVector;
     typedef typename GeometryCache::LocalVector LocalVector;
+
+    // just to make the Dune interface happy
+    typedef GlobalVector GlobalCoordinate;
+    typedef LocalVector LocalCoordinate;
 
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
@@ -109,11 +146,13 @@ namespace Dune
     {}
 
     explicit SPGeometry ( const EntityInfo &entityInfo )
-    : entityInfo_( entityInfo )
+    : entityInfo_( entityInfo ),
+      origin_( computeOrigin() )
     {}
 
     SPGeometry ( const GridLevel &gridLevel, const MultiIndex &id )
-    : entityInfo_( gridLevel, id )
+    : entityInfo_( gridLevel, id ),
+      origin_( computeOrigin() )
     {}
 
     using Base::jacobianTransposed;
@@ -126,7 +165,7 @@ namespace Dune
 
     GlobalVector origin () const
     {
-      return entityInfo().origin();
+      return origin_;
     }
 
     const GeometryCache &geometryCache () const
@@ -150,7 +189,17 @@ namespace Dune
     }
 
   private:
+    GlobalVector computeOrigin () const
+    {
+      const GlobalVector &h = gridLevel().h();
+      GlobalVector origin = gridLevel().domain().cube().origin();
+      for( int i = 0; i < dimension; ++i )
+        origin[ i ] += (id()[ i ] / 2) * h[ i ];
+      return origin;
+    }
+
     EntityInfo entityInfo_;
+    GlobalVector origin_;
   };
 
 
@@ -182,21 +231,14 @@ namespace Dune
     typedef typename Base::LocalVector LocalVector;
 
   public:
-    SPLocalGeometry ( const ReferenceCube &refCube,
-                      const GeometryCache &geometryCache,
+    SPLocalGeometry ( const GeometryCache &geometryCache,
                       const GlobalVector &origin )
-    : refCube_( &refCube ),
-      geometryCache_( geometryCache ),
+    : geometryCache_( geometryCache ),
       origin_( origin )
     {}
 
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
-
-    const ReferenceCube &referenceCube () const
-    {
-      return *refCube_;
-    }
 
     GlobalVector origin () const
     {
@@ -209,7 +251,6 @@ namespace Dune
     }
 
   private:
-    const ReferenceCube *refCube_;
     GeometryCache geometryCache_;
     GlobalVector origin_;
   };
@@ -251,8 +292,7 @@ namespace Dune
   inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
   SPBasicGeometry< mydim, cdim, Grid, Impl >::corner ( const int i ) const
   {
-    const ReferenceCube &refCube = asImpl().referenceCube();
-    return global( refCube.corner( i ) );
+    return global( ReferenceCube::corner( i ) );
   }
 
 
@@ -260,8 +300,7 @@ namespace Dune
   inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
   SPBasicGeometry< mydim, cdim, Grid, Impl >::center () const
   {
-    const ReferenceCube &refCube = asImpl().referenceCube();
-    return global( refCube.center() );
+    return global( ReferenceCube::center() );
   }
 
 
