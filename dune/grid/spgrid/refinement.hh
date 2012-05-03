@@ -5,36 +5,13 @@
 #include <dune/common/iostream.hh>
 
 #include <dune/grid/common/grid.hh>
+
+#include <dune/grid/spgrid/declaration.hh>
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 
 namespace Dune
 {
-
-  // SPRefinementStrategy
-  // --------------------
-
-  /** \enum  SPRefinementStrategy
-   *  \brief possible refinement strategies for \ref Dune::SPGrid "SPGrid"
-   */
-  enum SPRefinementStrategy
-  {
-    /** Each element is split into 2<sup>dim</sup> children.
-     *  This is the default refinement technique.
-     */
-    SPIsotropicRefinement,
-    /** The user may choose freely along which axes the grid should be refined.
-     *  By default, this coincides with SPIsotropicRefinement.
-     */
-    SPAnisotropicRefinement,
-    /** Each element is split into 2 children.
-     *  The axis along which the elements are split may be chosen by the user.
-     *  By default, the axes are cycled periodically.
-     */
-    SPBisectionRefinement
-  };
-
-
 
   // Internal Forward Declarations
   // -----------------------------
@@ -352,7 +329,7 @@ namespace Dune
     typedef SPDefaultRefinement< dim, SPIsotropicRefinement > Base;
 
   public:
-    static const int dimension = Base::dimension;
+    using Base::dimension;
     
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
@@ -388,7 +365,7 @@ namespace Dune
     typedef SPDefaultRefinement< dim, SPAnisotropicRefinement > Base;
 
   public:
-    static const int dimension = Base::dimension;
+    using Base::dimension;
 
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
@@ -426,7 +403,7 @@ namespace Dune
     typedef SPDefaultRefinement< dim, SPBisectionRefinement > Base;
 
   public:
-    static const int dimension = Base::dimension;
+    using Base::dimension;
 
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;

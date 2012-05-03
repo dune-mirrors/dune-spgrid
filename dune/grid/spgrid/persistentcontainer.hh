@@ -3,15 +3,17 @@
 
 #include <dune/grid/utility/persistentcontainer.hh>
 
+#include <dune/grid/spgrid/declaration.hh>
+
 namespace Dune
 {
+
   // PersistentContainer for SPGrid
   // ------------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy,
-            class Comm, class Data, class Allocator >
-  class PersistentContainer< SPGrid< ct, dim, strategy, Comm >, 
-                             Data, Allocator >
+  template< class ct, int dim, SPRefinementStrategy strategy, class Comm,
+            class Data, class Allocator >
+  class PersistentContainer< SPGrid< ct, dim, strategy, Comm >, Data, Allocator >
   : public PersistentContainerVector< SPGrid< ct, dim, strategy, Comm >, 
                                       typename SPGrid< ct, dim, strategy, Comm >::HierarchicIndexSet,
                                       std::vector<Data,Allocator> >
