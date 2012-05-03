@@ -56,19 +56,8 @@ namespace Dune
 
   public:
     explicit SPBasicEntity ( const EntityInfo &entityInfo )
-    : geometry_( GeometryImpl( entityInfo ) )
+    : entityInfo_( entityInfo )
     {}
-
-    SPBasicEntity ( const This &other )
-    : geometry_( GeometryImpl( Grid::getRealImplementation( other.geometry() ) ) )
-    {}
-
-    const This &operator= ( const This &other )
-    {
-      Grid::getRealImplementation( geometry_ )
-        = Grid::getRealImplementation( other.geometry() );
-      return *this;
-    }
 
     int level () const
     {
@@ -90,9 +79,9 @@ namespace Dune
       return geometry().type();
     }
 
-    const Geometry &geometry () const
+    Geometry geometry () const
     {
-      return geometry_;
+      return Geometry( GeometryImpl( entityInfo_ ) );
     }
 
     bool equals ( const This &other ) const
@@ -107,12 +96,12 @@ namespace Dune
   
     const EntityInfo &entityInfo () const
     {
-      return Grid::getRealImplementation( geometry_ ).entityInfo();
+      return entityInfo_;
     }
 
     EntityInfo &entityInfo ()
     {
-      return Grid::getRealImplementation( geometry_ ).entityInfo();
+      return entityInfo_;
     }
 
     const GridLevel &gridLevel () const
@@ -126,7 +115,7 @@ namespace Dune
     }
 
   private:
-    Geometry geometry_;
+    EntityInfo entityInfo_;
   };
 
 
@@ -211,14 +200,7 @@ namespace Dune
     }
 
     template< int codim >
-    typename Codim< codim >::EntityPointer subEntity ( const int i ) const
-    {
-      // warning: this is only true for closed partitions
-      const unsigned int partitionNumber = entityInfo().partitionNumber();
-      MultiIndex id = entityInfo().id();
-      id += gridLevel().referenceCube().subId( codim, i );
-      return SPEntityPointer< codim, Grid >( gridLevel(), id, partitionNumber );
-    }
+    typename Codim< codim >::EntityPointer subEntity ( const int i ) const;
 
     LeafIntersectionIterator ileafbegin () const
     {
@@ -286,6 +268,20 @@ namespace Dune
 
   // Implementation of SPEntity (for codimension 0)
   // ----------------------------------------------
+
+
+  template< int dim, class Grid >
+  template< int codim >
+  inline typename SPEntity< 0, dim, Grid >::template Codim< codim >::EntityPointer
+  SPEntity< 0, dim, Grid >::subEntity ( const int i ) const
+  {
+    // warning: this is only true for closed partitions
+    const unsigned int partitionNumber = entityInfo().partitionNumber();
+    MultiIndex id = entityInfo().id();
+    id += gridLevel().referenceCube().subId( codim, i );
+    return SPEntityPointer< codim, Grid >( gridLevel(), id, partitionNumber );
+  }
+
 
   template< int dim, class Grid >
   inline bool SPEntity< 0, dim, Grid >::hasBoundaryIntersections () const
