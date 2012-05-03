@@ -6,19 +6,11 @@
 #include <dune/grid/common/backuprestore.hh>
 
 #include <dune/grid/spgrid/communication.hh>
+#include <dune/grid/spgrid/declaration.hh>
 #include <dune/grid/spgrid/fileio.hh>
-#include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
 {
-
-  // External Forward Declarations
-  // -----------------------------
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  class SPGrid;
-
-
 
   /** \class BackupRestoreFacility
    *  \brief facility for writing and reading a \ref Dune::SPGrid "SPGrid"

@@ -3,6 +3,8 @@
 
 #include <limits>
 
+#include <dune/grid/common/exceptions.hh>
+
 #include <dune/grid/spgrid/partitionlist.hh>
 
 namespace Dune
