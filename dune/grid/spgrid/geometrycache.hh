@@ -212,6 +212,13 @@ namespace Dune
   }
 
 
+  inline int SPGeometryPattern< 0, 0 >::nonzero ( const int k ) const
+  {
+    assert( false );
+    return k;
+  }
+
+
   template< int dim, int codim >
   inline int SPGeometryPattern< dim, codim >::zero ( const int k ) const
   {
@@ -232,6 +239,13 @@ namespace Dune
   inline int SPGeometryPattern< dim, dim >::zero ( const int k ) const
   {
     assert( (k >= 0) && (k < dim) );
+    return k;
+  }
+
+
+  inline int SPGeometryPattern< 0, 0 >::zero ( const int k ) const
+  {
+    assert( false );
     return k;
   }
 
