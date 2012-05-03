@@ -214,12 +214,12 @@ namespace Dune
 
     LevelIntersectionIterator ilevelbegin () const
     {
-      return IntersectionIteratorImpl( *this, 0 );
+      return IntersectionIteratorImpl( entityInfo_, 0 );
     }
 
     LevelIntersectionIterator ilevelend () const
     {
-      return IntersectionIteratorImpl( *this, numFaces );
+      return IntersectionIteratorImpl( entityInfo_, numFaces );
     }
 
     bool hasBoundaryIntersections () const;
@@ -231,7 +231,7 @@ namespace Dune
 
     EntityPointer father () const;
 
-    const LocalGeometry &geometryInFather () const
+    LocalGeometry geometryInFather () const
     {
       return gridLevel().geometryInFather( entityInfo().id() );
     }
