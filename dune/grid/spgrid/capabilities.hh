@@ -5,13 +5,13 @@
 #include <mpi.h>
 #endif
 
-#include <dune/grid/common/capabilities.hh>
+#include <dune/geometry/genericgeometry/topologytypes.hh>
 
-#include <dune/grid/genericgeometry/topologytypes.hh>
+#include <dune/grid/common/capabilities.hh>
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
-#include <dune/grid/spgrid/refinement.hh>
+#include <dune/grid/spgrid/declaration.hh>
 
 /** \file
  *  \author Martin Nolte
@@ -20,14 +20,6 @@
 
 namespace Dune
 {
-
-  // External Forward Declarations
-  // -----------------------------
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  class SPGrid;
-
-
 
   // Capabilities
   // ------------
