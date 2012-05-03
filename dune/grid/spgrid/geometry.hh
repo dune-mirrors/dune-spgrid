@@ -158,11 +158,6 @@ namespace Dune
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
-    const ReferenceCube &referenceCube () const
-    {
-      return gridLevel().template referenceCube< codimension >();
-    }
-
     GlobalVector origin () const
     {
       return origin_;
@@ -194,7 +189,7 @@ namespace Dune
       const GlobalVector &h = gridLevel().h();
       GlobalVector origin = gridLevel().domain().cube().origin();
       for( int i = 0; i < dimension; ++i )
-        origin[ i ] += (id()[ i ] / 2) * h[ i ];
+        origin[ i ] += (entityInfo().id()[ i ] / 2) * h[ i ];
       return origin;
     }
 
