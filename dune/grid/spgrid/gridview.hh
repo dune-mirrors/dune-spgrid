@@ -322,7 +322,7 @@ namespace Dune
   inline typename SPGridView< ViewTraits >::IntersectionIterator
   SPGridView< ViewTraits >::ibegin ( const typename Codim< 0 >::Entity &entity ) const
   {
-    return IntersectionIteratorImpl( entity, 0 );
+    return IntersectionIteratorImpl( Grid::getRealImplementation( entity ).entityInfo(), 0 );
   }
 
 
@@ -330,7 +330,7 @@ namespace Dune
   inline typename SPGridView< ViewTraits >::IntersectionIterator
   SPGridView< ViewTraits >::iend ( const typename Codim< 0 >::Entity &entity ) const
   {
-    return IntersectionIteratorImpl( entity, GridLevel::ReferenceCube::numFaces );
+    return IntersectionIteratorImpl( Grid::getRealImplementation( entity ).entityInfo(), GridLevel::ReferenceCube::numFaces );
   }
 
 
