@@ -21,19 +21,15 @@ namespace Dune
     typedef typename Intersection::Entity Entity;
     
   private:
-    typedef SPEntity< 0, Traits::ReferenceCube::dimension, Grid > EntityImpl;
     typedef SPIntersection< Grid > IntersectionImpl;
 
   public:
+    typedef typename IntersectionImpl::EntityInfo EntityInfo;
     typedef typename IntersectionImpl::GridLevel GridLevel;
 
   public:
-    SPIntersectionIterator ( const Entity &entity, const int face )
-    : intersection_( IntersectionImpl( Grid::getRealImplementation( entity ), face ) )
-    {}
-
-    SPIntersectionIterator ( const EntityImpl &entityImpl, const int face )
-    : intersection_( IntersectionImpl( entityImpl, face ) )
+    SPIntersectionIterator ( const EntityInfo &entityInfo, const int face )
+    : intersection_( IntersectionImpl( entityInfo, face ) )
     {}
 
     SPIntersectionIterator ( const This &other )

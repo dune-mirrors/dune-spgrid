@@ -75,25 +75,10 @@ namespace Dune
     typedef typename PartitionList::Partition Partition;
 
   public:
-    SPIntersection ( const EntityImpl &entityImpl, const int face )
-    : inside_( &entityImpl ),
-      geometry_( GeometryImpl( entityImpl.gridLevel() ) )
+    SPIntersection ( const EntityInfo &entityInfo, const int face )
+    : entityInfo_( entityInfo )
     {
       setFace( face );
-    }
-
-    SPIntersection ( const This &other )
-    : inside_( other.inside_ ),
-      face_( other.face_ ),
-      geometry_( GeometryImpl( Grid::getRealImplementation( other.geometry_ ) ) )
-    {}
-
-    const This &operator= ( const This &other )
-    {
-      inside_ = other.inside_;
-      face_ = other.face_;
-      Grid::getRealImplementation( geometry_ ) = Grid::getRealImplementation( other.geometry_ );
-      return *this;
     }
 
     bool boundary () const;
@@ -109,7 +94,6 @@ namespace Dune
 
     EntityPointer inside () const
     {
-      //return EntityPointer( *inside_ );
       return EntityPointer( entityInfo() );
     }
 
@@ -120,19 +104,24 @@ namespace Dune
       return true;
     }
 
-    const LocalGeometry &geometryInInside () const
+    LocalGeometry geometryInInside () const
     {
       return gridLevel().grid().localFaceGeometry( indexInInside() );
     }
 
-    const LocalGeometry &geometryInOutside () const
+    LocalGeometry geometryInOutside () const
     {
       return gridLevel().grid().localFaceGeometry( indexInOutside() );
     }
 
-    const Geometry &geometry () const
+    Geometry geometry () const
     {
-      return geometry_;
+      typedef SPEntityInfo< Grid, 1 > EntityInfo;
+
+      const unsigned int partitionNumber = entityInfo().partitionNumber();
+      MultiIndex id = entityInfo().id();
+      id += gridLevel().referenceCube().subId( 1, face_ );
+      return Geometry( GeometryImpl( EntityInfo( gridLevel(), id, partitionNumber ) ) );
     }
 
     GeometryType type () const
@@ -185,25 +174,16 @@ namespace Dune
     {
       assert( face >= 0 );
       face_ = face;
-      if( face < ReferenceCube::numFaces )
-      {
-        const unsigned int partitionNumber = entityInfo().partitionNumber();
-        MultiIndex &id = Grid::getRealImplementation( geometry_ ).entityInfo().id();
-        id = entityInfo().id();
-        id += gridLevel().referenceCube().subId( 1, face );
-        Grid::getRealImplementation( geometry_ ).entityInfo().update( partitionNumber );
-      }
     }
 
   private:
     const EntityInfo &entityInfo () const
     {
-      return inside_->entityInfo();
+      return entityInfo_;
     }
 
-    const EntityImpl *inside_;
+    EntityInfo entityInfo_;
     int face_;
-    Geometry geometry_;
   };
 
 
