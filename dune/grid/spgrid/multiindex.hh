@@ -3,7 +3,10 @@
 
 #include <limits>
 
+#include <dune/common/array.hh>
+
 #include <dune/common/iostream.hh>
+
 #include <dune/grid/spgrid/misc.hh>
 
 namespace Dune
@@ -65,6 +68,13 @@ namespace Dune
 
     /** \brief assignment operator from int array */
     const This &operator= ( const int (&index)[ dimension ] )
+    {
+      for( int i = 0; i < dimension; ++i )
+        index_[ i ] = index[ i ];
+      return *this;
+    }
+
+    const This &operator= ( const Dune::array< int, dimension > &index )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] = index[ i ];
@@ -287,7 +297,7 @@ namespace Dune
     return m;
   }
 
-}
+} // namespace Dune
 
 
 namespace std
@@ -344,6 +354,6 @@ namespace std
     }
   };
 
-} // namespace Dune
+} // namespace std
 
 #endif // #ifndef DUNE_SPGRID_MULTIINDEX_HH
