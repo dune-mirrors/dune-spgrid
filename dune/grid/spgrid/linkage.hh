@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_LINKAGE_HH
 #define DUNE_SPGRID_LINKAGE_HH
 
+#include <vector>
+
 #include <dune/grid/spgrid/partitionlist.hh>
 #include <dune/grid/spgrid/partitionpool.hh>
 
