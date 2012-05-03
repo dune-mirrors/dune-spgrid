@@ -442,7 +442,7 @@ namespace Dune
                            const unsigned int partitionNumber,
                            const int face ) const;
 
-    const typename Codim< 1 >::LocalGeometryImpl &localFaceGeometry ( const int face ) const;
+    typename Codim< 1 >::LocalGeometry localFaceGeometry ( const int face ) const;
 
     void clear ();
 
@@ -852,11 +852,11 @@ namespace Dune
 
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline const typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometryImpl &
+  inline typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometry
   SPGrid< ct, dim, strategy, Comm >::localFaceGeometry ( const int face ) const
   {
     assert( (face >= 0) && (face < ReferenceCube::numFaces) );
-    return *localFaceGeometry_[ face ];
+    return LocalGeometry( *localFaceGeometry_[ face ] );
   }
 
 
