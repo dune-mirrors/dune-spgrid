@@ -223,15 +223,9 @@ namespace Dune
       return refCubes_.template get< codim >();
     }
 
-    const Domain &domain () const
-    {
-      return domain_;
-    }
+    const Domain &domain () const { return domain_; }
 
-    const MultiIndex &overlap () const
-    {
-      return overlap_;
-    }
+    const MultiIndex &overlap () const { return overlap_; }
 
     int maxLevel () const
     {
