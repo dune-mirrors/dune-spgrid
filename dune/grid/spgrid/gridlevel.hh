@@ -99,7 +99,7 @@ namespace Dune
                            const unsigned int partitionNumber,
                            const int face ) const;
 
-    const LocalGeometry &geometryInFather ( const MultiIndex &id ) const;
+    LocalGeometry geometryInFather ( const MultiIndex &id ) const;
 
     int size () const;
 
@@ -122,7 +122,7 @@ namespace Dune
     PartitionPool partitionPool_;
     Linkage linkage_;
 
-    LocalGeometry **geometryInFather_;
+    LocalGeometryImpl **geometryInFather_;
   };
 
 
@@ -263,11 +263,11 @@ namespace Dune
 
 
   template< class Grid >
-  inline const typename SPGridLevel< Grid >::LocalGeometry &
+  inline typename SPGridLevel< Grid >::LocalGeometry
   SPGridLevel< Grid >::geometryInFather ( const MultiIndex &id ) const
   {
     assert( (level() > 0) && (geometryInFather_ != 0) );
-    return *(geometryInFather_[ refinement().childIndex( id ) ]);
+    return LocalGeometry( *(geometryInFather_[ refinement().childIndex( id ) ]) );
   }
 
 
@@ -285,13 +285,13 @@ namespace Dune
     if( level() > 0 )
     {
       const unsigned int numChildren = refinement().numChildren();
-      geometryInFather_ = new LocalGeometry *[ numChildren ];
+      geometryInFather_ = new LocalGeometryImpl *[ numChildren ];
       const GlobalVector hInFather = refinement().template hInFather< ctype >();
       const typename Base::template Codim< 0 >::GeometryCache cacheInFather( hInFather, numDirections-1 );
       for( unsigned int index = 0; index < numChildren; ++index )
       {
         const GlobalVector origin = refinement().template originInFather< ctype >( index );
-        geometryInFather_[ index ] = new LocalGeometry( LocalGeometryImpl( referenceCube(), cacheInFather, origin ) );
+        geometryInFather_[ index ] = new LocalGeometryImpl( referenceCube(), cacheInFather, origin );
       }
     }
   }
