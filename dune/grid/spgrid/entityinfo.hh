@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ENTITYINFO_HH
 #define DUNE_SPGRID_ENTITYINFO_HH
 
+#include <limits>
+
 #include <dune/common/typetraits.hh>
 
 #include <dune/grid/common/gridenums.hh>
@@ -229,14 +231,14 @@ namespace Dune
     typedef typename GeometryCache::LocalVector LocalVector;
 
     SPEntityInfo ( const GridLevel &gridLevel )
-    : Base( gridLevel )
+    : Base( gridLevel ),
+      partitionNumber_( std::numeric_limits< unsigned int >::max() )
     {}
 
     SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id,
                    const unsigned int partitionNumber )
     : Base( gridLevel, id ),
-      partitionNumber_( partitionNumber ),
-      origin_( computeOrigin() )
+      partitionNumber_( partitionNumber )
     {}
 
     using Base::direction;
@@ -258,11 +260,6 @@ namespace Dune
       return gridLevel().template partitionType< codim >( id(), partitionNumber() );
     }
 
-    GlobalVector origin () const
-    {
-      return origin_;
-    }
-
     const GeometryCache &geometryCache () const
     {
       return gridLevel().template geometryCache< codim >( direction() );
@@ -273,7 +270,6 @@ namespace Dune
       assert( id() != std::numeric_limits< MultiIndex >::max() );
       assert( gridLevel().template partition< All_Partition >().contains( id(), partitionNumber() ) );
       Base::update();
-      origin_ = computeOrigin();
     }
 
     void update ( const unsigned int partitionNumber )
@@ -283,19 +279,9 @@ namespace Dune
     }
 
   private:
-    GlobalVector computeOrigin () const
-    {
-      const GlobalVector &h = gridLevel().h();
-      GlobalVector origin = gridLevel().domain().cube().origin();
-      for( int i = 0; i < dimension; ++i )
-        origin[ i ] += (id()[ i ] / 2) * h[ i ];
-      return origin;
-    }
-
     unsigned int partitionNumber_;
-    GlobalVector origin_;
   };
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_ENTITYINFO_HH
