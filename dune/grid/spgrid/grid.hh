@@ -85,6 +85,8 @@ namespace Dune
         typedef SPEntityPointer< codim, const Grid > EntityPointerImpl;
         typedef Dune::EntityPointer< const Grid, EntityPointerImpl > EntityPointer;
 
+        typedef SPLocalGeometry< dim - codim, dim, const Grid > LocalGeometryImpl;
+
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPGeometry > Geometry;
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry > LocalGeometry;
 
