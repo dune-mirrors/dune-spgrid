@@ -3,9 +3,10 @@
 
 #include <dune/common/mpicollectivecommunication.hh>
 
+#include <dune/geometry/genericgeometry/codimtable.hh>
+
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
-#include <dune/grid/genericgeometry/codimtable.hh>
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
@@ -85,8 +86,7 @@ namespace Dune
         typedef Dune::EntityPointer< const Grid, EntityPointerImpl > EntityPointer;
 
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPGeometry > Geometry;
-        typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry >
-          LocalGeometry;
+        typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry > LocalGeometry;
 
         template< PartitionIteratorType pitype >
         struct Partition
@@ -159,6 +159,8 @@ namespace Dune
     : Base::template Codim< codim >
     {
       typedef typename Traits::template Codim< codim >::ReferenceCube ReferenceCube;
+
+      typedef typename Traits::template Codim< codim >::LocalGeometryImpl LocalGeometryImpl;
     };
 
     template< PartitionIteratorType pitype >
@@ -438,7 +440,7 @@ namespace Dune
                            const unsigned int partitionNumber,
                            const int face ) const;
 
-    const typename Codim< 1 >::LocalGeometry &localFaceGeometry ( const int face ) const;
+    const typename Codim< 1 >::LocalGeometryImpl &localFaceGeometry ( const int face ) const;
 
     void clear ();
 
@@ -461,7 +463,7 @@ namespace Dune
     CollectiveCommunication comm_;
     size_t boundarySize_;
     std::vector< array< size_t, 2*dimension > > boundaryOffset_;
-    const typename Codim< 1 >::LocalGeometry *localFaceGeometry_[ ReferenceCube::numFaces ];
+    const typename Codim< 1 >::LocalGeometryImpl *localFaceGeometry_[ ReferenceCube::numFaces ];
   };
 
 
@@ -848,7 +850,7 @@ namespace Dune
 
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline const typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometry &
+  inline const typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometryImpl &
   SPGrid< ct, dim, strategy, Comm >::localFaceGeometry ( const int face ) const
   {
     assert( (face >= 0) && (face < ReferenceCube::numFaces) );
@@ -873,8 +875,8 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline void SPGrid< ct, dim, strategy, Comm >::createLocalGeometries ()
   {
-    typedef typename Codim< 1 >::LocalGeometry LocalGeo;
-    typedef SPLocalGeometry< dimension-1, dimension, const This > LocalGeoImpl;
+    typedef typename Codim< 1 >::LocalGeometryImpl LocalGeometryImpl;
+
     const GlobalVector unitH( ctype( 1 ) );
     for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {
@@ -882,7 +884,7 @@ namespace Dune
       GlobalVector origin( ctype( 0 ) );
       origin[ face/2 ] = ctype( face & 1 );
       const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-      localFaceGeometry_[ face ] = new LocalGeo( LocalGeoImpl( referenceCube< 1 >(), cache, origin ) );
+      localFaceGeometry_[ face ] = new LocalGeometryImpl( referenceCube< 1 >(), cache, origin );
     }
   }
 
