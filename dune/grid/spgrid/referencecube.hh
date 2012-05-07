@@ -112,6 +112,56 @@ namespace Dune
 
 
 
+  template< class ct, int dim >
+  inline SPReferenceCube< ct, dim >::SPReferenceCube ()
+  {
+    for( int codim = 0; codim <= dimension; ++codim )
+    {
+      const unsigned int size = SPReferenceCubeHelper::numSubEntities( dimension, codim );
+      subId_[ codim ].resize( size );
+      for( unsigned int i = 0; i < size; ++i )
+        subId( dimension, codim, i, subId_[ codim ][ i ] );
+    }
+
+    for( int i = 0; i < numFaces; ++i )
+    {
+      for( int j = 0; j < dimension; ++j )
+      {
+        const MultiIndex &sid = subId( 1, i );
+        normal_[ i ][ j ] = ctype( sid[ j ] );
+      }
+    }
+  }
+
+
+  template< class ct, int dim >
+  inline typename SPReferenceCube< ct, dim >::GlobalVector
+  SPReferenceCube< ct, dim >::corner ( int i )
+  {
+    assert( (i >= 0) && (i < numCorners) );
+
+    GlobalVector corner;
+    for( int j = 0; j < dimension; ++j )
+    {
+      corner[ j ] = ctype( i & 1 );
+      i /= 2;
+    }
+    return corner;
+  }
+
+
+  template< class ct, int dim >
+  inline typename SPReferenceCube< ct, dim >::GlobalVector
+  SPReferenceCube< ct, dim >::center ()
+  {
+    GlobalVector center;
+    for( int j = 0; j < dimension; ++j )
+      center[ j ] = ctype( 1 ) / ctype( 2 );
+    return center;
+  }
+
+
+
   // SPReferenceCube (for dim = 0)
   // -----------------------------
 
@@ -136,13 +186,13 @@ namespace Dune
       return 1;
     }
 
-    GlobalVector corner ( const int i ) const
+    static GlobalVector corner ( const int i )
     {
       assert( (i >= 0) && (i < numCorners) );
       return GlobalVector();
     }
 
-    GlobalVector center () const
+    static GlobalVector center ()
     {
       return GlobalVector();
     }
@@ -195,59 +245,6 @@ namespace Dune
   
     GenericGeometry::CodimTable< RefCube, dimension > refCubes_;
   };
-
-
-
-  // Implementation of SPReferenceCube
-  // ---------------------------------
-
-  template< class ct, int dim >
-  inline SPReferenceCube< ct, dim >::SPReferenceCube ()
-  {
-    for( int codim = 0; codim <= dimension; ++codim )
-    {
-      const unsigned int size = SPReferenceCubeHelper::numSubEntities( dimension, codim );
-      subId_[ codim ].resize( size );
-      for( unsigned int i = 0; i < size; ++i )
-        subId( dimension, codim, i, subId_[ codim ][ i ] );
-    }
-
-    for( int i = 0; i < numFaces; ++i )
-    {
-      for( int j = 0; j < dimension; ++j )
-      {
-        const MultiIndex &sid = subId( 1, i );
-        normal_[ i ][ j ] = ctype( sid[ j ] );
-      }
-    }
-  }
-
-
-  template< class ct, int dim >
-  inline typename SPReferenceCube< ct, dim >::GlobalVector
-  SPReferenceCube< ct, dim >::corner ( int i )
-  {
-    assert( (i >= 0) && (i < numCorners) );
-
-    GlobalVector corner;
-    for( int j = 0; j < dimension; ++j )
-    {
-      corner[ j ] = ctype( i & 1 );
-      i /= 2;
-    }
-    return corner;
-  }
-
-
-  template< class ct, int dim >
-  inline typename SPReferenceCube< ct, dim >::GlobalVector
-  SPReferenceCube< ct, dim >::center ()
-  {
-    GlobalVector center;
-    for( int j = 0; j < dimension; ++j )
-      center[ j ] = ctype( 1 ) / ctype( 2 );
-    return center;
-  }
 
 } // namespace Dune
 

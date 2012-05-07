@@ -214,12 +214,12 @@ namespace Dune
 
     LevelIntersectionIterator ilevelbegin () const
     {
-      return IntersectionIteratorImpl( entityInfo_, 0 );
+      return IntersectionIteratorImpl( entityInfo(), 0 );
     }
 
     LevelIntersectionIterator ilevelend () const
     {
-      return IntersectionIteratorImpl( entityInfo_, numFaces );
+      return IntersectionIteratorImpl( entityInfo(), numFaces );
     }
 
     bool hasBoundaryIntersections () const;

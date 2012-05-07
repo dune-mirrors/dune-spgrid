@@ -41,6 +41,15 @@ namespace Dune
     int zero ( const int k ) const;
   };
 
+  template<>
+  struct SPGeometryPattern< 0, 0 >
+  {
+    explicit SPGeometryPattern ( const unsigned int dir );
+
+    int nonzero ( const int k ) const;
+    int zero ( const int k ) const;
+  };
+
 
 
   // SPGeometryCache
@@ -185,6 +194,10 @@ namespace Dune
 
   template< int dim >
   inline SPGeometryPattern< dim, dim >::SPGeometryPattern ( const unsigned int dir )
+  {}
+
+
+  inline SPGeometryPattern< 0, 0 >::SPGeometryPattern ( const unsigned int dir )
   {}
 
 

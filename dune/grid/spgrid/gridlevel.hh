@@ -291,7 +291,7 @@ namespace Dune
       for( unsigned int index = 0; index < numChildren; ++index )
       {
         const GlobalVector origin = refinement().template originInFather< ctype >( index );
-        geometryInFather_[ index ] = new LocalGeometryImpl( referenceCube(), cacheInFather, origin );
+        geometryInFather_[ index ] = new LocalGeometryImpl( cacheInFather, origin );
       }
     }
   }

@@ -850,7 +850,7 @@ namespace Dune
   SPGrid< ct, dim, strategy, Comm >::localFaceGeometry ( const int face ) const
   {
     assert( (face >= 0) && (face < ReferenceCube::numFaces) );
-    return LocalGeometry( *localFaceGeometry_[ face ] );
+    return typename Codim< 1 >::LocalGeometry( *localFaceGeometry_[ face ] );
   }
 
 
@@ -880,7 +880,7 @@ namespace Dune
       GlobalVector origin( ctype( 0 ) );
       origin[ face/2 ] = ctype( face & 1 );
       const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-      localFaceGeometry_[ face ] = new LocalGeometryImpl( referenceCube< 1 >(), cache, origin );
+      localFaceGeometry_[ face ] = new LocalGeometryImpl( cache, origin );
     }
   }
 
