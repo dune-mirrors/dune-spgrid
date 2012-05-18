@@ -77,6 +77,7 @@ namespace Dune
     {
       // dereference boundary segment iterator
       const Intersection &boundarySegment = *bit;
+      ++bndSegments;
 
       // assert boundary segment is on boundary
       if( !boundarySegment.boundary() )
