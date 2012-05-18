@@ -87,10 +87,10 @@ namespace Dune
     const Intersection &dereference () const;
 
   protected:
-    //! \brief return face
     int face () const;
-    //! \brief return grid level
     const GridLevel &gridLevel () const;
+
+    void init ( int face );
 
   private:
     // return intersection implementation
@@ -112,7 +112,9 @@ namespace Dune
     ::SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, Begin ) 
   : intersection_( IntersectionImpl( EntityInfo( gridLevel ), face ) ),
     pit_( gridLevel, gridLevel.boundaryPartition( face ), Begin() )
-  {}
+  {
+    init( face );
+  }
 
 
   template< class Grid >
@@ -163,23 +165,10 @@ namespace Dune
 
     // try to increment internal iterator
     ++pit_;
-    if( !pit_ )
-    {
+    while( !pit_ && (face < numFaces) )
       pit_ = PartitionIterator( gridLevel(), gridLevel().boundaryPartition( ++face ), Begin() );
-      if( !pit_ )
-        return;
-    }
 
-    // compute id
-    MultiIndex id = Grid::getRealImplementation( *pit_ ).entityInfo().id();
-    const int i = face >> 1;
-    const int j = 2*(face & 1) - 1;
-    id[ i ] -= j;
-
-    // update intersection
-    const unsigned int number = Grid::getRealImplementation( *pit_ ).entityInfo().partitionNumber();
-    EntityInfo entityInfo = EntityInfo( gridLevel(), id, number );
-    intersectionImpl() = IntersectionImpl( entityInfo, face );
+    init( face );
   }
 
 
@@ -195,6 +184,26 @@ namespace Dune
   SPBoundarySegmentIterator< Grid >::gridLevel () const
   {
     return intersectionImpl().gridLevel();
+  }
+
+
+  template< class Grid >
+  inline void SPBoundarySegmentIterator< Grid >::init ( int face )
+  {
+    if( !pit_ )
+      return;
+
+    // compute id
+    const SPEntity< 1, dimension, Grid > &entityImpl = Grid::getRealImplementation( *pit_ );
+    MultiIndex id = entityImpl.entityInfo().id();
+    const int i = face >> 1;
+    const int j = 2*(face & 1) - 1;
+    id[ i ] -= j;
+
+    // update intersection
+    const unsigned int number = entityImpl.entityInfo().partitionNumber();
+    EntityInfo entityInfo = EntityInfo( gridLevel(), id, number );
+    intersectionImpl() = IntersectionImpl( entityInfo, face );
   }
 
 } // end namespace Dune
