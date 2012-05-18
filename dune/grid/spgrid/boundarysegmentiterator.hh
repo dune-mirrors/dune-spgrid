@@ -8,9 +8,6 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/typetraits.hh>
 
-//- dune-geometry includes
-#include <dune/geometry/referenceelements.hh>
-
 //- dune-grid includes
 #include <dune/grid/common/intersection.hh>
 #include <dune/grid/common/intersectioniterator.hh>
@@ -50,7 +47,7 @@ namespace Dune
     //! \brief grid dimension
     static const int dimension = IntersectionImpl::dimension;
     //! \brief single coordinate type 
-    typedef typename IntersectionImpl::ctype ctype; 
+    typedef typename IntersectionImpl::ctype ctype;
     //! \brief entity info type
     typedef typename IntersectionImpl::EntityInfo EntityInfo;
     //! \brief grid level
@@ -58,13 +55,8 @@ namespace Dune
     //! \brief partition list
     typedef typename GridLevel::PartitionList PartitionList;
 
-    struct Begin
-    : public PartitionIterator::Begin
-    { };
-
-    struct End
-    : public PartitionIterator::End
-    { };
+    typedef typename PartitionIterator::Begin Begin;
+    typedef typename PartitionIterator::End End;
 
   private:
     // number of faces
@@ -110,9 +102,9 @@ namespace Dune
     PartitionList partitionList ( const int face );
 
     // return intersection implementation
-    IntersectionImpl &intersectionImp () { return Grid::getRealImplementation( intersection_ ); }
+    IntersectionImpl &intersectionImpl () { return Grid::getRealImplementation( intersection_ ); }
     // return intersection implementation
-    const IntersectionImpl &intersectionImp () const { return Grid::getRealImplementation( intersection_ ); }
+    const IntersectionImpl &intersectionImpl () const { return Grid::getRealImplementation( intersection_ ); }
 
     Intersection intersection_;
     int lastFace_;
@@ -138,7 +130,7 @@ namespace Dune
 
   template< class Grid >
   inline SPBoundarySegmentIterator< Grid >::SPBoundarySegmentIterator ( const This &other )
-  : intersection_( Grid::getRealImplementation( other.intersection_ ) ),
+  : intersection_( other.intersectionImpl() ),
     lastFace_( other.lastFace_ ),
     pit_( other.pit_ ),
     pend_( other.pend_ )
@@ -149,7 +141,7 @@ namespace Dune
   inline const typename SPBoundarySegmentIterator< Grid >::This &
   SPBoundarySegmentIterator< Grid >::operator= ( const This &other ) 
   {
-    Grid::getRealImplementation( intersection_ ) = Grid::getRealImplementation( other.intersection_ );
+    intersectionImpl() = other.intersectionImpl();
     lastFace_ = other.lastFace_;
     pit_ = other.pit_;
     pend_ = other.pend_;
@@ -169,7 +161,7 @@ namespace Dune
   inline bool SPBoundarySegmentIterator< Grid >::equals ( const This &other ) const
   {
     assert( lastFace_ == other.lastFace_ );
-    return Grid::getRealImplementation( intersection_ ).equals( Grid::getRealImplementation( other.intersection_ ) );
+    return intersectionImpl().equals( other.intersectionImpl() );
   }
 
 
@@ -197,7 +189,7 @@ namespace Dune
 
     // update intersection
     EntityInfo entityInfo = EntityInfo( gridLevel(), id );
-    intersectionImp() = IntersectionImp( entityInfo, face );
+    intersectionImpl() = IntersectionImp( entityInfo, face );
   }
 
 
@@ -212,7 +204,7 @@ namespace Dune
   inline const typename SPBoundarySegmentIterator< Grid >::GridLevel &
   SPBoundarySegmentIterator< Grid >::gridLevel () const
   {
-    return intersectionImp().gridLevel();
+    return intersectionImpl().gridLevel();
   }
 
 
@@ -233,6 +225,9 @@ namespace Dune
     // return value
     PartitionList boundaryPartitions;
 
+    const MacroCube &globalCube = gridLevel().globalCube();
+    const int i = face >> 1;
+
     // iterate over all partitions in grid level
     typedef typename PartitionList::Iterator Iterator;
     const PartitionList &plist = gridLevel().template partition< All_Partition >();
@@ -242,24 +237,19 @@ namespace Dune
       // get partition
       const Partition partition = *it;
 
-      // get vertex indices of left and right corner of face
-      int subEntity[ 2 ];
-      const GenericReferenceElement< ctype, dimension > &referenceElement 
-        = GenericReferenceElements< ctype, dimension >::cube();
-      for( int i = 0; i < 2; ++i )
-        subEntity[ i ] = referenceElement.subEntity( face, 1, i*( (1<<(dimension-1))-1 ), dimension );
-
-      // compute boundary partition
+      // get partition bounds
       MultiIndex bound[ 2 ];
-      const MultiIndex direction = partition.end() - partition.begin();
-      for( int i = 0; i < 2; ++i )
-      {
-        bound[ i ] = partition.begin();
-        MultiIndex subId = gridLevel().referenceCube().subId( dimension, subEntity[ i ] );
-        for( int j = 0; j < dimension; ++j )
-          bound[ i ][ j ] += subId[ j ]*direction[ i ][ j ];
-      }
-      boundaryPartitions += Partition( bound[ 0 ], bound[ 1 ], partition.number() );
+      bound[ 0 ] = partition.begin();
+      bound[ 1 ] = partition.end();
+
+      // shrink partition bounds to face bounds
+      int bnd = (face & 1)*bound[ 0 ][ i ] + (1 - (face & 1))*bound[ 1 ][ i ];
+      bound[ 0 ][ i ] = bnd;
+      bound[ 1 ][ i ] = bnd;
+
+      // insert partition iff it is part of the global boundary (see also intersection.hh)
+      if( bnd == 2*globalCube.bound( face & 1 )[ i ] )
+        boundaryPartitions += Partition( bound[ 0 ], bound[ 1 ], partition.number() );
     }
     return boundaryPartitions;
   }
