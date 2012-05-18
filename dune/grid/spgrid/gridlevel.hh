@@ -128,7 +128,7 @@ namespace Dune
 
     LocalGeometryImpl **geometryInFather_;
 
-    typename PartitionList::Iterator boundaryPartition_[ numFaces+1 ];
+    PartitionList boundaryPartition_[ numFaces+1 ];
   };
 
 
@@ -318,7 +318,7 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildBoundaryPartitions ()
   {
-    const MacroCube &globalCube = globalCube();
+    const MacroCube &globalCube = This::globalCube();
 
     for( int face = 0; face < numFaces; ++face )
     {
@@ -330,7 +330,8 @@ namespace Dune
       for( typename PartitionList::Iterator it = plist.begin(); it != end; ++it )
       {
         // get partition
-        const typename PartitionList::Partition &partition = *it;
+        typedef typename PartitionList::Partition Partition;
+        const Partition &partition = *it;
 
         // get partition bounds
         MultiIndex bound[ 2 ];
