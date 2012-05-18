@@ -27,7 +27,7 @@ template< class Grid >
 void performCheck ( Grid &grid, const int maxLevel )
 {
   std::cerr << ">>> Refining grid globally..." << std::endl;
-  for( int level = 0; level <= maxLevel; ++level )
+  for( int level = 0; level < maxLevel; ++level )
     grid.globalRefine( 1 );
 
   assert( grid.maxLevel() == maxLevel );
