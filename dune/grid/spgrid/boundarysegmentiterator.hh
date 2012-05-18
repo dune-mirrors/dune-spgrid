@@ -171,14 +171,15 @@ namespace Dune
     }
 
     // compute id
-    MultiIndex id = pit_->entityInfo().id();
+    MultiIndex id = Grid::getRealImplementation( *pit_ ).entityInfo().id();
     const int i = face >> 1;
     const int j = 2*(face & 1) - 1;
     id[ i ] -= j;
 
     // update intersection
-    EntityInfo entityInfo = EntityInfo( gridLevel(), id );
-    intersectionImpl() = IntersectionImp( entityInfo, face );
+    const unsigned int number = Grid::getRealImplementation( *pit_ ).entityInfo().partitionNumber();
+    EntityInfo entityInfo = EntityInfo( gridLevel(), id, number );
+    intersectionImpl() = IntersectionImpl( entityInfo, face );
   }
 
 
