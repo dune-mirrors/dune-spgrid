@@ -339,7 +339,7 @@ namespace Dune
         bound[ 1 ] = partition.end();
 
         // shrink partition bounds to face bounds
-        int bnd = (face & 1)*bound[ 0 ][ i ] + (1 - (face & 1))*bound[ 1 ][ i ];
+        int bnd = (face & 1)*bound[ 1 ][ i ] + (1 - (face & 1))*bound[ 0 ][ i ];
         bound[ 0 ][ i ] = bnd;
         bound[ 1 ][ i ] = bnd;
 
