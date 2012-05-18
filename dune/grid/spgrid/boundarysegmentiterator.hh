@@ -69,9 +69,8 @@ namespace Dune
 
   public:
     //! \brief constructor
-    template< class BeginEnd >
-    SPBoundarySegmentIterator ( const GridLevel &gridLevel, const BeginEnd &be, 
-                                int firstFace = 0, int lastFace = numFaces );
+    SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, Begin );
+    SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, End );
 
     //! \brief copy constructor
     SPBoundarySegmentIterator ( const This &other );
@@ -94,21 +93,13 @@ namespace Dune
     const GridLevel &gridLevel () const;
 
   private:
-    // initialize internal iterators
-    template< class BeginEnd >
-    void initialize ( const BeginEnd &be, const int face );
-
-    // get partition list
-    PartitionList partitionList ( const int face );
-
     // return intersection implementation
     IntersectionImpl &intersectionImpl () { return Grid::getRealImplementation( intersection_ ); }
     // return intersection implementation
     const IntersectionImpl &intersectionImpl () const { return Grid::getRealImplementation( intersection_ ); }
 
     Intersection intersection_;
-    int lastFace_;
-    PartitionIterator pit_, pend_;
+    PartitionIterator pit_;
   };
 
 
@@ -117,24 +108,26 @@ namespace Dune
   // -------------------------------------------
 
   template< class Grid >
-  template< class BeginEnd >
   inline SPBoundarySegmentIterator< Grid >
-    ::SPBoundarySegmentIterator ( const GridLevel &gridLevel, const BeginEnd &be, 
-                                  int firstFace, int lastFace )
+    ::SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, Begin ) 
   : intersection_( IntersectionImpl( EntityInfo( gridLevel ), face ) ),
-    lastFace_( lastFace )
-  {  
-    initialize( be, face );
-  }
+    pit_( gridLevel, gridLevel.boundaryPartition( face ), Begin() )
+  {}
+
+
+  template< class Grid >
+  inline SPBoundarySegmentIterator< Grid >
+    ::SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, End )
+  : intersection_( IntersectionImpl( EntityInfo( gridLevel ), face+1 ) ),
+    pit_( gridLevel, gridLevel.boundaryPartition( face+1 ), Begin() )
+  {}
 
 
   template< class Grid >
   inline SPBoundarySegmentIterator< Grid >::SPBoundarySegmentIterator ( const This &other )
   : intersection_( other.intersectionImpl() ),
-    lastFace_( other.lastFace_ ),
-    pit_( other.pit_ ),
-    pend_( other.pend_ )
-  { }
+    pit_( other.pit_ )
+  {}
 
 
   template< class Grid >
@@ -142,9 +135,7 @@ namespace Dune
   SPBoundarySegmentIterator< Grid >::operator= ( const This &other ) 
   {
     intersectionImpl() = other.intersectionImpl();
-    lastFace_ = other.lastFace_;
     pit_ = other.pit_;
-    pend_ = other.pend_;
     return *this;
   }
 
@@ -160,8 +151,7 @@ namespace Dune
   template< class Grid >
   inline bool SPBoundarySegmentIterator< Grid >::equals ( const This &other ) const
   {
-    assert( lastFace_ == other.lastFace_ );
-    return intersectionImpl().equals( other.intersectionImpl() );
+    return (pit_ == other.pit_);
   }
 
 
@@ -173,12 +163,11 @@ namespace Dune
 
     // try to increment internal iterator
     ++pit_;
-    if( pit_ == pend_ )
+    if( !pit_ )
     {
-      ++face;
-      if( face > lastFace_ )
+      pit_ = PartitionIterator( gridLevel(), gridLevel().boundaryPartition( ++face ), Begin() );
+      if( !pit_ )
         return;
-      initialize( face );
     }
 
     // compute id
@@ -205,53 +194,6 @@ namespace Dune
   SPBoundarySegmentIterator< Grid >::gridLevel () const
   {
     return intersectionImpl().gridLevel();
-  }
-
-
-  template< class Grid >
-  template< class BeginEnd >
-  inline void SPBoundarySegmentIterator< Grid >::initialize ( const BeginEnd &be, const int face )
-  {
-    PartitionList plist = partitionList( face );
-    pit_ = PartitionIterator( gridLevel(), partitionList, be );
-    pend_ = PartitionIterator( gridLevel(), partitionList, End() );
-  }
-
-
-  template< class Grid >
-  inline typename SPBoundarySegmentIterator< Grid >::PartitionList
-  SPBoundarySegmentIterator< Grid >::partitionList ( const int face )
-  {
-    // return value
-    PartitionList boundaryPartitions;
-
-    const MacroCube &globalCube = gridLevel().globalCube();
-    const int i = face >> 1;
-
-    // iterate over all partitions in grid level
-    typedef typename PartitionList::Iterator Iterator;
-    const PartitionList &plist = gridLevel().template partition< All_Partition >();
-    const Iterator end = plist.end();
-    for( Iterator it = plist.begin(); it != end; ++it )
-    {
-      // get partition
-      const Partition partition = *it;
-
-      // get partition bounds
-      MultiIndex bound[ 2 ];
-      bound[ 0 ] = partition.begin();
-      bound[ 1 ] = partition.end();
-
-      // shrink partition bounds to face bounds
-      int bnd = (face & 1)*bound[ 0 ][ i ] + (1 - (face & 1))*bound[ 1 ][ i ];
-      bound[ 0 ][ i ] = bnd;
-      bound[ 1 ][ i ] = bnd;
-
-      // insert partition iff it is part of the global boundary (see also intersection.hh)
-      if( bnd == 2*globalCube.bound( face & 1 )[ i ] )
-        boundaryPartitions += Partition( bound[ 0 ], bound[ 1 ], partition.number() );
-    }
-    return boundaryPartitions;
   }
 
 } // end namespace Dune

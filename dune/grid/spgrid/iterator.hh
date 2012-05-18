@@ -45,6 +45,7 @@ namespace Dune
 
     operator bool () const { return bool( partition_ ); }
     This &operator++ ();
+    operator bool () const { return bool( partition_ ); }
 
     void increment ();
 

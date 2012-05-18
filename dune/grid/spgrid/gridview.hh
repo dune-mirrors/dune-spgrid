@@ -7,6 +7,7 @@
 
 #include <dune/grid/extensions/superentityiterator.hh>
 
+#include <dune/grid/spgrid/boundarysegmentiterator.hh>
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/communication.hh>
 #include <dune/grid/spgrid/indexset.hh>
@@ -40,6 +41,9 @@ namespace Dune
     typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > Intersection;
     typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator< const Grid >, SPIntersection< const Grid > >
       IntersectionIterator;
+
+    static const bool hasBoundarySegmentIterator = true;
+    typedef Dune::IntersectionIterator< const Grid, SPBoundarySegmentIterator, SPIntersection > BoundarySegmentIterator;
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
@@ -86,6 +90,7 @@ namespace Dune
     typedef typename ViewTraits::Grid Grid;
     typedef typename ViewTraits::IndexSet IndexSet;
     typedef typename ViewTraits::IntersectionIterator IntersectionIterator;
+    typedef typename ViewTraits::BoundarySegmentIterator BoundarySegmentIterator;
     typedef typename ViewTraits::CollectiveCommunication CollectiveCommunication;
 
     typedef SPGridLevel< const Grid > GridLevel;
@@ -150,6 +155,9 @@ namespace Dune
     template< class Entity >
     typename Codim< Entity::codimension >::SuperEntityIterator
     superEntityEnd ( const Entity &entity ) const;
+
+    BoundarySegmentIterator boundarySegmentBegin ( int face = 0 ) const;
+    BoundarySegmentIterator boundarySegmentEnd ( int face = GridLevel::numFaces-1 ) const;
 
     const CollectiveCommunication &comm () const;
 
@@ -350,6 +358,24 @@ namespace Dune
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
     return Impl( Grid::getRealImplementation( entity ), typename Impl::End() );
+  }
+
+
+  template< class ViewTraits >
+  inline typename SPGridView< ViewTraits >::BoundarySegmentIterator
+  SPGridView< ViewTraits >::boundarySegmentBegin ( int face ) const
+  {
+    typedef SPBoundarySegmentIterator< const Grid > Impl;
+    return Impl( gridLevel(), face, typename Impl::Begin() );
+  }
+
+
+  template< class ViewTraits >
+  inline typename SPGridView< ViewTraits >::BoundarySegmentIterator
+  SPGridView< ViewTraits >::boundarySegmentEnd ( int face ) const
+  {
+    typedef SPBoundarySegmentIterator< const Grid > Impl;
+    return Impl( gridLevel(), face, typename Impl::End() );
   }
 
 

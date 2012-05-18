@@ -121,14 +121,14 @@ namespace Dune
 
     Iterator &operator++ ()
     {
-      assert( node_ != 0 );
+      assert( *this );
       node_ = node_->next();
       return *this;
     }
 
     operator bool () const
     {
-      return (node_ != 0);
+      return bool( node_ );
     }
 
     bool operator== ( const Iterator &other ) const
@@ -143,13 +143,13 @@ namespace Dune
 
     const Partition &operator* () const
     {
-      assert( node_ != 0 );
+      assert( *this );
       return node_->partition();
     }
 
     const Partition *operator-> () const
     {
-      assert( node_ != 0 );
+      assert( *this );
       return &(node_->partition());
     }
 

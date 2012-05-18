@@ -42,6 +42,7 @@ namespace Dune
 
     static const int dimension = Base::dimension;
     static const unsigned int numDirections = Base::numDirections;
+    static const int numFaces = ReferenceCube::numFaces;
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
@@ -87,6 +88,8 @@ namespace Dune
     template< PartitionIteratorType pitype >
     const PartitionList &partition () const;
 
+    const PartitionList &boundaryPartition ( int face ) const;
+
     template< int codim >
     PartitionType
     partitionType ( const MultiIndex &id, const unsigned int partitionNumber ) const;
@@ -105,6 +108,7 @@ namespace Dune
 
   private:
     void buildLocalGeometry ();
+    void buildBoundaryPartitions ();
 
     static MultiIndex coarseMacroFactor ();
     static GlobalVector meshWidth ( const Domain &domain, const Mesh &mesh );
@@ -123,6 +127,8 @@ namespace Dune
     Linkage linkage_;
 
     LocalGeometryImpl **geometryInFather_;
+
+    typename PartitionList::Iterator boundaryPartition_[ numFaces+1 ];
   };
 
 
@@ -145,6 +151,7 @@ namespace Dune
     linkage_( grid.comm().rank(), partitionPool_, decomposition_ )
   {
     buildLocalGeometry();
+    buildBoundaryPartitions();
   }
 
 
@@ -163,6 +170,7 @@ namespace Dune
     linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
   {
     buildLocalGeometry();
+    buildBoundaryPartitions();
   }
 
 
@@ -179,6 +187,7 @@ namespace Dune
     linkage_( other.linkage_ )
   {
     buildLocalGeometry();
+    buildBoundaryPartitions();
   }
 
 
@@ -216,6 +225,15 @@ namespace Dune
   SPGridLevel< Grid >::partition () const
   {
     return partitionPool_.template get< pitype >();
+  }
+
+
+  template< class Grid >
+  inline const typename SPGridLevel< Grid >::PartitionList &
+  SPGridLevel< Grid >::boundaryPartition ( int face ) const
+  {
+    assert( (face >= 0) && (face <= numFaces) );
+    return boundaryPartition_[ face ];
   }
 
 
@@ -292,6 +310,41 @@ namespace Dune
       {
         const GlobalVector origin = refinement().template originInFather< ctype >( index );
         geometryInFather_[ index ] = new LocalGeometryImpl( cacheInFather, origin );
+      }
+    }
+  }
+
+
+  template< class Grid >
+  inline void SPGridLevel< Grid >::buildBoundaryPartitions ()
+  {
+    const MacroCube &globalCube = globalCube();
+
+    for( int face = 0; face < numFaces; ++face )
+    {
+      const int i = face >> 1;
+
+      // iterate over all partitions
+      const PartitionList &plist = partition< All_Partition >();
+      const typename PartitionList::Iterator end = plist.end();
+      for( typename PartitionList::Iterator it = plist.begin(); it != end; ++it )
+      {
+        // get partition
+        const typename PartitionList::Partition &partition = *it;
+
+        // get partition bounds
+        MultiIndex bound[ 2 ];
+        bound[ 0 ] = partition.begin();
+        bound[ 1 ] = partition.end();
+
+        // shrink partition bounds to face bounds
+        int bnd = (face & 1)*bound[ 0 ][ i ] + (1 - (face & 1))*bound[ 1 ][ i ];
+        bound[ 0 ][ i ] = bnd;
+        bound[ 1 ][ i ] = bnd;
+
+        // insert partition iff it is part of the global boundary (see also intersection.hh)
+        if( bnd == 2*globalCube.bound( face & 1 )[ i ] )
+          boundaryPartition_[ face ] += Partition( bound[ 0 ], bound[ 1 ], partition.number() );
       }
     }
   }
