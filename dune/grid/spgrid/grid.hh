@@ -11,6 +11,7 @@
 
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/entityseed.hh>
+#include <dune/grid/spgrid/geometryreference.hh>
 #include <dune/grid/spgrid/gridview.hh>
 #include <dune/grid/spgrid/hierarchiciterator.hh>
 #include <dune/grid/spgrid/idset.hh>
@@ -88,7 +89,7 @@ namespace Dune
         typedef SPLocalGeometry< dim - codim, dim, const Grid > LocalGeometryImpl;
 
         typedef Dune::Geometry< dim - codim, dim, const Grid, SPGeometry > Geometry;
-        typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometry > LocalGeometry;
+        typedef Dune::Geometry< dim - codim, dim, const Grid, SPLocalGeometryReference > LocalGeometry;
 
         template< PartitionIteratorType pitype >
         struct Partition
