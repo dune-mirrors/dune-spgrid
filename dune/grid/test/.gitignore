@@ -1,0 +1,8 @@
+/decomposition
+/test-spgrid
+/Makefile
+/Makefile.in
+/*.log
+/*.spgrid
+/*.swp
+/.deps

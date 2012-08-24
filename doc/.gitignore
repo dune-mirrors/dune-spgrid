@@ -1,0 +1,10 @@
+/Makefile
+/Makefile.in
+/Doxyfile
+/footer.html
+/html
+/stamp
+/*.log
+/*.out
+/*.tag
+/*.swp
