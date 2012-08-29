@@ -60,7 +60,6 @@ namespace Dune
     bool operator== ( const This &other ) const;
     bool operator!= ( const This &other ) const;
 
-    void compactify ();
     Entity &dereference () const;
 
     bool equals ( const This &other ) const;
@@ -144,11 +143,6 @@ namespace Dune
   {
     return !equals( other );
   }
-
-
-  template< int codim, class Grid >
-  inline void SPEntityPointer< codim, Grid >::compactify ()
-  {}
 
 
   template< int codim, class Grid >
