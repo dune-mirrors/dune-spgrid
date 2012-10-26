@@ -10,11 +10,12 @@ SOURCEFILE_MASK = -name \*.h -o -name \*.hh -o -name \*.c -o -name \*.cc
 dist-hook:
 	@for SOURCEFILE in `find $(distdir) \( $(SOURCEFILE_MASK) \) -print` ; do \
 	  TMPFILE=`mktemp authors.XXXXXX` ; \
-	  echo "/**************************************************************************" > $$TMPFILE ; \
-	  echo "  " >> $$TMPFILE ; \
+	  echo "/******************************************************************************" > $$TMPFILE ; \
+	  echo "" >> $$TMPFILE ; \
 	  cat $(top_srcdir)/AUTHORS >> $$TMPFILE ; \
-	  echo "  " >> $$TMPFILE ; \
-	  echo "**************************************************************************/" >> $$TMPFILE ; \
+	  echo "" >> $$TMPFILE ; \
+	  echo "******************************************************************************/" >> $$TMPFILE ; \
+	  echo "" >> $$TMPFILE ; \
 	  cat $$SOURCEFILE >> $$TMPFILE ; \
 	  cp $$TMPFILE $$SOURCEFILE ; \
 	  rm -f $$TMPFILE ; \
