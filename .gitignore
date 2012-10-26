@@ -1,5 +1,3 @@
-/Makefile
-/Makefile.in
 /dune-spgrid-*.tar.gz
 /aclocal.m4
 /am
@@ -19,7 +17,15 @@
 /ltmain.sh
 /missing
 /stamp-h1
-/*.log
-/*.tmp
-/*.swp
-/.libs
+
+Makefile
+Makefile.in
+.deps
+.libs
+
+*.la
+*.lo
+*.log
+*.o
+*.tmp
+*.swp
