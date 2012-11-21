@@ -43,6 +43,7 @@ namespace Dune
     SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
                           const End &e, const unsigned int sweepDir = 0 );
 
+    operator bool () const { return bool( partition_ ); }
     This &operator++ ();
 
     void increment ();
