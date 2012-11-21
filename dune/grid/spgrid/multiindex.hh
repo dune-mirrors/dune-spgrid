@@ -52,6 +52,17 @@ namespace Dune
       *this = index;
     }
 
+    /** \brief constructor from int array
+     *
+     *  \note This constructor defines an implicit conversion.
+     *
+     *  \param[in]  index  int array to copy
+     */
+    SPMultiIndex ( const Dune::array< int, dimension > &index )
+    {
+      *this = index;
+    }
+
     /** \brief copy constructor */
     SPMultiIndex ( const This &other )
     {
