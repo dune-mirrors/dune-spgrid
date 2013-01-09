@@ -3,7 +3,7 @@
 #include <limits>
 #include <sstream>
 
-#include <dune/common/mpihelper.hh>
+#include <dune/common/parallel/mpihelper.hh>
 #include <dune/common/iostream.hh>
 
 #include <dune/grid/io/file/vtk/vtkwriter.hh>

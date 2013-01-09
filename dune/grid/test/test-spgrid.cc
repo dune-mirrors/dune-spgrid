@@ -7,7 +7,7 @@
 #error "DIMGRID not defined. Please compile with -DDIMGRID=n"
 #endif
 
-#include <dune/common/mpihelper.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 #include <dune/grid/spgrid.hh>
 #include <dune/grid/spgrid/dgfparser.hh>
