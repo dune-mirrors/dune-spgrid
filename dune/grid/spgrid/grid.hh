@@ -1,7 +1,7 @@
 #ifndef DUNE_SPGRID_GRID_HH
 #define DUNE_SPGRID_GRID_HH
 
-#include <dune/common/mpicollectivecommunication.hh>
+#include <dune/common/parallel/mpicollectivecommunication.hh>
 
 #include <dune/geometry/genericgeometry/codimtable.hh>
 
