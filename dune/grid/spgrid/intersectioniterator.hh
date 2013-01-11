@@ -15,19 +15,16 @@ namespace Dune
 
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-  public:
-    typedef Dune::Intersection< Grid, SPIntersection > Intersection;
-
-    typedef typename Intersection::Entity Entity;
-    
-  private:
     typedef SPIntersection< Grid > IntersectionImpl;
 
   public:
+    typedef Dune::Intersection< Grid, IntersectionImpl > Intersection;
+
+    typedef typename Intersection::Entity Entity;
+    
     typedef typename IntersectionImpl::EntityInfo EntityInfo;
     typedef typename IntersectionImpl::GridLevel GridLevel;
 
-  public:
     SPIntersectionIterator ( const EntityInfo &entityInfo, const int face )
     : intersection_( IntersectionImpl( entityInfo, face ) )
     {}

@@ -54,17 +54,13 @@ namespace Dune
 
       typedef typename SPCommunicationTraits< Comm >::CollectiveCommunication CollectiveCommunication;
 
-      typedef Dune::Intersection< const Grid, SPIntersection >
-        LevelIntersection;
+      typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > LevelIntersection;
       typedef LevelIntersection LeafIntersection;
 
-      typedef Dune::IntersectionIterator
-        < const Grid, SPIntersectionIterator, SPIntersection >
-        LevelIntersectionIterator;
+      typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator< const Grid >, SPIntersection< const Grid > > LevelIntersectionIterator;
       typedef LevelIntersectionIterator LeafIntersectionIterator;
 
-      typedef Dune::EntityIterator< 0, const Grid, SPHierarchicIterator< const Grid > >
-        HierarchicIterator;
+      typedef Dune::EntityIterator< 0, const Grid, SPHierarchicIterator< const Grid > > HierarchicIterator;
 
       typedef SPIndexSet< const Grid > LevelIndexSet;
       typedef LevelIndexSet LeafIndexSet;
