@@ -8,24 +8,29 @@
 namespace Dune
 {
 
-  // External Forward Declarations
-  // -----------------------------
+  namespace Fem 
+  {
 
-  template< class Grid >
-  struct TwistFreeTwistUtility;
+    // External Forward Declarations
+    // -----------------------------
+    
+    template< class Grid >
+    struct TwistFreeTwistUtility;
 
-  template< class Grid >
-  struct TwistUtility;
+    template< class Grid >
+    struct TwistUtility;
 
 
 
-  // TwistUtility for SPGrid
-  // -----------------------
+    // TwistUtility for SPGrid
+    // -----------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm > 
-  struct TwistUtility< SPGrid< ct, dim, strategy, Comm > > 
-  : public TwistFreeTwistUtility< SPGrid< ct, dim, strategy, Comm > >
-  {};
+    template< class ct, int dim, SPRefinementStrategy strategy, class Comm > 
+    struct TwistUtility< SPGrid< ct, dim, strategy, Comm > > 
+    : public TwistFreeTwistUtility< SPGrid< ct, dim, strategy, Comm > >
+    {};
+
+  } // end namespace Fem 
 
 } // namespace Dune
 
