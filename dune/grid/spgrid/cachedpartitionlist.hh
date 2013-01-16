@@ -40,6 +40,15 @@ namespace Dune
       updateCache();
     }
 
+    ~SPCachedPartitionList ()
+    {
+      if( cache_ ) 
+      {
+        delete[] cache_;
+        cache_ = 0;
+      }
+    }
+
     const This &operator= ( const This &other )
     {
       *(Base *)this = other;
