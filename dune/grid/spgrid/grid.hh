@@ -205,6 +205,12 @@ namespace Dune
     ~SPGrid ()
     {
       clear();
+      // delete local face geometries
+      for( int face = 0; face < ReferenceCube::numFaces; ++face )
+      {
+        delete localFaceGeometry_[ face ];
+        localFaceGeometry_[ face ] = 0;
+      }
     }
 
     using Base::getRealImplementation;
