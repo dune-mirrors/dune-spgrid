@@ -80,8 +80,11 @@ void performCheck ( Grid &grid, const int maxLevel )
     checkIdCommunication( grid.leafView() );
     checkCommunication( grid, -1, std::cout );
 
-    std::cerr << ">>> Checking hierarchic search..." << std::endl;
-    checkHierarchicSearch( grid.leafView() );
+    if( grid.comm().size() <= 1 )
+    {
+      std::cerr << ">>> Checking hierarchic search..." << std::endl;
+      checkHierarchicSearch( grid.leafView() );
+    }
   }
 
   std::ostringstream sFilename;
