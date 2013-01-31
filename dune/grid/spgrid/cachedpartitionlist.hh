@@ -3,6 +3,8 @@
 
 #include <limits>
 
+#include <dune/common/nullptr.hh>
+
 #include <dune/grid/common/exceptions.hh>
 
 #include <dune/grid/spgrid/partitionlist.hh>
@@ -30,24 +32,17 @@ namespace Dune
     SPCachedPartitionList ()
     : first_( std::numeric_limits< unsigned int >::max() ),
       last_( std::numeric_limits< unsigned int >::min() ),
-      cache_( 0 )
+      cache_( nullptr )
     {}
 
     SPCachedPartitionList ( const This &other )
     : Base( other ),
-      cache_( 0 )
+      cache_( nullptr )
     {
       updateCache();
     }
 
-    ~SPCachedPartitionList ()
-    {
-      if( cache_ ) 
-      {
-        delete[] cache_;
-        cache_ = 0;
-      }
-    }
+    ~SPCachedPartitionList () { delete[] cache_; }
 
     const This &operator= ( const This &other )
     {
