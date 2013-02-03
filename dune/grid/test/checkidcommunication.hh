@@ -1,6 +1,9 @@
 #ifndef DUNE_SPGRID_CHECKIDCOMMUNICATION_HH
 #define DUNE_SPGRID_CHECKIDCOMMUNICATION_HH
 
+#include <dune/common/forloop.hh>
+
+#include <dune/grid/common/capabilities.hh>
 #include <dune/grid/common/gridview.hh>
 
 namespace Dune

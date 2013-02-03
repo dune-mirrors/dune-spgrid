@@ -6,6 +6,8 @@
 
 #include <dune/grid/common/gridview.hh>
 
+#include <dune/grid/extensions/superentityiterator.hh>
+
 namespace Dune
 {
 
