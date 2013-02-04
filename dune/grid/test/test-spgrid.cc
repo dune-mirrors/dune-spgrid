@@ -81,13 +81,15 @@ void performCheck ( Grid &grid, const int maxLevel )
     checkIdCommunication( grid.leafView() );
     checkCommunication( grid, -1, std::cout );
 
-    checkSuperEntityIterator( grid.leafView() );
-
     if( grid.comm().size() <= 1 )
     {
+      checkSuperEntityIterator( grid.leafView() );
+
       std::cerr << ">>> Checking hierarchic search..." << std::endl;
       checkHierarchicSearch( grid.leafView() );
     }
+    else
+      std::cerr << "WARNING: SuperEntityIterators currently don't work in parallel; test disabled." << std::endl;
   }
 
   std::ostringstream sFilename;
