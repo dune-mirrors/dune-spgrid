@@ -20,6 +20,7 @@
 #include <dune/grid/test/checkcommunicate.cc>
 
 #include "checkidcommunication.hh"
+#include "checkseiterator.hh"
 
 static const int dimGrid = DIMGRID;
 
@@ -79,6 +80,8 @@ void performCheck ( Grid &grid, const int maxLevel )
     std::cerr << ">>> Checking communication..." << std::endl;
     checkIdCommunication( grid.leafView() );
     checkCommunication( grid, -1, std::cout );
+
+    checkSuperEntityIterator( grid.leafView() );
 
     if( grid.comm().size() <= 1 )
     {

@@ -141,6 +141,6 @@ namespace Dune
 #endif // #else // #if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_CHECKSEITERATOR_HH
