@@ -9,10 +9,9 @@ check_PROGRAMS = decomposition test-spgrid
 decomposition_SOURCES = decomposition.cc
 test_spgrid_SOURCES = test-spgrid.cc
 
-gridtestdir = $(includedir)/dune/grid/test
-gridtest_HEADERS = checkidcommunication.hh  checkseiterator.hh
+DGFFILES = 2dcube.dgf  2dtorus.dgf  3dcube.dgf  4dcube.dgf
 
-EXTRA_DIST = 2dcube.dgf  2dtorus.dgf  3dcube.dgf  4dcube.dgf
+EXTRA_DIST = checkidcommunication.hh  checkseiterator.hh $(DGFFILES)
 
 CLEANFILES = dgfparser.log *.spgrid *.vtu
 
