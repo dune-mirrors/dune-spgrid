@@ -31,19 +31,18 @@ namespace Dune
     // grid traits
     typedef typename remove_const< Grid >::type::Traits Traits;
 
-  public:
-    //! \brief intersection type
-    typedef Dune::Intersection< Grid, SPIntersection > Intersection;
-    //! \brief entity type
-    typedef typename Intersection::Entity Entity;
-    
-  private:
     // intersection implementation
     typedef SPIntersection< Grid > IntersectionImpl;
     // partition iterator for faces
     typedef SPPartitionIterator< 1, Grid > PartitionIterator;
 
   public:
+    //! \brief intersection type
+    typedef Dune::Intersection< Grid, IntersectionImpl > Intersection;
+
+    //! \brief entity type
+    typedef typename Intersection::Entity Entity;
+    
     //! \brief grid dimension
     static const int dimension = IntersectionImpl::dimension;
     //! \brief single coordinate type 
