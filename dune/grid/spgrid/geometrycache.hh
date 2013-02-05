@@ -93,6 +93,7 @@ namespace Dune
   template< class ct, int dim, int codim >
   struct SPGeometryCache< ct, dim, codim >::JacobianTransposed
   {
+    typedef ct value_type;
     static const int rows = mydimension;
     static const int cols = dimension;
 
@@ -134,6 +135,7 @@ namespace Dune
   template< class ct, int dim, int codim >
   struct SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
   {
+    typedef ct value_type;
     static const int rows = dimension;
     static const int cols = mydimension;
 
