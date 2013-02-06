@@ -4,6 +4,8 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 
+#include <dune/grid/spgrid/normal.hh>
+
 namespace Dune
 {
 
@@ -93,15 +95,23 @@ namespace Dune
   template< class ct, int dim, int codim >
   struct SPGeometryCache< ct, dim, codim >::JacobianTransposed
   {
+    typedef ct field_type;
     typedef ct value_type;
+
+    typedef std::size_t size_type;
+
     static const int rows = mydimension;
     static const int cols = dimension;
 
-    typedef Dune::FieldMatrix< ctype, rows, cols > FieldMatrix;
+    typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
+
+    typedef SPNormalVector< field_type, cols > const_row_reference;
 
     JacobianTransposed ( const GlobalVector &h, const unsigned int dir );
 
-    operator const FieldMatrix & () const;
+    operator const FieldMatrix & () const { return matrix_; }
+
+    const_row_reference operator[] ( size_type i ) const;
 
     template< class X, class Y > void mv ( const X &x, Y &y ) const;
     template< class X, class Y > void mtv ( const X &x, Y &y ) const;
@@ -112,11 +122,12 @@ namespace Dune
     template< class X, class Y > void mmv ( const X &x, Y &y ) const;
     template< class X, class Y > void mmtv ( const X &x, Y &y ) const;
 
-    ctype det () const;
+    field_type det () const;
 
   private:
     friend class SPGeometryCache< ct, dim, codim >;
 
+    // prohibit unauthorized copying
     JacobianTransposed ( const JacobianTransposed &other );
 
     // prohibit assignment
@@ -135,15 +146,23 @@ namespace Dune
   template< class ct, int dim, int codim >
   struct SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
   {
+    typedef ct field_type;
     typedef ct value_type;
+
+    typedef std::size_t size_type;
+
     static const int rows = dimension;
     static const int cols = mydimension;
 
-    typedef Dune::FieldMatrix< ctype, rows, cols > FieldMatrix;
+    typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
+
+    typedef typename FieldMatrix::const_row_reference const_row_reference;
 
     JacobianInverseTransposed ( const GlobalVector &h, const unsigned int dir );
 
-    operator const FieldMatrix & () const;
+    operator const FieldMatrix & () const { return matrix_; }
+
+    const_row_reference operator[] ( size_type i ) const;
 
     template< class X, class Y > void mv ( const X &x, Y &y ) const;
     template< class X, class Y > void mtv ( const X &x, Y &y ) const;
@@ -154,11 +173,12 @@ namespace Dune
     template< class X, class Y > void mmv ( const X &x, Y &y ) const;
     template< class X, class Y > void mmtv ( const X &x, Y &y ) const;
 
-    ctype det () const;
+    field_type det () const;
 
   private:
     friend class SPGeometryCache< ct, dim, codim >;
 
+    // prohibit unauthorized copying
     JacobianInverseTransposed ( const JacobianInverseTransposed &other );
 
     // prohibit assignment
@@ -331,10 +351,10 @@ namespace Dune
 
 
   template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
-    ::operator const FieldMatrix & () const
+  inline typename SPGeometryCache< ct, dim, codim >::JacobianTransposed::const_row_reference
+  SPGeometryCache< ct, dim, codim >::JacobianTransposed::operator[] ( size_type i ) const
   {
-    return matrix_;
+    return const_row_reference( pattern_.nonzero( i ), h_[ i ] );
   }
 
 
@@ -440,10 +460,10 @@ namespace Dune
 
 
   template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
-    ::operator const FieldMatrix & () const
+  inline typename SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::const_row_reference
+  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::operator[] ( size_type i ) const
   {
-    return matrix_;
+    return matrix_[ i ];
   }
 
 

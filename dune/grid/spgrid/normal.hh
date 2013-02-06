@@ -18,10 +18,13 @@ namespace Dune
     static const int dimension = dim;
 
     typedef ct field_type;
+    typedef ct value_type;
 
-    typedef Dune::FieldVector< ct, dim > FieldVector;
+    typedef std::size_t size_type;
 
-    SPNormalVector ( const int i, const field_type &p );
+    typedef Dune::FieldVector< field_type, dim > FieldVector;
+
+    SPNormalVector ( const size_type i, const field_type &p );
 
     operator FieldVector () const;
 
@@ -40,7 +43,7 @@ namespace Dune
     field_type infinity_norm () const;
 
   private:
-    int i_;
+    size_type i_;
     field_type p_;
   };
 
@@ -106,7 +109,7 @@ namespace Dune
 
   template< class ct, int dim >
   inline SPNormalVector< ct, dim >
-    ::SPNormalVector ( const int i, const field_type &p )
+    ::SPNormalVector ( const size_type i, const field_type &p )
   : i_( i ), p_( p )
   {}
 
