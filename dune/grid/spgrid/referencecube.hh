@@ -208,9 +208,6 @@ namespace Dune
   {
     typedef SPReferenceCubeContainer< ct, dim > This;
 
-    // friend class SPIntersection< const This >;
-    // friend class SPGridLevel< const This >;
-
   public:
     typedef SPReferenceCube< ct, dim > ReferenceCube;
 
