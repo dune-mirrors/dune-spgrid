@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <dune/common/array.hh>
+#include <dune/common/exceptions.hh>
 
 #include <dune/grid/common/indexidset.hh>
 
@@ -61,6 +62,10 @@ namespace Dune
     IndexType index ( const typename Codim< codim >::Entity &entity ) const;
 
     IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
+                         const int i, const unsigned int codim ) const;
+
+    template< class Entity >
+    IndexType subIndex ( const Entity &entity,
                          const int i, const unsigned int codim ) const;
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const;
@@ -215,6 +220,18 @@ namespace Dune
     sid += gridLevel().referenceCube().subId( codim, i );
     // for the ghost approach, the partition number has to be corrected
     return index( sid, entityInfo.partitionNumber() );
+  }
+
+
+  template< class Grid >
+  template< class Entity >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >::subIndex ( const Entity &entity,
+                                 const int i, const unsigned int codim ) const
+  {
+    // TODO: Martin, please check whether there is a meaningful implementation for this method
+    DUNE_THROW(Dune::NotImplemented,"subIndex method is not yet implemented for entities of higher codim");
+    return IndexType( -1 );
   }
 
 
