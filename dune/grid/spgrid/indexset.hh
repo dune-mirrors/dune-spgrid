@@ -50,11 +50,10 @@ namespace Dune
   private:
     IndexType index ( const MultiIndex &id, unsigned int number ) const;
 
-    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const;
-    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const;
-
     template< int cd >
     IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, cd > ) const;
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const;
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const;
 
     void makeGeomTypes ();
 
@@ -178,25 +177,6 @@ namespace Dune
 
 
   template< class Grid >
-  inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >
-    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const
-  {
-    return index( id + gridLevel().referenceCube().subId( codim, i ), number );
-  }
-
-
-  template< class Grid >
-  inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >
-    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const
-  {
-    assert( (codim == dimension) && (i == 0) );
-    return index( id, number );
-  }
-
-
-  template< class Grid >
   template< int cd >
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >
@@ -211,6 +191,23 @@ namespace Dune
       l += id[ k ] & 1;
     }
     return index( subId, number );
+  }
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const
+  {
+    return index( id + gridLevel().referenceCube().subId( codim, i ), number );
+  }
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const
+  {
+    assert( (codim == dimension) && (i == 0) );
+    return index( id, number );
   }
 
 

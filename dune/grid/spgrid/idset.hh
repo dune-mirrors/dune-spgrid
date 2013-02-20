@@ -43,6 +43,14 @@ namespace Dune
 
     IdType computeId ( const GridLevel &gridLevel, const MultiIndex &id ) const;
 
+    template< int cd >
+    IdType computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
+                          int i, int codim, integral_constant< int, cd > ) const;
+    IdType computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
+                          int i, int codim, integral_constant< int, 0 > ) const;
+    IdType computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
+                          int i, int codim, integral_constant< int, dimension > ) const;
+
   public:
     template< class Entity >
     IdType id ( const Entity &entity ) const
@@ -58,14 +66,19 @@ namespace Dune
       return computeId( entityInfo.gridLevel(), entityInfo.id() );
     }
 
-    IdType subId ( const typename Codim< 0 >::Entity &entity, const int i, const unsigned int codim ) const
+    template< class Entity >
+    IdType subId ( const Entity &entity, int i, unsigned int codim ) const
+    {
+      return subId< Entity::codimension >( entity, i, codim );
+    }
+
+    template< int cd >
+    IdType subId ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const
     {
       const typename Codim< 0 >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
-      MultiIndex sid = entityInfo.id();
-      sid += gridLevel.referenceCube().subId( codim, i );
-      return computeId( gridLevel, sid );
+      return computeSubId( gridLevel, entityInfo.id(), i, codim, integral_constant< int, cd >() );
     }
   };
 
@@ -94,6 +107,44 @@ namespace Dune
       factor *= IdType( 2*globalMesh.width( i ) + 1 );
     }
     return index | (IdType( level ) << levelShift);
+  }
+
+
+  template< class Grid >
+  template< int cd >
+  typename SPLocalIdSet< Grid >::IdType
+  inline SPLocalIdSet< Grid >
+    ::computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
+                     int i, int codim, integral_constant< int, cd > ) const
+  {
+    const int mydim = dimension - cd;
+    const SPMultiIndex< mydim > refId = gridLevel.template referenceCube< cd >().subId( codim - cd, i );
+    MultiIndex subId;
+    for( int k = 0, l = 0; k < dimension; ++k )
+    {
+      subId[ k ] = id[ k ] + refId[ l ];
+      l += id[ k ] & 1;
+    }
+    return computeId( gridLevel, subId );
+  }
+
+  template< class Grid >
+  typename SPLocalIdSet< Grid >::IdType
+  inline SPLocalIdSet< Grid >
+    ::computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
+                     int i, int codim, integral_constant< int, 0 > ) const
+  {
+    return computeId( gridLevel, id + gridLevel.referenceCube().subId( codim, i ) );
+  }
+
+  template< class Grid >
+  typename SPLocalIdSet< Grid >::IdType
+  inline SPLocalIdSet< Grid >
+    ::computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
+                     int i, int codim, integral_constant< int, dimension > ) const
+  {
+    assert( (codim == dimension) && (i == 0) );
+    return computeId( gridLevel, id );
   }
 
 
