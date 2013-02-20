@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <dune/common/array.hh>
-#include <dune/common/exceptions.hh>
 
 #include <dune/grid/common/indexidset.hh>
 
@@ -49,8 +48,13 @@ namespace Dune
     void update ( const GridLevel &gridLevel );
 
   private:
-    IndexType index ( const MultiIndex &id,
-                      const unsigned int number ) const;
+    IndexType index ( const MultiIndex &id, unsigned int number ) const;
+
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const;
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const;
+
+    template< int cd >
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, cd > ) const;
 
     void makeGeomTypes ();
 
@@ -61,12 +65,11 @@ namespace Dune
     template< int codim >
     IndexType index ( const typename Codim< codim >::Entity &entity ) const;
 
-    IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
-                         const int i, const unsigned int codim ) const;
-
     template< class Entity >
-    IndexType subIndex ( const Entity &entity,
-                         const int i, const unsigned int codim ) const;
+    IndexType subIndex ( const Entity &entity, int i, unsigned int codim ) const;
+
+    template< int cd >
+    IndexType subIndex ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const;
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const;
 
@@ -148,8 +151,7 @@ namespace Dune
 
   template< class Grid >
   inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::index ( const MultiIndex &id,
-                              const unsigned int number ) const
+  SPIndexSet< Grid >::index ( const MultiIndex &id, unsigned int number ) const
   {
     const Partition &partition = partitions().partition( number );
 
@@ -172,6 +174,43 @@ namespace Dune
       factor *= width;
     }
     return offsets_[ number - partitions().minNumber() ][ dir ] + index;
+  }
+
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const
+  {
+    return index( id + gridLevel().referenceCube().subId( codim, i ), number );
+  }
+
+
+  template< class Grid >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const
+  {
+    assert( (codim == dimension) && (i == 0) );
+    return index( id, number );
+  }
+
+
+  template< class Grid >
+  template< int cd >
+  inline typename SPIndexSet< Grid >::IndexType
+  SPIndexSet< Grid >
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, cd > ) const
+  {
+    const int mydim = dimension - cd;
+    const SPMultiIndex< mydim > refId = gridLevel().template referenceCube< cd >().subId( codim - cd, i );
+    MultiIndex subId;
+    for( int k = 0, l = 0; k < dimension; ++k )
+    {
+      subId[ k ] = id[ k ] + refId[ l ];
+      l += id[ k ] & 1;
+    }
+    return index( subId, number );
   }
 
 
@@ -209,29 +248,25 @@ namespace Dune
 
 
   template< class Grid >
+  template< class Entity >
   inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::subIndex ( const typename Codim< 0 >::Entity &entity,
-                                 const int i, const unsigned int codim ) const
+  SPIndexSet< Grid >::subIndex ( const Entity &entity, int i, unsigned int codim ) const
   {
-    assert( contains( entity ) );
-    const typename Codim< 0 >::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
-    MultiIndex sid = entityInfo.id();
-    sid += gridLevel().referenceCube().subId( codim, i );
-    // for the ghost approach, the partition number has to be corrected
-    return index( sid, entityInfo.partitionNumber() );
+    return subIndex< Entity::codimension >( entity, i, codim );
   }
 
 
   template< class Grid >
-  template< class Entity >
+  template< int cd >
   inline typename SPIndexSet< Grid >::IndexType
-  SPIndexSet< Grid >::subIndex ( const Entity &entity,
-                                 const int i, const unsigned int codim ) const
+  SPIndexSet< Grid >
+    ::subIndex ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const
   {
-    // TODO: Martin, please check whether there is a meaningful implementation for this method
-    DUNE_THROW(Dune::NotImplemented,"subIndex method is not yet implemented for entities of higher codim");
-    return IndexType( -1 );
+    assert( contains( entity ) );
+    const typename Codim< cd >::EntityInfo &entityInfo
+      = Grid::getRealImplementation( entity ).entityInfo();
+    // for the ghost approach, the partition number has to be corrected
+    return subIndex( entityInfo.id(), i, codim, entityInfo.partitionNumber(), integral_constant< int, cd >() );
   }
 
 
