@@ -10,7 +10,7 @@
 
 //- dune-common includes
 #include <dune/common/exceptions.hh>
-#include <dune/common/mpihelper.hh>
+#include <dune/common/parallel/mpihelper.hh>
 
 //- dune-spgrid includes
 #include <dune/grid/spgrid.hh>

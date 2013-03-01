@@ -318,7 +318,7 @@ namespace Dune
   template< class Grid >
   inline void SPGridLevel< Grid >::buildBoundaryPartitions ()
   {
-    const MacroCube &globalCube = This::globalCube();
+    const Mesh &globalMesh = This::globalMesh();
 
     for( int face = 0; face < numFaces; ++face )
     {
@@ -344,7 +344,7 @@ namespace Dune
         bound[ 1 ][ i ] = bnd;
 
         // insert partition iff it is part of the global boundary (see also intersection.hh)
-        if( bnd == 2*globalCube.bound( face & 1 )[ i ] )
+        if( bnd == 2*globalMesh.bound( face & 1 )[ i ] )
           boundaryPartition_[ face ] += Partition( bound[ 0 ], bound[ 1 ], partition.number() );
       }
     }

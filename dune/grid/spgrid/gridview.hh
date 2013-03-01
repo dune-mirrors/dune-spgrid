@@ -39,11 +39,10 @@ namespace Dune
 
     typedef SPIndexSet< const Grid > IndexSet;
     typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > Intersection;
-    typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator< const Grid >, SPIntersection< const Grid > >
-      IntersectionIterator;
+    typedef Dune::IntersectionIterator< const Grid, SPIntersectionIterator< const Grid >, SPIntersection< const Grid > > IntersectionIterator;
 
     static const bool hasBoundarySegmentIterator = true;
-    typedef Dune::IntersectionIterator< const Grid, SPBoundarySegmentIterator, SPIntersection > BoundarySegmentIterator;
+    typedef Dune::IntersectionIterator< const Grid, SPBoundarySegmentIterator< const Grid >, SPIntersection< const Grid > > BoundarySegmentIterator;
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
