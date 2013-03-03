@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_PERSISTENTCONTAINER_HH
 #define DUNE_SPGRID_PERSISTENTCONTAINER_HH
 
+#include <vector>
+
 #include <dune/grid/utility/persistentcontainer.hh>
 #include <dune/grid/utility/persistentcontainervector.hh>
 
