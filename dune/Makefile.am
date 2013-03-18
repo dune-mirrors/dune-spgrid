@@ -1,4 +1,4 @@
-griddir = $(includedir)/dune
+dunedir = $(includedir)/dune
 
 SUBDIRS = common grid
 
