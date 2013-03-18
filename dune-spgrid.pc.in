@@ -9,7 +9,7 @@ DEPENDENCIES=@REQUIRES@
 Name: @PACKAGE_NAME@
 Version: @VERSION@
 Description: dune-spgrid module
-URL: http://dune.mathematik.uni-freiburg.de/
+URL: http://dune.mathematik.uni-freiburg.de/grids/dune-spgrid/
 Requires: ${DEPENDENCIES}
 Libs: -L${libdir}
 Cflags: -I${includedir}
