@@ -1,12 +1,14 @@
-set(GRIDDIM  3)
+set(DIMGRID 3)
 
 set(TESTS bndsegcheck decomposition test-spgrid)
 
-add_executable(bndsegcheck bndsegcheck.cc)
-add_executable(decomposition decomposition.cc)
-add_executable(test-spgrid test-spgrid.cc)
-set_property(TARGET bndsegcheck decomposition test-spgrid
-             APPEND PROPERTY COMPILE_DEFINITIONS "GRIDDIM=${GRIDDIM}")
+foreach(_executable ${TESTS})
+  add_executable(${_executable} EXCLUDE_FROM_ALL ${_executable}.cc)
+  set_property(TARGET ${_executable} APPEND PROPERTY COMPILE_DEFINITIONS "DIMGRID=${DIMGRID}")
+  target_link_libraries(${_executable} ${DUNE_LIBS})
+  add_test(${_executable} ${_executable})
+  add_dune_mpi_flags(${_executable})
+endforeach(_executable ${TESTS})
 
-add_directory_test_target(_test_target)
-add_dependencies(${_test_target} ${TESTS}) 
+add_directory_test_target(test_target)
+add_dependencies(${test_target} ${TESTS}) 
