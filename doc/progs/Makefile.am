@@ -5,6 +5,7 @@ noinst_PROGRAMS = iterators
 
 iterators_SOURCES = iterators.cc
 
+EXTRA_DIST = CMakeLists.txt
 CLEANFILES = vtu/*.vtu vtu/*.pvtu
 
 include $(top_srcdir)/am/global-rules

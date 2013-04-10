@@ -15,6 +15,7 @@ DGFFILES = 2dcube.dgf  2dtorus.dgf  3dcube.dgf  4dcube.dgf
 EXTRA_DIST = checkbndsegiterator.hh  checkidcommunication.hh \
              checkseiterator.hh
 EXTRA_DIST += $(DGFFILES)
+EXTRA_DIST += CMakeLists.txt
 
 CLEANFILES = dgfparser.log *.spgrid *.vtu
 

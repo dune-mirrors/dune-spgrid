@@ -13,4 +13,6 @@ spgrid_HEADERS = backuprestore.hh  boundarysegmentiterator.hh \
                  referencecube.hh  refinement.hh  superentityiterator.hh \
                  topology.hh  version.hh
 
+EXTRA_DIST = CMakeLists.txt
+
 include $(top_srcdir)/am/global-rules

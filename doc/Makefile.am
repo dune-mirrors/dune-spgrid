@@ -6,7 +6,7 @@ DOCDEPEND = -name \*.page
 doxygendir = $(datadir)/doc/dune-spgrid/
 
 PAGES = main.page
-EXTRA_DIST = Doxyfile.in header.html footer.html.in $(PAGES)
+EXTRA_DIST = CMakeLists.txt Doxyfile.in header.html footer.html.in $(PAGES)
 CLEANFILES = stamp doxygen.log doxygen.out
 
 if BUILD_DOCS

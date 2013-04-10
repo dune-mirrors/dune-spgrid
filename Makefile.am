@@ -1,4 +1,5 @@
 EXTRA_DIST = dune.module
+EXTRA_DIST += CMakeLists.txt dune-spgrid-config.cmake.in dune-spgrid-version.cmake.in
 
 SUBDIRS = doc m4 dune
 
