@@ -26,7 +26,12 @@ namespace Dune
 
     SPNormalVector ( const size_type i, const field_type &p );
 
-    operator FieldVector () const;
+    operator FieldVector () const
+    {
+      FieldVector v( field_type( 0 ) );
+      v[ i_ ] = p_;
+      return v;
+    }
 
     This &operator*= ( const field_type &s );
     This &operator/= ( const field_type &s );
@@ -112,15 +117,6 @@ namespace Dune
     ::SPNormalVector ( const size_type i, const field_type &p )
   : i_( i ), p_( p )
   {}
-
-
-  template< class ct, int dim >
-  inline SPNormalVector< ct, dim >::operator FieldVector () const
-  {
-    FieldVector v( field_type( 0 ) );
-    v[ i_ ] = p_;
-    return v;
-  }
 
 
   template< class ct, int dim >
