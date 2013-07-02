@@ -40,22 +40,25 @@ namespace Dune
 
     typedef FieldVector< ctype, dimension > GlobalVector;
 
-    SPHierarchicSearchBase ( const Grid &grid )
+    SPBasicHierarchicSearch ( const Grid &grid )
     : grid_( grid )
     {}
 
     EntityPointer findEntity ( const GlobalVector &global, int level ) const
     {
       typedef typename EntityPointer::Implementation EntityPointerImpl;
+      typedef typename Grid::GridLevel GridLevel;
+      typedef typename GridLevel::PartitionList PartitionList;
+
       assert( grid_.domain().contains( x ) );
       const GridLevel &gridLevel = grid_.gridLevel( level );
       const PartitionList &partitionList = gridLevel.template partition< All_Partition >();
 
-      const GlobalVector y = x - grid_.domain().cube().origin();
+      const GlobalVector y = global - grid_.domain().cube().origin();
       GlobalVector z;
       gridLevel.template geometryCache< 0 >( (1 << dimension) - 1 ).jacobianInverseTransposed().mv( y, z );
 
-      MultiIndex id;
+      typename GridLevel::MultiIndex id;
       for( int i = 0; i < dimension; ++i )
         id[ i ] = 2*int( z[ i ] ) + 1;
 
@@ -73,9 +76,9 @@ namespace Dune
         const typename PartitionList::Partition *leftPartition = partitionList.findPartition( id );
 
         if( leftPartition ) 
-          return EntityPointerImpl( gLevel, id, leftPartition->number() );
+          return EntityPointerImpl( gridLevel, id, leftPartition->number() );
         else  
-          DUNE_THROW( GridError, "Coordinate " << x << " is outside the grid." );
+          DUNE_THROW( GridError, "Coordinate " << global << " is outside the grid." );
       }
     }
     
@@ -95,6 +98,7 @@ namespace Dune
     typedef SPBasicHierarchicSearch< Grid > Base;
 
   public:
+    typedef typename Base::ctype ctype;
     typedef typename Base::Entity Entity;
     typedef typename Base::EntityPointer EntityPointer;
 
