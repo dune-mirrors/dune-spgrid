@@ -51,7 +51,7 @@ namespace Dune
     void print ( std::basic_ostream< char_type, traits > &out, const int i ) const;
 
   private:
-    MultiIndex bound_[ 2 ];
+    Dune::array< MultiIndex, 2 > bound_;
   };
 
 
