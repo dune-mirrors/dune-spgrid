@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_MESH_HH
 #define DUNE_SPGRID_MESH_HH
 
+#include <dune/common/array.hh>
 #include <dune/common/iostream.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
@@ -54,7 +55,7 @@ namespace Dune
     static This unitMesh ();
 
   private:
-    MultiIndex bound_[ 2 ];
+    Dune::array< MultiIndex, 2 > bound_;
   };
 
 
