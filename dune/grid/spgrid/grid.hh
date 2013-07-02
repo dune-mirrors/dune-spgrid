@@ -427,15 +427,17 @@ namespace Dune
 
     size_t numBoundarySegments () const;
 
-    typename Codim< 0 >::EntityPointer findEntity ( const GlobalVector &x, const int level ) const;
-
   private:
     // note: this method ignores the last bit of the macroId
     size_t boundaryIndex ( const MultiIndex &macroId,
                            const unsigned int partitionNumber,
                            const int face ) const;
 
-    typename Codim< 1 >::LocalGeometry localFaceGeometry ( const int face ) const;
+    typename Codim< 1 >::LocalGeometry localFaceGeometry ( int face ) const
+    {
+      assert( (face >= 0) && (face < ReferenceCube::numFaces) );
+      return typename Codim< 1 >::LocalGeometry( *localFaceGeometry_[ face ] );
+    }
 
     void clear ();
 
@@ -773,45 +775,6 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline typename SPGrid< ct, dim, strategy, Comm >::template Codim< 0 >::EntityPointer
-  SPGrid< ct, dim, strategy, Comm >
-    ::findEntity ( const GlobalVector &x, const int level ) const
-  {
-    typedef typename Traits::template Codim< 0 >::EntityPointerImpl EntityPointerImpl;
-    assert( domain().contains( x ) );
-    const GridLevel &gLevel = gridLevel( level );
-    const PartitionList &partitionList = gLevel.template partition< All_Partition >();
-
-    const GlobalVector y = x - domain().cube().origin();
-    GlobalVector z;
-    gLevel.template geometryCache< 0 >( (1 << dimension) - 1 ).jacobianInverseTransposed().mv( y, z );
-
-    MultiIndex id;
-    for( int i = 0; i < dimension; ++i )
-      id[ i ] = 2*int( z[ i ] ) + 1;
-
-    const typename PartitionList::Partition *partition = partitionList.findPartition( id );
-    if( partition )
-      return EntityPointerImpl( gLevel, id, partition->number() );
-    else
-    {
-      for( int i = 0; i < dimension; ++i )
-      {
-        // check upper bound 
-        if( id[ i ] - 1 == 2*gLevel.localMesh().bound( 1 )[ i ] ) 
-          id[ i ] = 2*int( z[ i ] ) - 1;
-      }
-      const typename PartitionList::Partition *leftPartition = partitionList.findPartition( id );
-
-      if( leftPartition ) 
-        return EntityPointerImpl( gLevel, id, leftPartition->number() );
-      else  
-        DUNE_THROW( GridError, "Coordinate " << x << " is outside the grid." );
-    }
-  }
-
-
   // note: this method ignores the last bit of the macroId
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline size_t SPGrid< ct, dim, strategy, Comm >
@@ -841,15 +804,6 @@ namespace Dune
       factor *= size_t( w );
     }
     return index + boundaryOffset_[ partitionNumber - partitions.minNumber() ][ face ];
-  }
-
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline typename SPGrid< ct, dim, strategy, Comm >::template Codim< 1 >::LocalGeometry
-  SPGrid< ct, dim, strategy, Comm >::localFaceGeometry ( const int face ) const
-  {
-    assert( (face >= 0) && (face < ReferenceCube::numFaces) );
-    return typename Codim< 1 >::LocalGeometry( *localFaceGeometry_[ face ] );
   }
 
 
