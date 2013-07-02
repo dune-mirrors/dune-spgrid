@@ -3,6 +3,7 @@
 
 #include <limits>
 
+#include <dune/common/array.hh>
 #include <dune/common/iostream.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
