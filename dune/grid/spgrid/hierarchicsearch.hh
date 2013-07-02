@@ -50,7 +50,7 @@ namespace Dune
       typedef typename Grid::GridLevel GridLevel;
       typedef typename GridLevel::PartitionList PartitionList;
 
-      assert( grid_.domain().contains( x ) );
+      assert( grid_.domain().contains( global ) );
       const GridLevel &gridLevel = grid_.gridLevel( level );
       const PartitionList &partitionList = gridLevel.template partition< All_Partition >();
 
