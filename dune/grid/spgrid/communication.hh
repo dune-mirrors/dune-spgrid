@@ -71,7 +71,7 @@ namespace Dune
   public:
     static const unsigned int dimension = Grid::dimension;
 
-    typedef SPGridLevel< const Grid > GridLevel;
+    typedef SPGridLevel< Grid > GridLevel;
     typedef SPPartitionList< dimension > PartitionList;
 
     typedef typename DataHandle::DataType DataType;

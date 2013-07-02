@@ -127,7 +127,7 @@ namespace Dune
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > > Base;
 
     friend class SPIntersection< const This >;
-    friend class SPGridLevel< const This >;
+    friend class SPGridLevel< This >;
 
   public:
     typedef SPGridFamily< ct, dim, strategy, Comm > GridFamily;
@@ -175,7 +175,7 @@ namespace Dune
 
     typedef SPHierarchyIndexSet< const This > HierarchicIndexSet;
 
-    typedef SPGridLevel< const This > GridLevel;
+    typedef SPGridLevel< This > GridLevel;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
     static const int numDirections = GridLevel::numDirections;

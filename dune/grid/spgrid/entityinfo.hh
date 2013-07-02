@@ -21,7 +21,7 @@ namespace Dune
     typedef SPBasicEntityInfo< Grid, dim, codim > This;
 
   public:
-    typedef SPGridLevel< Grid > GridLevel;
+    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
 
     static const int dimension = GridLevel::dimension;
 
@@ -80,7 +80,7 @@ namespace Dune
     typedef SPBasicEntityInfo< Grid, dim, 0 > This;
 
   public:
-    typedef SPGridLevel< Grid > GridLevel;
+    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
 
     static const int dimension = GridLevel::dimension;
 
@@ -158,7 +158,7 @@ namespace Dune
     typedef SPBasicEntityInfo< Grid, dim, dim > This;
 
   public:
-    typedef SPGridLevel< Grid > GridLevel;
+    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
@@ -209,10 +209,10 @@ namespace Dune
 
   template< class Grid, int codim >
   class SPEntityInfo
-  : public SPBasicEntityInfo< Grid, SPGridLevel< Grid >::dimension, codim >
+  : public SPBasicEntityInfo< Grid, remove_const< Grid >::type::dimension, codim >
   {
     typedef SPEntityInfo< Grid, codim > This;
-    typedef SPBasicEntityInfo< Grid, SPGridLevel< Grid >::dimension, codim > Base;
+    typedef SPBasicEntityInfo< Grid, remove_const< Grid >::type::dimension, codim > Base;
 
   public:
     typedef typename Base::GridLevel GridLevel;

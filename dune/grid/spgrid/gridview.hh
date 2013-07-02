@@ -92,7 +92,7 @@ namespace Dune
     typedef typename ViewTraits::BoundarySegmentIterator BoundarySegmentIterator;
     typedef typename ViewTraits::CollectiveCommunication CollectiveCommunication;
 
-    typedef SPGridLevel< const Grid > GridLevel;
+    typedef SPGridLevel< Grid > GridLevel;
 
     template< int codim >
     struct Codim

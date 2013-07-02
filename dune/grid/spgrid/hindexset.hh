@@ -34,7 +34,7 @@ namespace Dune
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
-    typedef SPGridLevel< Grid > GridLevel;
+    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
 
   private:
     typedef SPIndexSet< Grid > LevelIndexSet;
