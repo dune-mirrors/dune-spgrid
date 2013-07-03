@@ -66,7 +66,7 @@ namespace Dune
     typedef typename Traits::template Codim< 0 >::LocalGeometry LocalGeometry;
 
   private:
-    typedef SPLocalGeometry< dimension, dimension, Grid > LocalGeometryImpl;
+    typedef SPLocalGeometry< dimension, dimension, const Grid > LocalGeometryImpl;
 
   public:
     SPGridLevel ( const Grid &grid, const Decomposition &decomposition );
