@@ -86,7 +86,6 @@ namespace Dune
     GeometryType type () const;
 
     int corners () const;
-    const GlobalVector &operator[] ( const int i ) const;
     GlobalVector corner ( const int i ) const;
     GlobalVector center () const;
 
@@ -271,14 +270,6 @@ namespace Dune
   inline int SPBasicGeometry< mydim, cdim, Grid, Impl >::corners () const
   {
     return numCorners;
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline const typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector &
-  SPBasicGeometry< mydim, cdim, Grid, Impl >::operator[] ( const int i ) const
-  {
-    DUNE_THROW( NotImplemented, "SPGrid does not implement Geometry::operator[], use Geometry::corner instead." );
   }
 
 
