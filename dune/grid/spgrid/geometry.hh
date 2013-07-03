@@ -80,28 +80,29 @@ namespace Dune
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
 
   protected:
-    SPBasicGeometry ();
+    SPBasicGeometry ()
+    {}
 
   public:
     GeometryType type () const;
 
-    int corners () const;
-    GlobalVector corner ( const int i ) const;
-    GlobalVector center () const;
+    int corners () const { return numCorners; }
+    GlobalVector corner ( const int i ) const { return global( ReferenceCube::corner( i ) ); }
+    GlobalVector center () const { return global( ReferenceCube::center() ); }
 
-    bool affine () const;
+    bool affine () const { return true; }
 
     GlobalVector global ( const LocalVector &local ) const;
     LocalVector local ( const GlobalVector &global ) const;
 
-    ctype volume () const;
-    ctype integrationElement ( const LocalVector &local ) const;
+    ctype volume () const { return asImpl().geometryCache().volume(); }
+    ctype integrationElement ( const LocalVector &local ) const { return volume(); }
 
     const JacobianTransposed &jacobianTransposed ( const LocalVector &local ) const;
     const JacobianInverseTransposed &jacobianInverseTransposed ( const LocalVector &local ) const;
 
   protected:
-    const Impl &asImpl () const;
+    const Impl &asImpl () const { return static_cast< const Impl & >( *this ); }
   };
 
 
@@ -156,30 +157,13 @@ namespace Dune
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
-    GlobalVector origin () const
-    {
-      return origin_;
-    }
+    GlobalVector origin () const { return origin_; }
+    const GeometryCache &geometryCache () const { return entityInfo().geometryCache(); }
 
-    const GeometryCache &geometryCache () const
-    {
-      return entityInfo().geometryCache();
-    }
+    const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
 
-    const GridLevel &gridLevel () const
-    {
-      return entityInfo().gridLevel();
-    }
-
-    const EntityInfo &entityInfo () const
-    {
-      return entityInfo_;
-    }
-
-    EntityInfo &entityInfo ()
-    {
-      return entityInfo_;
-    }
+    const EntityInfo &entityInfo () const { return entityInfo_; }
+    EntityInfo &entityInfo () { return entityInfo_; }
 
   private:
     GlobalVector computeOrigin () const
@@ -233,15 +217,8 @@ namespace Dune
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
-    GlobalVector origin () const
-    {
-      return origin_;
-    }
-
-    const GeometryCache &geometryCache () const
-    {
-      return geometryCache_;
-    }
+    GlobalVector origin () const { return origin_; }
+    const GeometryCache &geometryCache () const { return geometryCache_; }
 
   private:
     GeometryCache geometryCache_;
@@ -254,45 +231,10 @@ namespace Dune
   // ---------------------------------
 
   template< int mydim, int cdim, class Grid, class Impl >
-  inline SPBasicGeometry< mydim, cdim, Grid, Impl >::SPBasicGeometry ()
-  {}
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
   inline GeometryType SPBasicGeometry< mydim, cdim, Grid, Impl >::type () const
   {
     typedef typename GenericGeometry::CubeTopology< mydimension >::type Topology;
     return GeometryType( Topology() );
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline int SPBasicGeometry< mydim, cdim, Grid, Impl >::corners () const
-  {
-    return numCorners;
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
-  SPBasicGeometry< mydim, cdim, Grid, Impl >::corner ( const int i ) const
-  {
-    return global( ReferenceCube::corner( i ) );
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector
-  SPBasicGeometry< mydim, cdim, Grid, Impl >::center () const
-  {
-    return global( ReferenceCube::center() );
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline bool SPBasicGeometry< mydim, cdim, Grid, Impl >::affine () const
-  {
-    return true;
   }
 
 
@@ -318,22 +260,6 @@ namespace Dune
 
   
   template< int mydim, int cdim, class Grid, class Impl >
-  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::ctype
-  SPBasicGeometry< mydim, cdim, Grid, Impl >::volume () const
-  {
-    return asImpl().geometryCache().volume();
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::ctype
-  SPBasicGeometry< mydim, cdim, Grid, Impl >::integrationElement ( const LocalVector &local ) const
-  {
-    return volume();
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
   inline const typename SPBasicGeometry< mydim, cdim, Grid, Impl >::JacobianTransposed &
   SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianTransposed ( const LocalVector &local ) const
   {
@@ -346,13 +272,6 @@ namespace Dune
   SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianInverseTransposed ( const LocalVector &local ) const
   {
     return asImpl().geometryCache().jacobianInverseTransposed();
-  }
-
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline const Impl &SPBasicGeometry< mydim, cdim, Grid, Impl >::asImpl () const
-  {
-    return static_cast< const Impl & >( *this );
   }
 
 } // namespace Dune
