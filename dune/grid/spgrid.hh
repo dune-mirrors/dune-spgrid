@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_HH
 #define DUNE_SPGRID_HH
 
+#include <dune/grid/spgrid/backuprestore.hh>
 #include <dune/grid/spgrid/grid.hh>
 #include <dune/grid/spgrid/hierarchicsearch.hh>
 #include <dune/grid/spgrid/persistentcontainer.hh>

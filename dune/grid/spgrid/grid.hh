@@ -22,6 +22,14 @@
 namespace Dune
 {
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< class Grid >
+  struct BackupRestoreFacility;
+
+
+
   // Internal Forward Declarations
   // -----------------------------
 
@@ -126,6 +134,7 @@ namespace Dune
     typedef SPGrid< ct, dim, strategy, Comm > This;
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > > Base;
 
+    friend struct BackupRestoreFacility< This >;
     friend class SPIntersection< const This >;
     friend class SPGridLevel< This >;
 

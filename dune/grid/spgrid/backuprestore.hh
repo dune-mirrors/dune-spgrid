@@ -47,7 +47,16 @@ namespace Dune
      */
     static void backup ( const Grid &grid, const std::string &path, const std::string &fileprefix )
     {
-      std::string filename = path + "/" + fileprefix + ".spgrid";
+      backup( path + "/" + fileprefix + ".spgrid" );
+    }
+
+    /** \brief write a hierarchic grid to disk
+     *
+     *  \param[in]  grid        grid to write
+     *  \param[in]  path        filename of the file to create
+     */
+    static void backup ( const Grid &grid, const std::string &filename )
+    {
       std::ofstream stream( filename.c_str() );
       if( !stream )
         DUNE_THROW( IOError, "Unable to create file: " + filename );
@@ -59,7 +68,7 @@ namespace Dune
      *  \param[in]  grid        grid to write
      *  \param[in]  stream      std::stream to write the grid to
      */
-    static void backup ( const Grid &grid, const std::ostream &stream )
+    static void backup ( const Grid &grid, std::ostream &stream )
     {
       int result = 0;
       if( grid.comm().rank() == 0 )
@@ -95,7 +104,19 @@ namespace Dune
     static Grid *restore ( const std::string &path, const std::string &fileprefix,
                            const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
-      const std::string filename = path + "/" + fileprefix + ".spgrid";
+      return restore( path + "/" + fileprefix + ".spgrid" );
+    }
+
+    /** \brief read a hierarchic grid from disk
+     *
+     *  \param[in]  filename    name of the file to read
+     *  \param[in]  comm        collective communication (optional)
+     *
+     *  \returns a pointer to the grid (allocated by new)
+     */
+    static Grid *restore ( const std::string &filename,
+                           const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
+    {
       std::ifstream stream( filename.c_str() );
       if( !stream )
         DUNE_THROW( IOError, "Unable to open file: " + filename );
@@ -105,12 +126,10 @@ namespace Dune
       if( ioData.read( stream, filename ) )
         grid = restore( ioData, comm );
 
-      int result = (grid ? 1 : 0);
-      result = comm.sum( result );
-      if( result < comm.size() )
+      if( !parallelAnd( comm, grid ) )
       {
         delete grid;
-        DUNE_THROW( IOError, "Unable to read grid from stream." );
+        DUNE_THROW( IOError, "Unable to read grid from file '" << filename << "'." );
       }
       return grid;
     }
@@ -120,7 +139,7 @@ namespace Dune
      *  \param[in]  stream      std::stream to read the grid from
      *  \param[in]  comm        collective communication (optional)
      */
-    static Grid *restore ( const std::istream &stream,
+    static Grid *restore ( std::istream &stream,
                            const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       Grid *grid = 0;
@@ -128,9 +147,7 @@ namespace Dune
       if( ioData.read( stream ) )
         grid = restore( ioData, comm );
 
-      int result = (grid ? 1 : 0);
-      result = comm.sum( result );
-      if( result < comm.size() )
+      if( !parallelAnd( comm, grid ) )
       {
         delete grid;
         DUNE_THROW( IOError, "Unable to read grid from stream." );
@@ -160,7 +177,13 @@ namespace Dune
       }
       return grid;
     }
- 
+
+    static bool parallelAnd ( const CollectiveCommunication &comm, bool condition )
+    {
+      int result = (condition ? 1 : 0);
+      result = comm.sum( result );
+      return (result == comm.size());
+    }
   };
 
 } // namespace Dune
