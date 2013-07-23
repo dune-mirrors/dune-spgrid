@@ -97,22 +97,27 @@ void performCheck ( Grid &grid, const int maxLevel )
   const std::string filename = sFilename.str();
 
   std::cerr << ">>> Writing out grid..." << std::endl;
-  grid.template writeGrid< Dune::ascii >( filename, 0.0 );
+  Dune::BackupRestoreFacility< Grid >::backup( grid, filename );
 
   std::cerr << ">>> Reading back grid..." << std::endl;
-  Grid rgrid;
-  double time;
-  rgrid.template readGrid< Dune::ascii >( filename, time );
+  Grid *rgrid = Dune::BackupRestoreFacility< Grid >::restore( filename );
 
-  std::cerr << ">>> Checking grid..." << std::endl;
-  gridcheck( rgrid );
-  std::cerr << ">>> Checking intersections..." << std::endl;
-  checkIntersectionIterator( rgrid );
-  if( rgrid.maxLevel() > 0 )
+  if( rgrid )
   {
-    std::cerr << ">>> Checking geometry in father..." << std::endl;
-    checkGeometryInFather( rgrid );
+    std::cerr << ">>> Checking grid..." << std::endl;
+    gridcheck( *rgrid );
+    std::cerr << ">>> Checking intersections..." << std::endl;
+    checkIntersectionIterator( *rgrid );
+    if( rgrid->maxLevel() > 0 )
+    {
+      std::cerr << ">>> Checking geometry in father..." << std::endl;
+      checkGeometryInFather( *rgrid );
+    }
+
+    delete rgrid;
   }
+  else
+    std::cerr << "Could not read back grid." << std::endl;
 }
 
 
