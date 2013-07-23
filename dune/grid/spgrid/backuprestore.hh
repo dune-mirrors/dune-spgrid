@@ -57,10 +57,19 @@ namespace Dune
      */
     static void backup ( const Grid &grid, const std::string &filename )
     {
-      std::ofstream stream( filename.c_str() );
-      if( !stream )
-        DUNE_THROW( IOError, "Unable to create file: " + filename );
-      backup( grid, stream );
+      SPGridIOData< ct, dim, strategy > ioData;
+      backup( grid, ioData );
+
+      int result = 0;
+      if( grid.comm().rank() == 0 )
+      {
+        std::ofstream stream( filename.c_str() );
+        if( stream )
+          result = int( ioData.write( stream ) );
+      }
+      grid.comm().broadcast( &result, 1, 0 );
+      if( !result )
+        DUNE_THROW( IOError, "Unable to write SPGrid to file '" + filename + "'." );
     }
 
     /** \brief write a hierarchic grid into a stream
@@ -70,26 +79,14 @@ namespace Dune
      */
     static void backup ( const Grid &grid, std::ostream &stream )
     {
+      SPGridIOData< ct, dim, strategy > ioData;
+      backup( grid, ioData );
+
       int result = 0;
       if( grid.comm().rank() == 0 )
-      {
-        SPGridIOData< ct, dim, strategy > ioData;
-
-        ioData.time = 0;
-        ioData.cubes.push_back( grid.domain().cube() );
-        ioData.topology = grid.domain().topology();
-        ioData.cells = grid.globalMesh_.width();
-        ioData.partitions = grid.comm().size();
-        ioData.overlap = grid.overlap_;
-        ioData.maxLevel = grid.maxLevel();
-        ioData.refinements.resize( ioData.maxLevel );
-        for( int level = 0; level < ioData.maxLevel; ++level )
-          ioData.refinements[ level ] = grid.gridLevel( level+1 ).refinement().policy();
-
         result = int( ioData.write( stream ) );
-      }
       grid.comm().broadcast( &result, 1, 0 );
-      if( result != 0 )
+      if( !result )
         DUNE_THROW( IOError, "Unable to write SPGrid to stream." );
     }
 
@@ -129,7 +126,7 @@ namespace Dune
       if( !parallelAnd( comm, grid ) )
       {
         delete grid;
-        DUNE_THROW( IOError, "Unable to read grid from file '" << filename << "'." );
+        DUNE_THROW( IOError, "Unable to read grid from file '" + filename + "'." );
       }
       return grid;
     }
@@ -156,6 +153,20 @@ namespace Dune
     }
 
   private:
+    static void backup ( const Grid &grid, SPGridIOData< ct, dim, strategy > &ioData )
+    {
+      ioData.time = 0;
+      ioData.cubes.push_back( grid.domain().cube() );
+      ioData.topology = grid.domain().topology();
+      ioData.cells = grid.globalMesh_.width();
+      ioData.partitions = grid.comm().size();
+      ioData.overlap = grid.overlap_;
+      ioData.maxLevel = grid.maxLevel();
+      ioData.refinements.resize( ioData.maxLevel );
+      for( int level = 0; level < ioData.maxLevel; ++level )
+        ioData.refinements[ level ] = grid.gridLevel( level+1 ).refinement().policy();
+    }
+
     static Grid *restore ( const SPGridIOData< ct, dim, strategy > &ioData,
                            const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
@@ -180,7 +191,7 @@ namespace Dune
 
     static bool parallelAnd ( const CollectiveCommunication &comm, bool condition )
     {
-      int result = (condition ? 1 : 0);
+      int result( condition );
       result = comm.sum( result );
       return (result == comm.size());
     }
