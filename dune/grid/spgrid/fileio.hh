@@ -30,7 +30,6 @@ namespace Dune
     typedef SPRefinement< dim, strategy > Refinement;
     typedef typename Refinement::Policy RefinementPolicy;
 
-    std::string name;
     ctype time;
     std::vector< Cube > cubes;
     Topology topology;
@@ -67,7 +66,6 @@ namespace Dune
     stream << std::endl << std::endl;
 
     // write generic information
-    stream << "name " << name << std::endl;
     stream << "time " << time << std::endl;
     stream << std::endl;
 
@@ -167,7 +165,6 @@ namespace Dune
       return false;
     }
 
-    name = "SPGrid";
     partitions = 1;
     overlap = MultiIndex::zero();
     time = ctype( 0 );
@@ -190,9 +187,7 @@ namespace Dune
       std::string cmd;
       lineIn >> cmd;
 
-      if( cmd == "name" )
-        name = readLine( lineIn );
-      else if( cmd == "time" )
+      if( cmd == "time" )
         lineIn >> time;
       else if ( cmd == "domain" )
       {

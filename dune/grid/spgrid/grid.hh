@@ -22,6 +22,14 @@
 namespace Dune
 {
 
+  // External Forward Declarations
+  // -----------------------------
+
+  template< class Grid >
+  struct BackupRestoreFacility;
+
+
+
   // Internal Forward Declarations
   // -----------------------------
 
@@ -126,6 +134,7 @@ namespace Dune
     typedef SPGrid< ct, dim, strategy, Comm > This;
     typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > > Base;
 
+    friend struct BackupRestoreFacility< This >;
     friend class SPIntersection< const This >;
     friend class SPGridLevel< This >;
 
@@ -416,12 +425,6 @@ namespace Dune
       return EntityPointerImpl( gridLevel( seed.level() ), seed.id(), seed.partitionNumber() );
     }
 
-    template< GrapeIOFileFormatType format >
-    bool writeGrid ( const std::string &filename, const ctype &time ) const;
-
-    template< GrapeIOFileFormatType format >
-    bool readGrid ( const std::string &filename, ctype &time );
-
     const GridLevel &gridLevel ( const int level ) const;
     const GridLevel &leafLevel () const;
 
@@ -678,75 +681,6 @@ namespace Dune
   SPGrid< ct, dim, strategy, Comm >::comm () const
   {
     return comm_;
-  }
-
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  template< GrapeIOFileFormatType format >
-  inline bool SPGrid< ct, dim, strategy, Comm >
-    ::writeGrid ( const std::string &filename, const ctype &time ) const
-  {
-    // we ignore the format and always write ascii
-
-    int result = 0;
-    if( comm().rank() == 0 )
-    {
-      SPGridIOData< ctype, dimension, strategy > ioData;
-
-      ioData.time = time;
-      ioData.cubes.push_back( domain().cube() );
-      ioData.topology = domain().topology();
-      ioData.cells = globalMesh_.width();
-      ioData.partitions = comm().size();
-      ioData.overlap = overlap_;
-      ioData.maxLevel = maxLevel();
-      ioData.refinements.resize( maxLevel() );
-      for( int level = 0; level < maxLevel(); ++level )
-        ioData.refinements[ level ] = gridLevel( level+1 ).refinement().policy();
-
-      result = int( ioData.write( filename ) );
-    }
-    comm().broadcast( &result, 1, 0 );
-    return (result != 0);
-  }
-
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  template< GrapeIOFileFormatType format >
-  inline bool SPGrid< ct, dim, strategy, Comm >
-    ::readGrid ( const std::string &filename, ctype &time )
-  {
-    // we ignore the format and always read ascii
-
-    int result = 0;
-    SPGridIOData< ctype, dimension, strategy > ioData;
-
-    if( ioData.read( filename ) )
-    {
-      time = ioData.time;
-
-      if( ioData.partitions != comm().size() )
-      {
-        std::cerr << "Warning: Reading grid with different number of partitions,"
-                  << " index sets will not coincide." << std::endl;
-      }
-
-      domain_ = Domain( ioData.cubes, ioData.topology );
-      globalMesh_ = Mesh( ioData.cells );
-      overlap_ = ioData.overlap;
-      setupMacroGrid();
-
-      for( int level = 0; level < ioData.maxLevel; ++level )
-      {
-        if( level < int( ioData.refinements.size() ) )
-          globalRefine( 1, ioData.refinements[ level ] );
-        else
-          globalRefine( 1 );
-      }
-    }
-
-    result = comm().sum( result );
-    return (result == comm().size());
   }
 
 

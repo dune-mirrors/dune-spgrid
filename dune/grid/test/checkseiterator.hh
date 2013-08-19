@@ -49,7 +49,7 @@ namespace Dune
       static void apply ( const GridView &gridView )
       {
         const bool check = Extensions::SuperEntityIterator< Grid, codim >::v;
-        Dune::SelectType< check, Check< true >, NoCheck< false > >::Type::apply( gridView );
+        Dune::conditional< check, Check< true >, NoCheck< false > >::type::apply( gridView );
       }
     };
 
