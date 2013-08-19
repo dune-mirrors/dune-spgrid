@@ -2,9 +2,9 @@
 #define DUNE_SPGRID_COMMUNICATION_HH
 
 #include <dune/common/forloop.hh>
-#include <dune/common/collectivecommunication.hh>
-#include <dune/common/mpicollectivecommunication.hh>
-#include <dune/common/mpitraits.hh>
+#include <dune/common/parallel/collectivecommunication.hh>
+#include <dune/common/parallel/mpicollectivecommunication.hh>
+#include <dune/common/parallel/mpitraits.hh>
 
 #include <dune/grid/common/datahandleif.hh>
 
