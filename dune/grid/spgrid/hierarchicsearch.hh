@@ -5,6 +5,7 @@
 #include <dune/common/exceptions.hh>
 
 #include <dune/grid/common/indexidset.hh>
+#include <dune/grid/common/gridenums.hh>
 
 #include <dune/grid/spgrid/refinement.hh>
 
@@ -116,7 +117,7 @@ namespace Dune
       EntityPointer ep = Base::findEntity( global, 0 );
       return (indexSet_.contains( *ep ) ? ep : hFindEntity( *ep, global ));
     }
-    
+  
   private:
     typedef GlobalVector LocalVector;
     typedef typename Entity::HierarchicIterator HierarchicIterator;
@@ -164,7 +165,7 @@ namespace Dune
     {
       return Base::findEntity( global, indexSet_.gridLevel().level() );
     }
-    
+
   private:
     const IndexSet &indexSet_;
   };
@@ -200,9 +201,55 @@ namespace Dune
     typedef SPGrid< ct, dim, strategy, Comm > Grid;
 
   public:
+    typedef typename Base::EntityPointer EntityPointer;
+    typedef typename Base::GlobalVector GlobalVector;
+
     HierarchicSearch ( const Grid &grid, const IndexSet &indexSet )
     : Base( grid, indexSet )
     {}
+
+    EntityPointer findEntity ( const GlobalVector &global ) const
+    {
+      return Base::findEntity( global );
+    }
+
+    template< PartitionIteratorType pitype >
+    EntityPointer findEntity ( const GlobalVector &global ) const
+    {
+      const EntityPointer entityPointer = Base::findEntity( global );
+      if( !contains< pitype >( entityPointer->partitionType() ) )
+        DUNE_THROW( GridError, "Coordinate " << global << " does not belong to partition " << pitype );
+      return entityPointer;
+    }
+
+  private:
+    template< PartitionIteratorType pitype >
+    static bool contains ( const PartitionType partitionType )
+    {
+      switch( pitype )
+      {
+      case Interior_Partition:
+        return ( partitionType == InteriorEntity );
+
+      case InteriorBorder_Partition:
+        return ( partitionType == InteriorEntity || partitionType == BorderEntity );
+
+      case Overlap_Partition:
+        return ( partitionType != FrontEntity && partitionType != GhostEntity );
+
+      case OverlapFront_Partition:
+        return ( partitionType != GhostEntity );
+
+      case All_Partition:
+        return true;
+
+      case Ghost_Partition:
+        return ( partitionType == GhostEntity );
+
+      default:
+        DUNE_THROW( InvalidStateException, "wrong PartitionIteratorType: " << pitype << "." );
+      }
+    }
   };
 
 } // namespace Dune
