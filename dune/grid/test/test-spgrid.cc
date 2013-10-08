@@ -44,7 +44,7 @@ void checkHierarchicSearch ( const GridView &gridView )
   EntityPointer ep = hsearch.findEntity( x );
   const Geometry &geometry = ep->geometry();
   const LocalVector xl = geometry.local( x );
-  if( !Dune::GenericReferenceElements< ctype, dimGrid >::cube().checkInside( xl ) )
+  if( !Dune::ReferenceElements< ctype, dimGrid >::cube().checkInside( xl ) )
   {
     std::cerr << "Cannot find " << x << " in entity returned by hierarchic search." << std::endl;
     std::cerr << "Entity:";
