@@ -5,8 +5,6 @@
 
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 
-#include <dune/geometry/genericgeometry/codimtable.hh>
-
 #include <dune/grid/albertagrid/geometryreference.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>

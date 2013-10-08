@@ -5,8 +5,8 @@
 #include <vector>
 
 #include <dune/common/fvector.hh>
-
-#include <dune/geometry/genericgeometry/codimtable.hh>
+#include <dune/common/tuples/enumeration.hh>
+#include <dune/common/tuples/foreach.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/normal.hh>
@@ -211,17 +211,17 @@ namespace Dune
     template< int codim >
     const typename Codim< codim >::ReferenceCube &get () const
     {
-      std::integral_constant< int, codim > codimVariable;
-      return refCubes_[ codimVariable ];
+      return std::get< codim >( refCubes_ );
     }
 
   private:
-    template< int codim >
+    template< class T >
     struct RefCube
-    : public Codim< codim >::ReferenceCube
-    {};
-  
-    GenericGeometry::CodimTable< RefCube, dimension > refCubes_;
+    {
+      typedef typename Codim< T::value >::ReferenceCube Type;
+    };
+
+    typename ForEachType< RefCube, EnumerationTuple< int, dimension+1 > >::Type refCubes_;
   };
 
 } // namespace Dune
