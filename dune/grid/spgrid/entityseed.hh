@@ -49,6 +49,14 @@ namespace Dune
     /** \internal \brief type of multi index */
     typedef typename ReferenceCube::MultiIndex MultiIndex;
 
+    /** \brief default constructor
+     *
+     *  \note A default constructed entity seed is invalid.
+     */
+    SPEntitySeed ()
+      : level_( -1 )
+    {}
+
     /** \internal
      *  \brief constructor
      *
@@ -58,8 +66,11 @@ namespace Dune
      *                               belongs to
      */
     SPEntitySeed ( const int level, const MultiIndex &id, const unsigned int partitionNumber )
-    : level_( level ), id_( id ), partitionNumber_( partitionNumber )
+      : level_( level ), id_( id ), partitionNumber_( partitionNumber )
     {}
+
+    /** \brief check whether this seed generates a valid entity */
+    bool isValid () const { return (level_ >= 0); }
 
     /** \internal
      *  \brief obtain level of the seeded entity
@@ -68,6 +79,7 @@ namespace Dune
      */
     int level () const
     {
+      assert( isValid() );
       return level_;
     }
 
@@ -78,6 +90,7 @@ namespace Dune
      */
     MultiIndex id () const
     {
+      assert( isValid() );
       return id_;
     }
 
@@ -88,6 +101,7 @@ namespace Dune
      */
     unsigned int partitionNumber () const
     {
+      assert( isValid() );
       return partitionNumber_;
     }
 
