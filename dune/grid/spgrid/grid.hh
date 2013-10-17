@@ -85,7 +85,7 @@ namespace Dune
 
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
 
-        typedef SPEntitySeed< codim, const Grid > EntitySeed;
+        typedef Dune::EntitySeed< const Grid, SPEntitySeed< codim, const Grid > > EntitySeed;
 
         typedef SPEntityPointer< codim, const Grid > EntityPointerImpl;
         typedef Dune::EntityPointer< const Grid, EntityPointerImpl > EntityPointer;
@@ -422,7 +422,7 @@ namespace Dune
     entityPointer ( const EntitySeed &seed ) const
     {
       typedef typename Traits::template Codim< EntitySeed::codimension >::EntityPointerImpl EntityPointerImpl;
-      return EntityPointerImpl( gridLevel( seed.level() ), seed.id(), seed.partitionNumber() );
+      return EntityPointerImpl( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
     }
 
     const GridLevel &gridLevel ( const int level ) const;

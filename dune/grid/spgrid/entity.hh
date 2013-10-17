@@ -3,6 +3,7 @@
 
 #include <dune/grid/common/gridenums.hh>
 
+#include <dune/grid/spgrid/entityseed.hh>
 #include <dune/grid/spgrid/geometry.hh>
 
 namespace Dune
@@ -53,6 +54,7 @@ namespace Dune
 
   protected:
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
+    typedef SPEntitySeed< codimension, Grid > EntitySeedImpl;
 
   public:
     explicit SPBasicEntity ( const EntityInfo &entityInfo )
@@ -92,7 +94,7 @@ namespace Dune
 
     EntitySeed seed () const
     {
-      return EntitySeed( gridLevel().level(), entityInfo().id(), entityInfo().partitionNumber() );
+      return EntitySeed( EntitySeedImpl( gridLevel().level(), entityInfo().id(), entityInfo().partitionNumber() ) );
     }
   
     const EntityInfo &entityInfo () const
