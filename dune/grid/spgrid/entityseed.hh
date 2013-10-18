@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ENTITYSEED_HH
 #define DUNE_SPGRID_ENTITYSEED_HH
 
+#include <cassert>
+
 #include <dune/common/typetraits.hh>
 
 /** \file
