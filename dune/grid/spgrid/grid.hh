@@ -242,40 +242,40 @@ namespace Dune
 
     int size ( const int level, const int codim ) const
     {
-      return levelView( level ).size( codim );
+      return levelGridView( level ).size( codim );
     }
 
     int size ( const int codim ) const
     {
-      return leafView().size( codim );
+      return leafGridView().size( codim );
     }
 
     int size ( const int level, const GeometryType &type ) const
     {
-      return levelView( level ).size( type );
+      return levelGridView( level ).size( type );
     }
 
     int size ( const GeometryType &type ) const
     {
-      return leafView().size( type );
+      return leafGridView().size( type );
     }
 
     template< PartitionIteratorType pitype >
     typename Traits::template Partition< pitype >::LevelGridView
-    levelView ( const int level ) const;
+    levelGridView ( const int level ) const;
 
     template< PartitionIteratorType pitype >
     typename Traits::template Partition< pitype >::LeafGridView
-    leafView () const;
+    leafGridView () const;
 
-    LevelGridView levelView ( const int level ) const;
-    LeafGridView leafView () const;
+    LevelGridView levelGridView ( const int level ) const;
+    LeafGridView leafGridView () const;
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      const LevelGridView &view = levelView( level );
+      const LevelGridView &view = levelGridView( level );
       return getRealImplementation( view ).template begin< codim, pitype >( sweepDir );
     }
 
@@ -283,7 +283,7 @@ namespace Dune
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lend ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      const LevelGridView &view = levelView( level );
+      const LevelGridView &view = levelGridView( level );
       return getRealImplementation( view ).template end< codim, pitype >( sweepDir );
     }
 
@@ -291,7 +291,7 @@ namespace Dune
     typename Traits::template Codim< codim >::LevelIterator
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      const LevelGridView &view = levelView( level );
+      const LevelGridView &view = levelGridView( level );
       return getRealImplementation( view ).template begin< codim >( sweepDir );
     }
 
@@ -299,7 +299,7 @@ namespace Dune
     typename Traits::template Codim< codim >::LevelIterator
     lend ( const int level, const unsigned int sweepDir = 0 ) const
     {
-      const LevelGridView &view = levelView( level );
+      const LevelGridView &view = levelGridView( level );
       return getRealImplementation( view ).template end< codim >( sweepDir );
     }
 
@@ -307,7 +307,7 @@ namespace Dune
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
     leafbegin ( const unsigned int sweepDir = 0 ) const
     {
-      const LeafGridView &view = leafView();
+      const LeafGridView &view = leafGridView();
       return getRealImplementation( view ).template begin< codim, pitype >( sweepDir );
     }
 
@@ -315,7 +315,7 @@ namespace Dune
     typename Traits::template Codim< codim >::template Partition< pitype >::LeafIterator
     leafend ( const unsigned int sweepDir = 0 ) const
     {
-      const LeafGridView &view = leafView();
+      const LeafGridView &view = leafGridView();
       return getRealImplementation( view ).template end< codim, pitype >( sweepDir );
     }
 
@@ -323,7 +323,7 @@ namespace Dune
     typename Traits::template Codim< codim >::LeafIterator
     leafbegin ( const unsigned int sweepDir = 0 ) const
     {
-      const LeafGridView &view = leafView();
+      const LeafGridView &view = leafGridView();
       return getRealImplementation( view ).template begin< codim >( sweepDir );
     }
 
@@ -331,7 +331,7 @@ namespace Dune
     typename Traits::template Codim< codim >::LeafIterator
     leafend ( const unsigned int sweepDir = 0 ) const
     {
-      const LeafGridView &view = leafView();
+      const LeafGridView &view = leafGridView();
       return getRealImplementation( view ).template end< codim >( sweepDir );
     }
 
@@ -347,12 +347,12 @@ namespace Dune
 
     const LevelIndexSet &levelIndexSet ( const int level ) const
     {
-      return levelView( level ).indexSet();
+      return levelGridView( level ).indexSet();
     }
 
     const LeafIndexSet &leafIndexSet () const
     {
-      return leafView().indexSet();
+      return leafGridView().indexSet();
     }
 
     const HierarchicIndexSet &hierarchicIndexSet () const
@@ -382,22 +382,22 @@ namespace Dune
 
     int overlapSize ( const int level, const int codim ) const
     {
-      return levelView( level ).overlapSize( codim );
+      return levelGridView( level ).overlapSize( codim );
     }
 
     int overlapSize ( const int codim ) const
     {
-      return leafView().overlapSize( codim );
+      return leafGridView().overlapSize( codim );
     }
 
     int ghostSize ( const int level, const int codim ) const
     {
-      return levelView( level ).ghostSize( codim );
+      return levelGridView( level ).ghostSize( codim );
     }
 
     int ghostSize ( const int codim ) const
     {
-      return leafView().ghostSize( codim );
+      return leafGridView().ghostSize( codim );
     }
 
     template< class DataHandle, class Data >
@@ -405,14 +405,14 @@ namespace Dune
                        InterfaceType interface, CommunicationDirection dir,
                        int level ) const
     {
-      levelView( level ).communicate( data, interface, dir );
+      levelGridView( level ).communicate( data, interface, dir );
     }
 
     template< class DataHandle, class Data >
     void communicate ( CommDataHandleIF< DataHandle, Data > &data,
                        InterfaceType interface, CommunicationDirection dir ) const
     {
-      leafView().communicate( data, interface, dir );
+      leafGridView().communicate( data, interface, dir );
     }
 
     const CollectiveCommunication &comm () const;
@@ -455,8 +455,8 @@ namespace Dune
     MultiIndex overlap_;
     ReferenceCubeContainer refCubes_;
     std::vector< GridLevel * > gridLevels_;
-    std::vector< LevelGridView > levelViews_;
-    LeafGridView leafView_;
+    std::vector< LevelGridView > levelGridViews_;
+    LeafGridView leafGridView_;
     HierarchicIndexSet hierarchicIndexSet_;
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
@@ -476,7 +476,7 @@ namespace Dune
   : domain_( Domain::unitCube() ),
     globalMesh_( Mesh::unitMesh() ),
     overlap_( MultiIndex::zero() ),
-    leafView_( LeafGridViewImpl() ),
+    leafGridView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
   {
@@ -492,7 +492,7 @@ namespace Dune
   : domain_( domain ),
     globalMesh_( cells ),
     overlap_( MultiIndex::zero() ),
-    leafView_( LeafGridViewImpl() ),
+    leafGridView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
   {
@@ -508,7 +508,7 @@ namespace Dune
   : domain_( domain ),
     globalMesh_( cells ),
     overlap_( overlap ),
-    leafView_( LeafGridViewImpl() ),
+    leafGridView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
   {
@@ -524,7 +524,7 @@ namespace Dune
   : domain_( a, b ),
     globalMesh_( cells ),
     overlap_( MultiIndex::zero() ),
-    leafView_( LeafGridViewImpl() ),
+    leafGridView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
   {
@@ -540,7 +540,7 @@ namespace Dune
   : domain_( a, b ),
     globalMesh_( cells ),
     overlap_( overlap ),
-    leafView_( LeafGridViewImpl() ),
+    leafGridView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
   {
@@ -552,12 +552,12 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   template< PartitionIteratorType pitype >
   typename SPGrid< ct, dim, strategy, Comm >::Traits::template Partition< pitype >::LevelGridView
-  SPGrid< ct, dim, strategy, Comm >::levelView ( const int level ) const
+  SPGrid< ct, dim, strategy, Comm >::levelGridView ( const int level ) const
   {
     typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
     typedef typename GridView::Traits::GridViewImp GridViewImpl;
     assert( (level >= 0) && (level <= maxLevel()) );
-    const LevelGridViewImpl &viewImpl = getRealImplementation( levelViews_[ level ] );
+    const LevelGridViewImpl &viewImpl = getRealImplementation( levelGridViews_[ level ] );
     return GridViewImpl( viewImpl );
   }
 
@@ -565,29 +565,29 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   template< PartitionIteratorType pitype >
   typename SPGrid< ct, dim, strategy, Comm >::Traits::template Partition< pitype >::LeafGridView
-  SPGrid< ct, dim, strategy, Comm >::leafView () const
+  SPGrid< ct, dim, strategy, Comm >::leafGridView () const
   {
     typedef typename Traits::template Partition< pitype >::LeafGridView GridView;
     typedef typename GridView::Traits::GridViewImp GridViewImpl;
-    const LeafGridViewImpl &viewImpl = getRealImplementation( leafView_ );
+    const LeafGridViewImpl &viewImpl = getRealImplementation( leafGridView_ );
     return GridViewImpl( viewImpl );
   }
 
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   typename SPGrid< ct, dim, strategy, Comm >::LevelGridView
-  SPGrid< ct, dim, strategy, Comm >::levelView ( const int level ) const
+  SPGrid< ct, dim, strategy, Comm >::levelGridView ( const int level ) const
   {
     assert( (level >= 0) && (level <= maxLevel()) );
-    return levelViews_[ level ];
+    return levelGridViews_[ level ];
   }
 
 
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   typename SPGrid< ct, dim, strategy, Comm >::LeafGridView
-  SPGrid< ct, dim, strategy, Comm >::leafView () const
+  SPGrid< ct, dim, strategy, Comm >::leafGridView () const
   {
-    return leafView_;
+    return leafGridView_;
   }
 
 
@@ -642,9 +642,9 @@ namespace Dune
     for( int i = 0; i < refCount; ++i )
     {
       gridLevels_.push_back( new GridLevel( leafLevel(), policy ) );
-      levelViews_.push_back( LevelGridViewImpl( leafLevel() ) );
+      levelGridViews_.push_back( LevelGridViewImpl( leafLevel() ) );
     }
-    getRealImplementation( leafView_ ).update( leafLevel() );
+    getRealImplementation( leafGridView_ ).update( leafLevel() );
     hierarchicIndexSet_.update();
   }
 
@@ -658,13 +658,13 @@ namespace Dune
   {
     for( int i = 0; i < refCount; ++i )
     {
-      const LevelGridView fatherView = levelView( maxLevel() );
+      const LevelGridView fatherView = levelGridView( maxLevel() );
 
       gridLevels_.push_back( new GridLevel( leafLevel(), policy ) );
-      levelViews_.push_back( LevelGridViewImpl( leafLevel() ) );
+      levelGridViews_.push_back( LevelGridViewImpl( leafLevel() ) );
 
       hierarchicIndexSet_.update();
-      getRealImplementation( leafView_ ).update( leafLevel() );
+      getRealImplementation( leafGridView_ ).update( leafLevel() );
 
       handle.preAdapt( leafLevel().size() );
       typedef typename Codim< 0 >::LevelIterator LevelIterator;
@@ -718,7 +718,7 @@ namespace Dune
   {
     assert( (face >= 0) && (face < 2*dimension) );
 
-    const LevelGridView &macroView = levelView( 0 );
+    const LevelGridView &macroView = levelGridView( 0 );
     const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
     const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
     const typename PartitionList::Partition &partition = partitions.partition( partitionNumber );
@@ -744,8 +744,8 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline void SPGrid< ct, dim, strategy, Comm >::clear ()
   {
-    levelViews_.clear();
-    leafView_ = LeafGridView( LeafGridViewImpl() );
+    levelGridViews_.clear();
+    leafGridView_ = LeafGridView( LeafGridViewImpl() );
 
     typedef typename std::vector< GridLevel * >::iterator Iterator;
     const Iterator end = gridLevels_.end();
@@ -781,8 +781,8 @@ namespace Dune
 
     GridLevel *leafLevel = new GridLevel( *this, decomposition );
     gridLevels_.push_back( leafLevel );
-    levelViews_.push_back( LevelGridViewImpl( *leafLevel ) );
-    getRealImplementation( leafView_ ).update( *leafLevel );
+    levelGridViews_.push_back( LevelGridViewImpl( *leafLevel ) );
+    getRealImplementation( leafGridView_ ).update( *leafLevel );
     hierarchicIndexSet_.update();
     setupBoundaryIndices();
   }
@@ -791,7 +791,7 @@ namespace Dune
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   inline void SPGrid< ct, dim, strategy, Comm >::setupBoundaryIndices ()
   {
-    const LevelGridView &macroView = levelView( 0 );
+    const LevelGridView &macroView = levelGridView( 0 );
     const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
     const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
 
