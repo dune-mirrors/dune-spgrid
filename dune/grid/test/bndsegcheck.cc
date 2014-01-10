@@ -34,7 +34,7 @@ void performCheck ( Grid &grid, const int maxLevel )
 
   std::cerr << ">>> Checking boundary segment iterator..." << std::endl;
   for( int level = 0; level <= maxLevel; ++level )
-    checkBoundarySegmentIterator( grid.levelView( level ) );
+    checkBoundarySegmentIterator( grid.levelGridView( level ) );
 }
 
 

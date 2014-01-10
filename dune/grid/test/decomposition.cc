@@ -242,7 +242,7 @@ int main ( int argc, char **argv )
       }
     }
   }
-  VTKWriter< Grid::LeafGridView > vtkWriter( grid.leafView() );
+  VTKWriter< Grid::LeafGridView > vtkWriter( grid.leafGridView() );
   vtkWriter.addCellData( data, "rank" );
   vtkWriter.write( "decomposition" );
 
