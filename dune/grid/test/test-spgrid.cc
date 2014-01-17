@@ -102,8 +102,8 @@ void performCheck ( Grid &grid, int maxLevel )
     }
     std::cerr << ">>> Checking grid..." << std::endl;
     gridcheck( grid );
-    checkIterators( grid.leafView() );
-    checkPartitionType( grid.leafView() );
+    checkIterators( grid.leafGridView() );
+    checkPartitionType( grid.leafGridView() );
     std::cerr << ">>> Checking intersections..." << std::endl;
     checkIntersectionIterator( grid );
     if( i > 0 )
@@ -113,17 +113,17 @@ void performCheck ( Grid &grid, int maxLevel )
     }
 
     std::cerr << ">>> Checking communication..." << std::endl;
-    checkIdCommunication( grid.leafView() );
+    checkIdCommunication( grid.leafGridView() );
     checkCommunication( grid, -1, std::cout );
 
-    checkSubIndex( grid.leafView() );
+    checkSubIndex( grid.leafGridView() );
 
     if( grid.comm().size() <= 1 )
     {
-      checkSuperEntityIterator( grid.leafView() );
+      checkSuperEntityIterator( grid.leafGridView() );
 
       std::cerr << ">>> Checking hierarchic search..." << std::endl;
-      checkHierarchicSearch( grid.leafView() );
+      checkHierarchicSearch( grid.leafGridView() );
     }
     else
       std::cerr << "WARNING: SuperEntityIterators currently don't work in parallel; test disabled." << std::endl;
