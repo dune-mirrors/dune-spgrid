@@ -7,6 +7,7 @@
 #error "DIMGRID not defined. Please compile with -DDIMGRID=n"
 #endif
 
+#include <dune/common/forloop.hh>
 #include <dune/common/parallel/mpihelper.hh>
 
 #include <dune/grid/spgrid.hh>
@@ -23,6 +24,40 @@
 #include "checkseiterator.hh"
 
 static const int dimGrid = DIMGRID;
+
+
+template< int codim >
+struct CheckSubIndex
+{
+  template< class GridView >
+  static void apply ( const GridView &gridView )
+  {
+    std::cerr << ">>> Checking subIndex() for codim " << codim << "..." << std::endl;
+    typedef typename GridView::ctype ctype;
+
+    static const int dimension = GridView::dimension;
+    static const int mydimension = dimension - codim;
+
+    const typename GridView::IndexSet &indexSet = gridView.indexSet();
+
+    typedef typename GridView::template Codim< codim >::Iterator Iterator;
+    const Iterator end = gridView.template end< codim >();
+    for( Iterator it = gridView.template begin< codim >(); it != end; ++it )
+    {
+      const typename Iterator::Entity &entity = *it;
+      const Dune::ReferenceElement< ctype, mydimension > &referenceElement
+        = Dune::ReferenceElements< ctype, mydimension >::general( entity.type() );
+      for( int i = 0; i < referenceElement.size( mydimension ); ++i )
+        indexSet.subIndex( entity, i, dimension );
+    }
+  }
+};
+
+template< class GridView >
+void checkSubIndex ( const GridView &gridView )
+{
+  Dune::ForLoop< CheckSubIndex, 0, GridView::dimension >::apply( gridView );
+}
 
 
 template< class GridView >
@@ -56,7 +91,7 @@ void checkHierarchicSearch ( const GridView &gridView )
 
 
 template< class Grid >
-void performCheck ( Grid &grid, const int maxLevel )
+void performCheck ( Grid &grid, int maxLevel )
 {
   for( int i = 0; i <= maxLevel; ++i )
   {
@@ -80,6 +115,8 @@ void performCheck ( Grid &grid, const int maxLevel )
     std::cerr << ">>> Checking communication..." << std::endl;
     checkIdCommunication( grid.leafView() );
     checkCommunication( grid, -1, std::cout );
+
+    checkSubIndex( grid.leafView() );
 
     if( grid.comm().size() <= 1 )
     {
