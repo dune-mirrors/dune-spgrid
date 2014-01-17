@@ -184,11 +184,11 @@ namespace Dune
   {
     const int mydim = dimension - cd;
     const SPMultiIndex< mydim > refId = gridLevel().template referenceCube< cd >().subId( codim - cd, i );
-    MultiIndex subId;
+    MultiIndex subId( id );
     for( int k = 0, l = 0; k < dimension; ++k )
     {
-      subId[ k ] = id[ k ] + refId[ l ];
-      l += id[ k ] & 1;
+      if( (id[ k ] & 1) != 0 )
+        subId[ k ] += refId[ l++ ];
     }
     return index( subId, number );
   }
