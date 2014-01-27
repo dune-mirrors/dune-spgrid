@@ -271,6 +271,27 @@ namespace Dune
     LevelGridView levelGridView ( const int level ) const;
     LeafGridView leafGridView () const;
 
+    // for compatibility with dune-grid 2.3
+    template< PartitionIteratorType pitype >
+    typename Traits::template Partition< pitype >::LevelGridView
+    levelView ( const int level ) const
+    {
+      return levelGridView< pitype >( level );
+    }
+
+    // for compatibility with dune-grid 2.3
+    template< PartitionIteratorType pitype >
+    typename Traits::template Partition< pitype >::LeafGridView
+    leafView () const
+    {
+      return leafGridView< pitype >();
+    }
+
+    // for compatibility with dune-grid 2.3
+    LevelGridView levelView ( const int level ) const { return levelGridView( level ); }
+    // for compatibility with dune-grid 2.3
+    LeafGridView leafView () const { return leafGridView(); }
+
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
