@@ -75,7 +75,7 @@ namespace Dune
     template< int cd >
     IdType subId ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const
     {
-      const typename Codim< 0 >::EntityInfo &entityInfo
+      const typename Codim< cd >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
       return computeSubId( gridLevel, entityInfo.id(), i, codim, integral_constant< int, cd >() );
@@ -119,11 +119,11 @@ namespace Dune
   {
     const int mydim = dimension - cd;
     const SPMultiIndex< mydim > refId = gridLevel.template referenceCube< cd >().subId( codim - cd, i );
-    MultiIndex subId;
+    MultiIndex subId( id );
     for( int k = 0, l = 0; k < dimension; ++k )
     {
-      subId[ k ] = id[ k ] + refId[ l ];
-      l += id[ k ] & 1;
+      if( (id[ k ] & 1) != 0 )
+        subId[ k ] += refId[ l++ ];
     }
     return computeId( gridLevel, subId );
   }
