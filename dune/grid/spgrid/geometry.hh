@@ -12,39 +12,6 @@
 namespace Dune
 {
 
-  // Internal Forward Declarations
-  // -----------------------------
-
-  template< int mydim, int cdim, class Grid >
-  class SPGeometry;
-
-  template< int mydim, int cdim, class Grid >
-  class SPLocalGeometry;
-
-
-
-  // FacadeOptions
-  // -------------
-
-  namespace FacadeOptions
-  {
-
-    template< int mydim, int cdim, class Grid >
-    struct StoreGeometryReference< mydim, cdim, Grid, SPGeometry >
-    {
-      static const bool v = false;
-    };
-
-    template< int mydim, int cdim, class Grid >
-    struct StoreGeometryReference< mydim, cdim, Grid, SPLocalGeometry >
-    {
-      static const bool v = true;
-    };
-
-  } // namespace FacadeOptions
-
-
-
   // SPBasicGeometry
   // ---------------
 
