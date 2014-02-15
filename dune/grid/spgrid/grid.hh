@@ -7,7 +7,6 @@
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
-#include <dune/grid/common/geometryreference.hh>
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
