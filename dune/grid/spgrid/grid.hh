@@ -5,6 +5,7 @@
 
 #include <dune/geometry/genericgeometry/codimtable.hh>
 
+#include <dune/grid/albertagrid/geometryreference.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
 #include <dune/grid/utility/grapedataioformattypes.hh>
