@@ -72,6 +72,18 @@ namespace Dune
     typedef FieldVector< ctype, dimension > GlobalVector;
     typedef FieldVector< ctype, mydimension > LocalVector;
 
+  private:
+    typedef SPGeometryPattern< dimension, codimension > Pattern;
+
+    struct MatrixStorage
+      : public Pattern
+    {
+      explicit MatrixStorage ( unsigned int dir ) : Pattern( dir ) {}
+
+      LocalVector h;
+    };
+
+  public:
     struct JacobianTransposed;
     struct JacobianInverseTransposed;
 
@@ -81,7 +93,6 @@ namespace Dune
     const JacobianTransposed &jacobianTransposed () const;
     const JacobianInverseTransposed &jacobianInverseTransposed () const;
 
-  private:
     JacobianTransposed jacobianTransposed_;
     JacobianInverseTransposed jacobianInverseTransposed_;
     ctype volume_;
@@ -106,13 +117,14 @@ namespace Dune
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
-    typedef SPNormalVector< field_type, cols > const_row_reference;
+    JacobianTransposed ( const GlobalVector &h, unsigned int dir )
+      : storage_( dir )
+    {
+      for( int k = 0; k < mydimension; ++k )
+        storage_.h[ k ] = h[ pattern().nonzero( k ) ];
+    }
 
-    JacobianTransposed ( const GlobalVector &h, const unsigned int dir );
-
-    operator const FieldMatrix & () const { return matrix_; }
-
-    const_row_reference operator[] ( size_type i ) const;
+    operator FieldMatrix () const;
 
     template< class X, class Y > void mv ( const X &x, Y &y ) const;
     template< class X, class Y > void mtv ( const X &x, Y &y ) const;
@@ -132,23 +144,16 @@ namespace Dune
 
     field_type det () const;
 
-    real_type frobenius_norm () const { return h_.two_norm(); }
-    real_type frobenius_norm2 () const { return h_.two_norm2(); }
-    real_type infinity_norm () const { return h_.infinity_norm(); }
-    real_type infinity_norm_real () const { return h_.infinity_norm_real(); }
+    real_type frobenius_norm () const { return h().two_norm(); }
+    real_type frobenius_norm2 () const { return h().two_norm2(); }
+    real_type infinity_norm () const { return h().infinity_norm(); }
+    real_type infinity_norm_real () const { return h().infinity_norm_real(); }
 
   private:
-    friend class SPGeometryCache< ct, dim, codim >;
+    const SPGeometryPattern< dimension, codimension > &pattern () const { return storage_; }
+    const LocalVector h () const { return storage_.h; }
 
-    // prohibit unauthorized copying
-    JacobianTransposed ( const JacobianTransposed &other );
-
-    // prohibit assignment
-    const JacobianTransposed &operator= ( const JacobianTransposed & );
-
-    SPGeometryPattern< dimension, codimension > pattern_;
-    LocalVector h_;
-    FieldMatrix matrix_;
+    MatrixStorage storage_;
   };
 
 
@@ -170,13 +175,14 @@ namespace Dune
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
-    typedef typename FieldMatrix::const_row_reference const_row_reference;
+    JacobianInverseTransposed ( const GlobalVector &h, unsigned int dir )
+      : storage_( dir )
+    {
+      for( int k = 0; k < mydimension; ++k )
+        storage_.h[ k ] = ctype( 1 ) / h[ pattern().nonzero( k ) ];
+    }
 
-    JacobianInverseTransposed ( const GlobalVector &h, const unsigned int dir );
-
-    operator const FieldMatrix & () const { return matrix_; }
-
-    const_row_reference operator[] ( size_type i ) const;
+    operator FieldMatrix () const;
 
     template< class X, class Y > void mv ( const X &x, Y &y ) const;
     template< class X, class Y > void mtv ( const X &x, Y &y ) const;
@@ -196,23 +202,16 @@ namespace Dune
 
     field_type det () const;
 
-    real_type frobenius_norm () const { return hInv_.two_norm(); }
-    real_type frobenius_norm2 () const { return hInv_.two_norm2(); }
-    real_type infinity_norm () const { return hInv_.infinity_norm(); }
-    real_type infinity_norm_real () const { return hInv_.infinity_norm_real(); }
+    real_type frobenius_norm () const { return hInv().two_norm(); }
+    real_type frobenius_norm2 () const { return hInv().two_norm2(); }
+    real_type infinity_norm () const { return hInv().infinity_norm(); }
+    real_type infinity_norm_real () const { return hInv().infinity_norm_real(); }
 
   private:
-    friend class SPGeometryCache< ct, dim, codim >;
+    const SPGeometryPattern< dimension, codimension > &pattern () const { return storage_; }
+    const LocalVector hInv () const { return storage_.h; }
 
-    // prohibit unauthorized copying
-    JacobianInverseTransposed ( const JacobianInverseTransposed &other );
-
-    // prohibit assignment
-    const JacobianInverseTransposed &operator= ( const JacobianInverseTransposed & );
-
-    SPGeometryPattern< dimension, codimension > pattern_;
-    LocalVector hInv_;
-    FieldMatrix matrix_;
+    MatrixStorage storage_;
   };
 
 
@@ -353,34 +352,12 @@ namespace Dune
   // -----------------------------------------------------
 
   template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
-    ::JacobianTransposed ( const GlobalVector &h, const unsigned int dir )
-  : pattern_( dir ),
-    matrix_( ctype( 0 ) )
+  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed::operator FieldMatrix () const
   {
+    FieldMatrix matrix( ctype( 0 ) );
     for( int k = 0; k < mydimension; ++k )
-    {
-      const int j = pattern_.nonzero( k );
-      h_[ k ] = h[ j ];
-      matrix_[ k ][ j ] = h_[ k ];
-    }
-  }
-
-
-  template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed
-    ::JacobianTransposed ( const JacobianTransposed &other )
-  : pattern_( other.pattern_ ),
-    h_( other.h_ ),
-    matrix_( other.matrix_ )
-  {}
-
-
-  template< class ct, int dim, int codim >
-  inline typename SPGeometryCache< ct, dim, codim >::JacobianTransposed::const_row_reference
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::operator[] ( size_type i ) const
-  {
-    return const_row_reference( pattern_.nonzero( i ), h_[ i ] );
+      matrix[ k ][ pattern().nonzero( k ) ] = h()[ k ];
+    return matrix;
   }
 
 
@@ -390,7 +367,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] = h_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] = h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -400,9 +377,9 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] = h_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] = h()[ k ] * x[ k ];
     for( int k = 0; k < codimension; ++k )
-      y[ pattern_.zero( k ) ] = ctype( 0 );
+      y[ pattern().zero( k ) ] = ctype( 0 );
   }
 
 
@@ -412,9 +389,9 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mhv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] = conjugateComplex( h_[ k ] ) * x[ k ];
+      y[ pattern().nonzero( k ) ] = conjugateComplex( h()[ k ] ) * x[ k ];
     for( int k = 0; k < codimension; ++k )
-      y[ pattern_.zero( k ) ] = ctype( 0 );
+      y[ pattern().zero( k ) ] = ctype( 0 );
   }
 
 
@@ -424,7 +401,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += h_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] += h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -434,7 +411,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] += h_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] += h()[ k ] * x[ k ];
   }
 
 
@@ -444,7 +421,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::umhv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] += conjugateComplex( h_[ k ] ) * x[ k ];
+      y[ pattern().nonzero( k ) ] += conjugateComplex( h()[ k ] ) * x[ k ];
   }
 
 
@@ -454,7 +431,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::usmv ( const field_type &alpha, const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += alpha * h_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] += alpha * h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -464,7 +441,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::usmtv ( const field_type &alpha, const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] += alpha * h_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] += alpha * h()[ k ] * x[ k ];
   }
 
 
@@ -474,7 +451,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::usmhv ( const field_type &alpha, const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] += alpha * conjugateComplex( h_[ k ] ) * x[ k ];
+      y[ pattern().nonzero( k ) ] += alpha * conjugateComplex( h()[ k ] ) * x[ k ];
   }
 
 
@@ -484,7 +461,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] -= h_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] -= h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -494,7 +471,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] -= h_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] -= h()[ k ] * x[ k ];
   }
 
 
@@ -504,7 +481,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmhv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] -= conjugateComplex( h_[ k ] ) * x[ k ];
+      y[ pattern().nonzero( k ) ] -= conjugateComplex( h()[ k ] ) * x[ k ];
   }
 
 
@@ -514,7 +491,7 @@ namespace Dune
   {
     ctype det( 1 );
     for( int k = 0; k < mydimension; ++k )
-      det *= h_[ k ];
+      det *= h()[ k ];
     return det;
   }
 
@@ -524,34 +501,12 @@ namespace Dune
   // ------------------------------------------------------------
 
   template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
-    ::JacobianInverseTransposed ( const GlobalVector &h, const unsigned int dir )
-  : pattern_( dir ),
-    matrix_( ctype( 0 ) )
+  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::operator FieldMatrix () const
   {
+    FieldMatrix matrix( ctype( 0 ) );
     for( int k = 0; k < mydimension; ++k )
-    {
-      const int j = pattern_.nonzero( k );
-      hInv_[ k ] = ctype( 1 ) / h[ j ];
-      matrix_[ j ][ k ] = hInv_[ k ];
-    }
-  }
-
-
-  template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
-    ::JacobianInverseTransposed ( const JacobianInverseTransposed &other )
-  : pattern_( other.pattern_ ),
-    hInv_( other.hInv_ ),
-    matrix_( other.matrix_ )
-  {}
-
-
-  template< class ct, int dim, int codim >
-  inline typename SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::const_row_reference
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::operator[] ( size_type i ) const
-  {
-    return matrix_[ i ];
+      matrix[ pattern().nonzero( k ) ][ k ] = hInv()[ k ];
+    return matrix;
   }
 
 
@@ -561,9 +516,9 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] = hInv_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] = hInv()[ k ] * x[ k ];
     for( int k = 0; k < codimension; ++k )
-      y[ pattern_.zero( k ) ] = ctype( 0 );
+      y[ pattern().zero( k ) ] = ctype( 0 );
   }
 
 
@@ -573,7 +528,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] = hInv_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] = hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -583,7 +538,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mhv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] = conjugateComplex( hInv_[ k ] ) * x[ pattern_.nonzero( k ) ];
+      y[ k ] = conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -593,7 +548,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] += hInv_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] += hInv()[ k ] * x[ k ];
   }
 
 
@@ -603,7 +558,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += hInv_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] += hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -613,7 +568,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umhv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += conjugateComplex( hInv_[ k ] ) * x[ pattern_.nonzero( k ) ];
+      y[ k ] += conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -623,7 +578,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::usmv ( const field_type &alpha, const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] += alpha * hInv_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] += alpha * hInv()[ k ] * x[ k ];
   }
 
 
@@ -633,7 +588,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::usmtv ( const field_type &alpha, const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += alpha * hInv_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] += alpha * hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -643,7 +598,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::usmhv ( const field_type &alpha, const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] += alpha * conjugateComplex( hInv_[ k ] ) * x[ pattern_.nonzero( k ) ];
+      y[ k ] += alpha * conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -653,7 +608,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ pattern_.nonzero( k ) ] -= hInv_[ k ] * x[ k ];
+      y[ pattern().nonzero( k ) ] -= hInv()[ k ] * x[ k ];
   }
 
 
@@ -663,7 +618,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmtv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] -= hInv_[ k ] * x[ pattern_.nonzero( k ) ];
+      y[ k ] -= hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -673,7 +628,7 @@ namespace Dune
   SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmhv ( const X &x, Y &y ) const
   {
     for( int k = 0; k < mydimension; ++k )
-      y[ k ] -= conjugateComplex( hInv_[ k ] ) * x[ pattern_.nonzero( k ) ];
+      y[ k ] -= conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
@@ -683,7 +638,7 @@ namespace Dune
   {
     ctype det( 1 );
     for( int k = 0; k < mydimension; ++k )
-      det *= hInv_[ k ];
+      det *= hInv()[ k ];
     return det;
   }
 
