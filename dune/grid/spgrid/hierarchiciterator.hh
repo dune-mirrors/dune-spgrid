@@ -1,7 +1,7 @@
 #ifndef DUNE_SPGRID_HITERATOR_HH
 #define DUNE_SPGRID_HITERATOR_HH
 
-#include <dune/grid/common/hierarchiciterator.hh>
+#include <dune/grid/common/entityiterator.hh>
 
 #include <dune/grid/spgrid/entitypointer.hh>
 
