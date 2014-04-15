@@ -81,8 +81,8 @@ namespace Dune
   template< int dim >
   struct SPLinkage< dim >::Interface::Node
   {
-    dune_static_assert( (int( ForwardCommunication ) == 0) && (int( BackwardCommunication ) == 1),
-                        "enumeration CommunicationDirection has changed." );
+    static_assert( (int( ForwardCommunication ) == 0) && (int( BackwardCommunication ) == 1),
+                   "enumeration CommunicationDirection has changed." );
 
     Node ( const int rank, const PartitionList *sendList, const PartitionList *receiveList );
 
