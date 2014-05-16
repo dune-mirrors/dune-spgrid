@@ -15,6 +15,9 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
+  template< int codim, class Grid >
+  class SPEntityPointer;
+
   template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
   class SPGrid;
 
@@ -47,7 +50,7 @@ namespace Dune
 
     EntityPointer findEntity ( const GlobalVector &global, int level ) const
     {
-      typedef typename EntityPointer::Implementation EntityPointerImpl;
+      typedef SPEntityPointer< 0, const Grid > EntityPointerImpl;
       typedef typename Grid::GridLevel GridLevel;
       typedef typename GridLevel::PartitionList PartitionList;
 
