@@ -158,15 +158,18 @@ namespace Dune
     BoundarySegmentIterator boundarySegmentBegin ( int face = 0 ) const;
     BoundarySegmentIterator boundarySegmentEnd ( int face = GridLevel::numFaces-1 ) const;
 
-    const CollectiveCommunication &comm () const;
+    const CollectiveCommunication &comm () const { return grid().comm(); }
 
     template< class DataHandle, class Data >
-    void communicate ( CommDataHandleIF< DataHandle, Data > &data,
-                       InterfaceType iftype, CommunicationDirection dir ) const;
+    SPCommunication< Grid, CommDataHandleIF< DataHandle, Data > >
+    communicate ( CommDataHandleIF< DataHandle, Data > &data, InterfaceType iftype, CommunicationDirection dir ) const
+    {
+      return SPCommunication< Grid, CommDataHandleIF< DataHandle, Data > >( gridLevel(), data, iftype, dir );
+    }
 
-    const GridLevel &gridLevel () const;
+    const GridLevel &gridLevel () const { return indexSet().gridLevel(); }
 
-    void update ( const GridLevel &gridLevel );
+    void update ( const GridLevel &gridLevel ) { indexSet_->first.update( gridLevel ); }
 
   private:
     IndexSetPair *indexSet_;
@@ -375,49 +378,6 @@ namespace Dune
   {
     typedef SPBoundarySegmentIterator< const Grid > Impl;
     return Impl( gridLevel(), face, typename Impl::End() );
-  }
-
-
-  template< class ViewTraits >
-  inline const typename SPGridView< ViewTraits >::CollectiveCommunication &
-  SPGridView< ViewTraits >::comm () const
-  {
-    return grid().comm();
-  }
-
-
-  template< class ViewTraits >
-  template< class DataHandle, class Data >
-  inline void SPGridView< ViewTraits >
-    ::communicate ( CommDataHandleIF< DataHandle, Data > &data,
-                    InterfaceType iftype, CommunicationDirection dir ) const
-  {
-    typedef CommDataHandleIF< DataHandle, Data > DataHandleIF;
-    typedef typename GridLevel::CommInterface Interface;
-
-    SPCommunication< Grid, DataHandleIF > communication( gridLevel(), data );
-    const Interface &interface = gridLevel().commInterface( iftype );
-
-    const typename Interface::Iterator &end = interface.end();
-    for( typename Interface::Iterator it = interface.begin(); it != end; ++it )
-      communication.gather( it->rank(), it->sendList( dir ) );
-    for( typename Interface::Iterator it = interface.begin(); it != end; ++it )
-      communication.scatter( it->rank(), it->receiveList( dir ) );
-  }
-
-
-  template< class ViewTraits >
-  inline const typename SPGridView< ViewTraits >::GridLevel &
-  SPGridView< ViewTraits >::gridLevel () const
-  {
-    return indexSet().gridLevel();
-  }
-
-
-  template< class ViewTraits >
-  inline void SPGridView< ViewTraits >::update ( const GridLevel &gridLevel )
-  {
-    indexSet_->first.update( gridLevel );
   }
 
 } // namespace Dune
