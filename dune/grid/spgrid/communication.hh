@@ -91,10 +91,17 @@ namespace Dune
     ~SPCommunication ();
 
   private:
+    static int getTag ()
+    {
+      static unsigned char counter = 0;
+      return 2*int( counter++ ) + 1536;
+    };
+
     const GridLevel &gridLevel_;
     DataHandle &dataHandle_;
     const Interface *interface_;
     CommunicationDirection dir_;
+    int tag_;
     std::vector< Packet * > packets_;
   };
 
@@ -185,15 +192,16 @@ namespace Dune
     : gridLevel_( gridLevel ),
       dataHandle_( dataHandle ),
       interface_( &gridLevel.commInterface( iftype ) ),
-      dir_( dir )
+      dir_( dir ),
+      tag_( getTag() )
   {
     const typename Interface::Iterator end = interface_->end();
     for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
     {
       Packet *packet = new Packet;
       ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), packet->first, packet->second );
-      packet->first.send( it->rank(), 1, gridLevel_.grid().comm() );
-      packet->second.send( it->rank(), 2, gridLevel_.grid().comm() );
+      packet->first.send( it->rank(), tag_, gridLevel_.grid().comm() );
+      packet->second.send( it->rank(), tag_+1, gridLevel_.grid().comm() );
       packets_.push_back( packet );
     }
   }
@@ -204,7 +212,8 @@ namespace Dune
     : gridLevel_( other.gridLevel_ ),
       dataHandle_( other.dataHandle_ ),
       interface_( other.interface_ ),
-      dir_( other.dir_ )
+      dir_( other.dir_ ),
+      tag_( other.tag_ )
   {
     other.interface_ = nullptr;
   }
@@ -220,8 +229,8 @@ namespace Dune
       const typename Interface::Iterator end = interface_->end();
       for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
       {
-        sizes.receive( it->rank(), 1, gridLevel_.grid().comm() );
-        data.receive( it->rank(), 2, gridLevel_.grid().comm() );
+        sizes.receive( it->rank(), tag_, gridLevel_.grid().comm() );
+        data.receive( it->rank(), tag_+1, gridLevel_.grid().comm() );
         ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), sizes, data );
       }
     }
