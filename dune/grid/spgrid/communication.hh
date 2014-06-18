@@ -88,7 +88,11 @@ namespace Dune
     SPCommunication ( const SPCommunication & ) = delete;
     SPCommunication ( SPCommunication &&other );
 
-    ~SPCommunication ();
+    ~SPCommunication () { wait(); }
+
+    bool pending () const { return bool( interface_ ); }
+
+    void wait ();
 
   private:
     static int getTag ()
@@ -213,36 +217,36 @@ namespace Dune
       dataHandle_( other.dataHandle_ ),
       interface_( other.interface_ ),
       dir_( other.dir_ ),
-      tag_( other.tag_ )
+      tag_( other.tag_ ),
+      packets_( std::move( other.packets_ ) )
   {
     other.interface_ = nullptr;
   }
 
 
   template< class Grid, class DataHandle >
-  inline SPCommunication< Grid, DataHandle >::~SPCommunication ()
+  inline void SPCommunication< Grid, DataHandle >::wait ()
   {
-    if( interface_ )
+    if( !pending() )
+      return;
+
+    ReadBuffer< int > sizes;
+    ReadBuffer< DataType > data;
+    const typename Interface::Iterator end = interface_->end();
+    for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
     {
-      ReadBuffer< int > sizes;
-      ReadBuffer< DataType > data;
-      const typename Interface::Iterator end = interface_->end();
-      for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
-      {
-        sizes.receive( it->rank(), tag_, gridLevel_.grid().comm() );
-        data.receive( it->rank(), tag_+1, gridLevel_.grid().comm() );
-        ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), sizes, data );
-      }
+      sizes.receive( it->rank(), tag_, gridLevel_.grid().comm() );
+      data.receive( it->rank(), tag_+1, gridLevel_.grid().comm() );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), sizes, data );
     }
 
-    typedef typename std::vector< Packet * >::iterator Iterator;
-    const Iterator end = packets_.end();
-    for( Iterator it = packets_.begin(); it != end; ++it )
+    for( typename std::vector< Packet * >::iterator it = packets_.begin(); it != packets_.end(); ++it )
     {
       (*it)->first.wait( gridLevel_.grid().comm() );
       (*it)->second.wait( gridLevel_.grid().comm() );
       delete *it;
     }
+    packets_.clear();
   }
 
 
