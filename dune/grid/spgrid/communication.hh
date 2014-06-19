@@ -103,6 +103,7 @@ namespace Dune
     CommunicationDirection dir_;
     int tag_;
     std::vector< WriteBuffer > writeBuffers_;
+    std::vector< ReadBuffer > readBuffers_;
   };
 
 
@@ -139,12 +140,17 @@ namespace Dune
       dir_( dir ),
       tag_( getTag() )
   {
-    const typename Interface::Iterator end = interface_->end();
-    for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
+    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
     {
       writeBuffers_.emplace_back( gridLevel.grid().comm() );
       ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), writeBuffers_.back() );
       writeBuffers_.back().send( it->rank(), tag_ );
+    }
+
+    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+    {
+      readBuffers_.emplace_back( gridLevel.grid().comm() );
+      readBuffers_.back().receive( it->rank(), tag_ );
     }
   }
 
@@ -156,7 +162,8 @@ namespace Dune
       interface_( other.interface_ ),
       dir_( other.dir_ ),
       tag_( other.tag_ ),
-      writeBuffers_( std::move( other.writeBuffers_ ) )
+      writeBuffers_( std::move( other.writeBuffers_ ) ),
+      readBuffers_( std::move( other.readBuffers_ ) )
   {
     other.interface_ = nullptr;
   }
@@ -168,13 +175,16 @@ namespace Dune
     if( !pending() )
       return;
 
-    ReadBuffer buffer( gridLevel_.grid().comm() );
-    const typename Interface::Iterator end = interface_->end();
-    for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
+    typename std::vector< ReadBuffer >::iterator bufferIt = readBuffers_.begin();
+    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
     {
-      buffer.receive( it->rank(), tag_ );
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), buffer );
+      assert( bufferIt != readBuffers_.end() );
+      bufferIt->wait();
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), *bufferIt );
+      ++bufferIt;
     }
+    assert( bufferIt == readBuffers_.end() );
+    readBuffers_.clear();
 
     for( typename std::vector< WriteBuffer >::iterator it = writeBuffers_.begin(); it != writeBuffers_.end(); ++it )
       it->wait();
