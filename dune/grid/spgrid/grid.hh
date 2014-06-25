@@ -401,18 +401,22 @@ namespace Dune
     }
 
     template< class DataHandle, class Data >
-    void communicate ( CommDataHandleIF< DataHandle, Data > &data,
-                       InterfaceType interface, CommunicationDirection dir,
-                       int level ) const
+    SPCommunication< This, CommDataHandleIF< DataHandle, Data > >
+    communicate ( CommDataHandleIF< DataHandle, Data > &data,
+                  InterfaceType interface, CommunicationDirection dir,
+                  int level ) const
     {
-      levelGridView( level ).communicate( data, interface, dir );
+      LevelGridView view = levelGridView( level );
+      return getRealImplementation( view ).communicate( data, interface, dir );
     }
 
     template< class DataHandle, class Data >
-    void communicate ( CommDataHandleIF< DataHandle, Data > &data,
-                       InterfaceType interface, CommunicationDirection dir ) const
+    SPCommunication< This, CommDataHandleIF< DataHandle, Data > >
+    communicate ( CommDataHandleIF< DataHandle, Data > &data,
+                  InterfaceType interface, CommunicationDirection dir ) const
     {
-      leafGridView().communicate( data, interface, dir );
+      LeafGridView view = leafGridView();
+      return getRealImplementation( view ).communicate( data, interface, dir );
     }
 
     const CollectiveCommunication &comm () const;
