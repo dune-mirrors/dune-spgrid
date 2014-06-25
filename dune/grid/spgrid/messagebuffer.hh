@@ -314,6 +314,11 @@ namespace Dune
     int rank () const { return 0 ; }
 
     void wait () {}
+
+    friend inline typename std::vector< This >::iterator waitAny ( std::vector< This > &readBuffers )
+    {
+      return readBuffers.end();
+    }
   };
 
 #if HAVE_MPI
@@ -348,6 +353,22 @@ namespace Dune
     int rank () const { return rank_; }
 
     void wait () { MPI_Wait( &request_, MPI_STATUS_IGNORE ); }
+
+    friend inline typename std::vector< This >::iterator waitAny ( std::vector< This > &readBuffers )
+    {
+      const std::size_t numBuffers = readBuffers.size();
+      std::vector< MPI_Request > requests( numBuffers );
+      for( std::size_t i = 0; i < numBuffers; ++i )
+        requests[ i ] = readBuffers[ i ].request_;
+
+      int index;
+      MPI_Waitany( numBuffers, requests.data(), &index, MPI_STATUS_IGNORE );
+      if( index == MPI_UNDEFINED )
+        return readBuffers.end();
+
+      readBuffers[ index ].request_ = requests[ index ];
+      return readBuffers.begin() + index;
+    }
 
   protected:
     static constexpr MPI_Datatype mpitype () { return MPI_PACKED; }

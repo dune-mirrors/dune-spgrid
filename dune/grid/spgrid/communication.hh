@@ -201,9 +201,10 @@ namespace Dune
     if( !pending() )
       return;
 
-    for( typename std::vector< ReadBuffer >::iterator buffer = readBuffers_.begin(); buffer != readBuffers_.end(); ++buffer )
+    const std::size_t numLinks = interface_->size();
+    for( std::size_t i = 0; i < numLinks; ++i )
     {
-      buffer->wait();
+      const typename std::vector< ReadBuffer >::iterator buffer = waitAny( readBuffers_ );
       for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
       {
         if( it->rank() == buffer->rank() )
