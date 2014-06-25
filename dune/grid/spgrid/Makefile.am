@@ -31,6 +31,7 @@ spgrid_HEADERS = \
 	iterator.hh \
 	linkage.hh \
 	mesh.hh \
+	messagebuffer.hh \
 	misc.hh \
 	multiindex.hh \
 	normal.hh \

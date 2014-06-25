@@ -9,6 +9,7 @@
 #include <dune/grid/common/datahandleif.hh>
 
 #include <dune/grid/spgrid/iterator.hh>
+#include <dune/grid/spgrid/messagebuffer.hh>
 
 namespace Dune
 {
@@ -59,12 +60,6 @@ namespace Dune
   template< class Grid, class DataHandle >
   class SPCommunication
   {
-    template< class T >
-    struct WriteBuffer;
-
-    template< class T >
-    struct ReadBuffer;
-
     template< int codim >
     struct Codim;
 
@@ -79,7 +74,8 @@ namespace Dune
     typedef typename GridLevel::CommInterface Interface;
 
   private:
-    typedef std::pair< WriteBuffer< int >, WriteBuffer< DataType > > Packet;
+    typedef SPPackedMessageWriteBuffer< typename Grid::CollectiveCommunication > WriteBuffer;
+    typedef SPPackedMessageReadBuffer< typename Grid::CollectiveCommunication > ReadBuffer;
 
   public:
     SPCommunication ( const GridLevel &gridLevel, DataHandle &dataHandle,
@@ -98,7 +94,7 @@ namespace Dune
     static int getTag ()
     {
       static unsigned char counter = 0;
-      return 2*int( counter++ ) + 1536;
+      return int( counter++ ) + 1536;
     };
 
     const GridLevel &gridLevel_;
@@ -106,61 +102,7 @@ namespace Dune
     const Interface *interface_;
     CommunicationDirection dir_;
     int tag_;
-    std::vector< Packet * > packets_;
-  };
-
-
-
-  // SPCommunication::WriteBuffer
-  // ----------------------------
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  struct SPCommunication< Grid, DataHandle >::WriteBuffer
-  {
-    void write ( const T &value );
-
-    template< class C >
-    void send ( int rank, int tag, const CollectiveCommunication< C > &comm );
-    template< class C >
-    void wait ( const CollectiveCommunication< C > &comm );
-
-#if HAVE_MPI
-    void send ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm );
-    void wait ( const CollectiveCommunication< MPI_Comm > &comm );
-#endif // #if HAVE_MPI
-
-  private:
-    std::vector< T > buffer_;
-#if HAVE_MPI
-    MPI_Request request_;
-#endif // #if HAVE_MPI
-  };
-
-
-
-  // SPCommunication::ReadBuffer
-  // ---------------------------
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  struct SPCommunication< Grid, DataHandle >::ReadBuffer
-  {
-    ReadBuffer () : read_( buffer_.begin() ) {}
-
-    template< class C >
-    void receive ( int rank, int tag, const CollectiveCommunication< C > &comm )
-    {}
-
-#if HAVE_MPI
-    void receive ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm );
-#endif // #if HAVE_MPI
-
-    void read ( T &value );
-
-  private:
-    std::vector< T > buffer_;
-    typename std::vector< T >::const_iterator read_;
+    std::vector< WriteBuffer > writeBuffers_;
   };
 
 
@@ -176,12 +118,10 @@ namespace Dune
 
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const PartitionList &partitionList,
-            WriteBuffer< int > &sizes, WriteBuffer< DataType > &buffer );
+            const PartitionList &partitionList, WriteBuffer &buffer );
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const PartitionList &partitionList,
-            ReadBuffer< int > &sizes, ReadBuffer< DataType > &data );
+            const PartitionList &partitionList, ReadBuffer &buffer );
   };
 
 
@@ -202,11 +142,9 @@ namespace Dune
     const typename Interface::Iterator end = interface_->end();
     for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
     {
-      Packet *packet = new Packet;
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), packet->first, packet->second );
-      packet->first.send( it->rank(), tag_, gridLevel_.grid().comm() );
-      packet->second.send( it->rank(), tag_+1, gridLevel_.grid().comm() );
-      packets_.push_back( packet );
+      writeBuffers_.emplace_back( gridLevel.grid().comm() );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), writeBuffers_.back() );
+      writeBuffers_.back().send( it->rank(), tag_ );
     }
   }
 
@@ -218,7 +156,7 @@ namespace Dune
       interface_( other.interface_ ),
       dir_( other.dir_ ),
       tag_( other.tag_ ),
-      packets_( std::move( other.packets_ ) )
+      writeBuffers_( std::move( other.writeBuffers_ ) )
   {
     other.interface_ = nullptr;
   }
@@ -230,115 +168,17 @@ namespace Dune
     if( !pending() )
       return;
 
-    ReadBuffer< int > sizes;
-    ReadBuffer< DataType > data;
+    ReadBuffer buffer( gridLevel_.grid().comm() );
     const typename Interface::Iterator end = interface_->end();
     for( typename Interface::Iterator it = interface_->begin(); it != end; ++it )
     {
-      sizes.receive( it->rank(), tag_, gridLevel_.grid().comm() );
-      data.receive( it->rank(), tag_+1, gridLevel_.grid().comm() );
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), sizes, data );
+      buffer.receive( it->rank(), tag_ );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), buffer );
     }
 
-    for( typename std::vector< Packet * >::iterator it = packets_.begin(); it != packets_.end(); ++it )
-    {
-      (*it)->first.wait( gridLevel_.grid().comm() );
-      (*it)->second.wait( gridLevel_.grid().comm() );
-      delete *it;
-    }
-    packets_.clear();
-  }
-
-
-
-  // Implementation of SPCommunication::WriteBuffer
-  // ----------------------------------------------
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  inline void
-  SPCommunication< Grid, DataHandle >::WriteBuffer< T >::write ( const T &value )
-  {
-    buffer_.push_back( value );
-  }
-
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  template< class C >
-  inline void SPCommunication< Grid, DataHandle >::WriteBuffer< T >
-    ::send ( int rank, int tag, const CollectiveCommunication< C > &comm )
-  {}
-
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  template< class C >
-  inline void SPCommunication< Grid, DataHandle >::WriteBuffer< T >
-    ::wait ( const CollectiveCommunication< C > &comm )
-  {}
-
-
-#if HAVE_MPI
-  template< class Grid, class DataHandle >
-  template< class T >
-  inline void SPCommunication< Grid, DataHandle >::WriteBuffer< T >
-   ::send ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
-  {
-    MPI_Datatype mpitype = MPITraits< T >::getType();
-    MPI_Isend( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm, &request_ );
-  }
-
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  inline void SPCommunication< Grid, DataHandle >::WriteBuffer< T >
-    ::wait ( const CollectiveCommunication< MPI_Comm > &comm )
-  {
-    MPI_Status status;
-    MPI_Wait( &request_, &status );
-  }
-#endif // #if HAVE_MPI
-
-
-
-  // Implementation of SPCommunication::ReadBuffer
-  // ---------------------------------------------
-
-#if HAVE_MPI
-  template< class Grid, class DataHandle >
-  template< class T >
-  inline void SPCommunication< Grid, DataHandle >::ReadBuffer< T >
-    ::receive ( int rank, int tag, const CollectiveCommunication< MPI_Comm > &comm )
-  {
-    MPI_Status status;
-    MPI_Probe( rank, tag, comm, &status );
-
-    MPI_Datatype mpitype = MPITraits< T >::getType();
-
-    int count;
-    MPI_Get_count( &status, mpitype, &count );
-    buffer_.resize( count );
-
-    MPI_Recv( &(buffer_[ 0 ]), buffer_.size(), mpitype, rank, tag, comm, &status );
-
-    read_ = buffer_.begin();
-  }
-#endif // #if HAVE_MPI
-
-
-  template< class Grid, class DataHandle >
-  template< class T >
-  inline void
-  SPCommunication< Grid, DataHandle >::ReadBuffer< T >::read ( T &value )
-  {
-    if( read_ != buffer_.end() )
-    {
-      value = *read_;
-      ++read_;
-    }
-    else
-      DUNE_THROW( IOError, "Cannot read beyond the buffer's end." );
+    for( typename std::vector< WriteBuffer >::iterator it = writeBuffers_.begin(); it != writeBuffers_.end(); ++it )
+      it->wait();
+    writeBuffers_.clear();
   }
 
 
@@ -350,15 +190,14 @@ namespace Dune
   template< int codim >
   inline void SPCommunication< Grid, DataHandle >::Codim< codim >
     ::apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-              const PartitionList &partitionList,
-              WriteBuffer< int > &sizes, WriteBuffer< DataType > &buffer )
+              const PartitionList &partitionList, WriteBuffer &buffer )
   {
     if( dataHandle.contains( dimension, codim ) )
     {
       const Iterator end( gridLevel, partitionList, typename Iterator::End() );
       for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
       {
-        sizes.write( dataHandle.size( *it ) );
+        buffer.write( static_cast< int >( dataHandle.size( *it ) ) );
         dataHandle.gather( buffer, *it ); 
       }
     }
@@ -368,8 +207,7 @@ namespace Dune
   template< int codim >
   inline void SPCommunication< Grid, DataHandle >::Codim< codim >
     ::apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-              const PartitionList &partitionList,
-              ReadBuffer< int > &sizes, ReadBuffer< DataType > &data )
+              const PartitionList &partitionList, ReadBuffer &buffer )
   {
     if( dataHandle.contains( dimension, codim ) )
     {
@@ -377,8 +215,8 @@ namespace Dune
       for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
       {
         int n;
-        sizes.read( n );
-        dataHandle.scatter( data, *it, n ); 
+        buffer.read( n );
+        dataHandle.scatter( buffer, *it, n ); 
       }
     }
   }
