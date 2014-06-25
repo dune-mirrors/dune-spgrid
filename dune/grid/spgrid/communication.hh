@@ -144,6 +144,9 @@ namespace Dune
       dir_( dir ),
       tag_( getTag() )
   {
+    const std::size_t numLinks = interface_->size();
+
+    writeBuffers_.reserve( numLinks );
     for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
     {
       writeBuffers_.emplace_back( gridLevel.grid().comm() );
@@ -155,6 +158,7 @@ namespace Dune
     for( int codim = 0; codim <= dimension; ++codim )
       fixedSize &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedsize( dimension, codim );
 
+    readBuffers_.reserve( numLinks );
     if( fixedSize )
     {
       for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
@@ -168,10 +172,10 @@ namespace Dune
     }
     else
     {
-      for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+      for( std::size_t i = 0; i < numLinks; ++i )
       {
         readBuffers_.emplace_back( gridLevel.grid().comm() );
-        readBuffers_.back().receive( it->rank(), tag_ );
+        readBuffers_.back().receive( tag_ );
       }
     }
   }
@@ -197,15 +201,18 @@ namespace Dune
     if( !pending() )
       return;
 
-    typename std::vector< ReadBuffer >::iterator bufferIt = readBuffers_.begin();
-    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+    for( typename std::vector< ReadBuffer >::iterator buffer = readBuffers_.begin(); buffer != readBuffers_.end(); ++buffer )
     {
-      assert( bufferIt != readBuffers_.end() );
-      bufferIt->wait();
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), *bufferIt );
-      ++bufferIt;
+      buffer->wait();
+      for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+      {
+        if( it->rank() == buffer->rank() )
+        {
+          ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), *buffer );
+          break;
+        }
+      }
     }
-    assert( bufferIt == readBuffers_.end() );
     readBuffers_.clear();
 
     for( typename std::vector< WriteBuffer >::iterator it = writeBuffers_.begin(); it != writeBuffers_.end(); ++it )

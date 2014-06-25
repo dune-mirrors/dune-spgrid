@@ -64,10 +64,15 @@ namespace Dune
 
     ~Interface ();
 
-    Iterator begin () const;
-    Iterator end () const;
+    Iterator begin () const { return nodes_.begin(); }
+    Iterator end () const { return nodes_.end(); }
 
-    void add ( const int rank, const PartitionList *sendList, const PartitionList *receiveList );
+    std::size_t size () const { return nodes_.size(); }
+
+    void add ( int rank, const PartitionList *sendList, const PartitionList *receiveList )
+    {
+      nodes_.emplace_back( rank, sendList, receiveList );
+    }
 
   private:
     NodeContainer nodes_;
@@ -270,30 +275,6 @@ namespace Dune
     const Iterator end = nodes_.end();
     for( Iterator it = nodes_.begin(); it != end; ++it )
       it->destroy();
-  }
-
-
-  template< int dim >
-  inline typename SPLinkage< dim >::Interface::Iterator
-  SPLinkage< dim >::Interface::begin () const
-  {
-    return nodes_.begin();
-  }
-
-
-  template< int dim >
-  inline typename SPLinkage< dim >::Interface::Iterator
-  SPLinkage< dim >::Interface::end () const
-  {
-    return nodes_.end();
-  }
-
-
-  template< int dim >
-  inline void SPLinkage< dim >::Interface
-    ::add ( const int rank, const PartitionList *sendList, const PartitionList *receiveList )
-  {
-    nodes_.push_back( Node( rank, sendList, receiveList ) );
   }
 
 

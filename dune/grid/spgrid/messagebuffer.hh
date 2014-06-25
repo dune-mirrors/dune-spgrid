@@ -309,7 +309,11 @@ namespace Dune
     }
 
     void receive ( int rank, int tag ) { receive( rank, tag, 0 ); }
-    int receive ( int tag ) { receive( 0, tag, 0 ); return 0; }
+    void receive ( int tag ) { receive( 0, tag, 0 ); }
+
+    int rank () const { return 0 ; }
+
+    void wait () {}
   };
 
 #if HAVE_MPI
@@ -325,39 +329,32 @@ namespace Dune
 
     void receive ( int rank, int tag, std::size_t size )
     {
+      rank_ = rank;
       reset( size );
       MPI_Irecv( buffer_, size_, mpitype(), rank, tag, comm(), &request_ );
     }
 
     void receive ( int rank, int tag )
     {
-      std::pair< int, std::size_t > status = probe( rank, tag );
-      receive( status.first, tag, status.second );
-    }
-
-    int receive ( int tag )
-    {
-      std::pair< int, std::size_t > status = probe( MPI_ANY_SOURCE, tag );
-      receive( status.first, tag, status.second );
-      return status.first;
-    }
-
-    void wait () { MPI_Wait( &request_, MPI_STATUS_IGNORE ); }
-
-  protected:
-    std::pair< int, std::size_t > probe ( int rank, int tag ) const
-    {
       MPI_Status status;
       MPI_Probe( rank, tag, comm(), &status );
       int count;
       MPI_Get_count( &status, mpitype(), &count );
-      return std::make_pair( status.MPI_SOURCE, count );
+      receive( status.MPI_SOURCE, tag, count );
     }
 
+    void receive ( int tag ) { receive( MPI_ANY_SOURCE, tag ); }
+
+    int rank () const { return rank_; }
+
+    void wait () { MPI_Wait( &request_, MPI_STATUS_IGNORE ); }
+
+  protected:
     static constexpr MPI_Datatype mpitype () { return MPI_PACKED; }
 
     MPI_Comm comm () const { return serialize().comm(); }
 
+    int rank_;
     MPI_Request request_;
   };
 #endif // #if HAVE_MPI
