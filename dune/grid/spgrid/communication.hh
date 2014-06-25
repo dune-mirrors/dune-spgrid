@@ -65,7 +65,7 @@ namespace Dune
     struct Codim;
 
   public:
-    static const unsigned int dimension = Grid::dimension;
+    static const int dimension = Grid::dimension;
 
     typedef SPGridLevel< Grid > GridLevel;
     typedef SPPartitionList< dimension > PartitionList;
@@ -120,6 +120,9 @@ namespace Dune
 
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
+            const PartitionList &partitionList, std::size_t &size );
+    static void
+    apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
             const PartitionList &partitionList, WriteBuffer &buffer );
     static void
     apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
@@ -148,10 +151,28 @@ namespace Dune
       writeBuffers_.back().send( it->rank(), tag_ );
     }
 
-    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+    bool fixedSize = true;
+    for( int codim = 0; codim <= dimension; ++codim )
+      fixedSize &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedsize( dimension, codim );
+
+    if( fixedSize )
     {
-      readBuffers_.emplace_back( gridLevel.grid().comm() );
-      readBuffers_.back().receive( it->rank(), tag_ );
+      for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+      {
+        readBuffers_.emplace_back( gridLevel.grid().comm() );
+        std::size_t size = 0;
+        ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir ), size );
+        size *= readBuffers_.back().serialize().template maxSize< typename DataHandle::DataType >();
+        readBuffers_.back().receive( it->rank(), tag_, size );
+      }
+    }
+    else
+    {
+      for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+      {
+        readBuffers_.emplace_back( gridLevel.grid().comm() );
+        readBuffers_.back().receive( it->rank(), tag_ );
+      }
     }
   }
 
@@ -202,19 +223,37 @@ namespace Dune
   template< class Grid, class DataHandle >
   template< int codim >
   inline void SPCommunication< Grid, DataHandle >::Codim< codim >
-    ::apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-              const PartitionList &partitionList, WriteBuffer &buffer )
+    ::apply( const GridLevel &gridLevel, DataHandle &dataHandle,
+             const PartitionList &partitionList, std::size_t &size )
   {
     if( dataHandle.contains( dimension, codim ) )
     {
       const Iterator end( gridLevel, partitionList, typename Iterator::End() );
       for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
+        size += dataHandle.size( *it );
+    }
+  }
+
+
+  template< class Grid, class DataHandle >
+  template< int codim >
+  inline void SPCommunication< Grid, DataHandle >::Codim< codim >
+    ::apply( const GridLevel &gridLevel, DataHandle &dataHandle,
+             const PartitionList &partitionList, WriteBuffer &buffer )
+  {
+    if( dataHandle.contains( dimension, codim ) )
+    {
+      const bool fixedSize = dataHandle.fixedsize( dimension, codim );
+      const Iterator end( gridLevel, partitionList, typename Iterator::End() );
+      for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
       {
-        buffer.write( static_cast< int >( dataHandle.size( *it ) ) );
-        dataHandle.gather( buffer, *it ); 
+        if( !fixedSize )
+          buffer.write( static_cast< int >( dataHandle.size( *it ) ) );
+        dataHandle.gather( buffer, *it );
       }
     }
   }
+
 
   template< class Grid, class DataHandle >
   template< int codim >
@@ -224,12 +263,16 @@ namespace Dune
   {
     if( dataHandle.contains( dimension, codim ) )
     {
+      const bool fixedSize = dataHandle.fixedsize( dimension, codim );
       const Iterator end( gridLevel, partitionList, typename Iterator::End() );
       for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
       {
-        int n;
-        buffer.read( n );
-        dataHandle.scatter( buffer, *it, n ); 
+        int size;
+        if( !fixedSize )
+          buffer.read( size );
+        else
+          size = dataHandle.size( *it );
+        dataHandle.scatter( buffer, *it, size );
       }
     }
   }

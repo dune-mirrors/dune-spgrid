@@ -135,10 +135,12 @@ namespace Dune
     template< class T >
     void write ( const T &value )
     {
-      const std::size_t size = serialize_.template maxSize< T >();
+      const std::size_t size = serialize().template maxSize< T >();
       reserve( position_ + size );
-      position_ = serialize_.pack( value, buffer_, position_, capacity_ );
+      position_ = serialize().pack( value, buffer_, position_, capacity_ );
     }
+
+    const Serialize &serialize () const { return serialize_; }
 
   protected:
     void initialize () { buffer_ = nullptr; position_ = 0; capacity_ = 0; }
@@ -201,7 +203,7 @@ namespace Dune
 
     void send ( int rank, int tag )
     {
-      MPI_Isend( buffer_, position_, MPI_PACKED, rank, tag, serialize_.comm(), &request_ );
+      MPI_Isend( buffer_, position_, MPI_PACKED, rank, tag, serialize().comm(), &request_ );
     }
 
     void wait () { MPI_Wait( &request_, MPI_STATUS_IGNORE ); }
@@ -256,10 +258,12 @@ namespace Dune
     void read ( T &value )
     {
       if( position_ < size_ )
-        position_ = serialize_.unpack( buffer_, position_, size_, value );
+        position_ = serialize().unpack( buffer_, position_, size_, value );
       else
         DUNE_THROW( IOError, "Cannot read beyond the buffer's end." );
     }
+
+    const Serialize &serialize () const { return serialize_; }
 
   protected:
     void initialize () { buffer_ = nullptr; position_ = 0; size_ = 0; }
@@ -352,7 +356,7 @@ namespace Dune
 
     static constexpr MPI_Datatype mpitype () { return MPI_PACKED; }
 
-    MPI_Comm comm () const { return serialize_.comm(); }
+    MPI_Comm comm () const { return serialize().comm(); }
 
     MPI_Request request_;
   };
