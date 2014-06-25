@@ -2,6 +2,7 @@
 #define DUNE_SPGRID_COMMUNICATION_HH
 
 #include <dune/common/forloop.hh>
+#include <dune/common/nullptr.hh>
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
@@ -189,6 +190,8 @@ namespace Dune
     for( typename std::vector< WriteBuffer >::iterator it = writeBuffers_.begin(); it != writeBuffers_.end(); ++it )
       it->wait();
     writeBuffers_.clear();
+
+    interface_ = nullptr;
   }
 
 
