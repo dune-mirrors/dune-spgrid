@@ -144,21 +144,13 @@ namespace Dune
       dir_( dir ),
       tag_( getTag() )
   {
-    const std::size_t numLinks = interface_->size();
-
-    writeBuffers_.reserve( numLinks );
-    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
-    {
-      writeBuffers_.emplace_back( gridLevel.grid().comm() );
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), writeBuffers_.back() );
-      writeBuffers_.back().send( it->rank(), tag_ );
-    }
-
     bool fixedSize = true;
     for( int codim = 0; codim <= dimension; ++codim )
       fixedSize &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedsize( dimension, codim );
 
+    const std::size_t numLinks = interface_->size();
     readBuffers_.reserve( numLinks );
+
     if( fixedSize )
     {
       for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
@@ -170,7 +162,16 @@ namespace Dune
         readBuffers_.back().receive( it->rank(), tag_, size );
       }
     }
-    else
+
+    writeBuffers_.reserve( numLinks );
+    for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
+    {
+      writeBuffers_.emplace_back( gridLevel.grid().comm() );
+      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), writeBuffers_.back() );
+      writeBuffers_.back().send( it->rank(), tag_ );
+    }
+
+    if( !fixedSize )
     {
       for( std::size_t i = 0; i < numLinks; ++i )
       {
