@@ -103,6 +103,7 @@ namespace Dune
     const Interface *interface_;
     CommunicationDirection dir_;
     int tag_;
+    bool fixedSize_;
     std::vector< WriteBuffer > writeBuffers_;
     std::vector< ReadBuffer > readBuffers_;
   };
@@ -142,16 +143,16 @@ namespace Dune
       dataHandle_( dataHandle ),
       interface_( &gridLevel.commInterface( iftype ) ),
       dir_( dir ),
-      tag_( getTag() )
+      tag_( getTag() ),
+      fixedSize_( true )
   {
-    bool fixedSize = true;
     for( int codim = 0; codim <= dimension; ++codim )
-      fixedSize &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedsize( dimension, codim );
+      fixedSize_ &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedsize( dimension, codim );
 
     const std::size_t numLinks = interface_->size();
     readBuffers_.reserve( numLinks );
 
-    if( fixedSize )
+    if( fixedSize_ )
     {
       for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
       {
@@ -170,15 +171,6 @@ namespace Dune
       ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), writeBuffers_.back() );
       writeBuffers_.back().send( it->rank(), tag_ );
     }
-
-    if( !fixedSize )
-    {
-      for( std::size_t i = 0; i < numLinks; ++i )
-      {
-        readBuffers_.emplace_back( gridLevel.grid().comm() );
-        readBuffers_.back().receive( tag_ );
-      }
-    }
   }
 
 
@@ -189,6 +181,7 @@ namespace Dune
       interface_( other.interface_ ),
       dir_( other.dir_ ),
       tag_( other.tag_ ),
+      fixedSize_( other.fixedSize_ ),
       writeBuffers_( std::move( other.writeBuffers_ ) ),
       readBuffers_( std::move( other.readBuffers_ ) )
   {
@@ -203,6 +196,16 @@ namespace Dune
       return;
 
     const std::size_t numLinks = interface_->size();
+
+    if( !fixedSize_ )
+    {
+      for( std::size_t i = 0; i < numLinks; ++i )
+      {
+        readBuffers_.emplace_back( gridLevel_.grid().comm() );
+        readBuffers_.back().receive( tag_ );
+      }
+    }
+
     for( std::size_t i = 0; i < numLinks; ++i )
     {
       const typename std::vector< ReadBuffer >::iterator buffer = waitAny( readBuffers_ );
