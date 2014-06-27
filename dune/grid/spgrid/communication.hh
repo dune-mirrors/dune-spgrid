@@ -158,7 +158,7 @@ namespace Dune
         readBuffers_.emplace_back( gridLevel.grid().comm() );
         std::size_t size = 0;
         ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir ), size );
-        size *= readBuffers_.back().serialize().template maxSize< typename DataHandle::DataType >();
+        size *= sizeof( typename DataHandle::DataType );
         readBuffers_.back().receive( it->rank(), tag_, size );
       }
     }
