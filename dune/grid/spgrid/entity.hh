@@ -202,6 +202,11 @@ namespace Dune
       return gridLevel().referenceCube().count( codim );
     }
 
+    unsigned int subEntities ( unsigned int codim ) const
+    {
+      return gridLevel().referenceCube().count( codim );
+    }
+
     template< int codim >
     typename Codim< codim >::EntityPointer subEntity ( const int i ) const;
 
