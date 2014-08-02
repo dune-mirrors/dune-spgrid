@@ -1,12 +1,13 @@
 #ifndef DUNE_SPGRID_REFERENCECUBE_HH
 #define DUNE_SPGRID_REFERENCECUBE_HH
 
+#include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <dune/common/fvector.hh>
-#include <dune/common/tuples/enumeration.hh>
-#include <dune/common/tuples/foreach.hh>
+#include <dune/common/tuples/sequence.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/normal.hh>
@@ -202,11 +203,7 @@ namespace Dune
       typedef SPReferenceCube< ct, dim-codim > ReferenceCube;
     };
 
-  public:
-    const ReferenceCube &get () const
-    {
-      return get< 0 >();
-    }
+    const ReferenceCube &get () const { return get< 0 >(); }
 
     template< int codim >
     const typename Codim< codim >::ReferenceCube &get () const
@@ -215,13 +212,10 @@ namespace Dune
     }
 
   private:
-    template< class T >
-    struct RefCube
-    {
-      typedef typename Codim< T::value >::ReferenceCube Type;
-    };
+    template< class... I >
+    static std::tuple< typename Codim< I::value >::ReferenceCube... > makeRefCubeTable ( std::tuple< I... > );
 
-    typename ForEachType< RefCube, EnumerationTuple< int, dimension+1 > >::Type refCubes_;
+    decltype( makeRefCubeTable( sequence< int, dimension+1 >() ) ) refCubes_;
   };
 
 } // namespace Dune
