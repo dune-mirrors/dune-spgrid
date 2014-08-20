@@ -46,131 +46,31 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
-    SPEntityPointer () : entity_( EntityImpl( EntityInfo() ) ) {}
+    SPEntityPointer () = default;
+    SPEntityPointer ( const EntityInfo &entityInfo ) : entityInfo_( entityInfo ) {}
 
-    SPEntityPointer ( const EntityInfo &entityInfo );
-    SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id,
-                      const unsigned int partitionNumber );
-    SPEntityPointer ( const EntityImpl &entityImpl );
-    SPEntityPointer ( const This &other );
+    SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id, unsigned int partitionNumber )
+      : entityInfo_( gridLevel, id, partitionNumber )
+    {}
 
-    const This &operator= ( const This &other );
+    SPEntityPointer ( const EntityImpl &entityImpl ) : entityInfo_( entityImpl.entityInfo() ) {}
 
-    const Entity &operator* () const;
-    const Entity *operator-> () const;
+    Entity operator* () const { return dereference(); }
 
-    bool operator== ( const This &other ) const;
-    bool operator!= ( const This &other ) const;
+    int level () const { return gridLevel().level(); }
 
-    const Entity &dereference () const { return entity_; }
+    Entity dereference () const { return EntityImpl( entityInfo() ); }
 
-    bool equals ( const This &other ) const;
+    bool equals ( const This &other ) const { return entityInfo().equals( other.entityInfo() ); }
 
-    int level () const;
-    const GridLevel &gridLevel () const;
+    const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
 
-    const EntityInfo &entityInfo () const { return Grid::getRealImplementation( entity_ ).entityInfo(); }
-    EntityInfo &entityInfo () { return Grid::getRealImplementation( entity_ ).entityInfo(); }
+    const EntityInfo &entityInfo () const { return entityInfo_; }
+    EntityInfo &entityInfo () { return entityInfo_; }
 
-  private:
-    Entity entity_;
+  protected:
+    EntityInfo entityInfo_;
   };
-
-
-
-  // Implementation of SPEntityPointer
-  // ---------------------------------
-
-  template< int codim, class Grid >
-  inline SPEntityPointer< codim, Grid >
-    ::SPEntityPointer ( const EntityInfo &entityInfo )
-  : entity_( EntityImpl( entityInfo ) )
-  {}
-
-
-  template< int codim, class Grid >
-  inline SPEntityPointer< codim, Grid >
-    ::SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id,
-                        const unsigned int partitionNumber )
-  : entity_( EntityImpl( EntityInfo( gridLevel, id, partitionNumber ) ) )
-  {}
-
-
-  template< int codim, class Grid >
-  inline SPEntityPointer< codim, Grid >
-    ::SPEntityPointer ( const EntityImpl &entityImpl )
-  : entity_( entityImpl )
-  {}
-
-
-  template< int codim, class Grid >
-  inline SPEntityPointer< codim, Grid >::SPEntityPointer ( const This &other )
-  : entity_( EntityImpl( Grid::getRealImplementation( other.dereference() ) ) )
-  {}
-
-
-  template< int codim, class Grid >
-  inline const typename SPEntityPointer< codim, Grid >::This &
-  SPEntityPointer< codim, Grid >::operator= ( const This &other )
-  {
-    Grid::getRealImplementation( entity_ )
-      = Grid::getRealImplementation( other.dereference() );
-    return *this;
-  }
-
-
-  template< int codim, class Grid >
-  inline const typename SPEntityPointer< codim, Grid >::Entity &
-  SPEntityPointer< codim, Grid >::operator* () const
-  {
-    return entity_;
-  }
-
-
-  template< int codim, class Grid >
-  inline const typename SPEntityPointer< codim, Grid >::Entity *
-  SPEntityPointer< codim, Grid >::operator-> () const
-  {
-    return &entity_;
-  }
-
-
-  template< int codim, class Grid >
-  inline bool
-  SPEntityPointer< codim, Grid >::operator== ( const This &other ) const
-  {
-    return equals( other );
-  }
-
-  template< int codim, class Grid >
-  inline bool
-  SPEntityPointer< codim, Grid >::operator!= ( const This &other ) const
-  {
-    return !equals( other );
-  }
-
-
-  template< int codim, class Grid >
-  inline bool
-  SPEntityPointer< codim, Grid >::equals ( const This &other ) const
-  {
-    return Grid::getRealImplementation( entity_ ).equals( Grid::getRealImplementation( other.entity_ ) );
-  }
-
-
-  template< int codim, class Grid >
-  inline int SPEntityPointer< codim, Grid >::level () const
-  {
-    return entity_.level();
-  }
-
-
-  template< int codim, class Grid >
-  inline const typename SPEntityPointer< codim, Grid >::GridLevel &
-  SPEntityPointer< codim, Grid >::gridLevel () const
-  {
-    return Grid::getRealImplementation( entity_ ).gridLevel();
-  }
 
 } // namespace Dune
 

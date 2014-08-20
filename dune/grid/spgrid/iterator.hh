@@ -54,7 +54,7 @@ namespace Dune
                           const End &e, const unsigned int sweepDir = 0 );
 
     operator bool () const { return bool( partition_ ); }
-    This &operator++ ();
+    This &operator++ () { increment(); return *this; }
 
     void increment ();
 
@@ -97,15 +97,6 @@ namespace Dune
   {
     assert( sweepDir < numDirections );
     init();
-  }
-
-
-  template< int codim, class Grid >
-  inline typename SPPartitionIterator< codim, Grid >::This &
-  SPPartitionIterator< codim, Grid >::operator++ ()
-  {
-    increment();
-    return *this;
   }
 
 

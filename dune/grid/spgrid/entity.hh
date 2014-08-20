@@ -227,20 +227,9 @@ namespace Dune
       return gridLevel().geometryInFather( entityInfo().id() );
     }
 
-    bool isRegular () const
-    {
-      return true;
-    }
-
-    bool isNew () const
-    {
-      return false;
-    }
-
-    bool mightVanish () const
-    {
-      return false;
-    }
+    bool isRegular () const { return true; }
+    bool isNew () const { return false; }
+    bool mightVanish () const { return false; }
   };
 
 

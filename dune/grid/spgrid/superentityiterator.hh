@@ -53,16 +53,16 @@ namespace Dune
     using Base::entityInfo;
 
   protected:
-    template< class EntityImpl, class BeginEnd >
-    SPSuperEntityIterator ( const EntityImpl &entityImpl, const BeginEnd &be )
-    : Base( entityImpl.gridLevel() ),
-      fBoundary_( 0 )
+    template< class SubInfo, class BeginEnd >
+    SPSuperEntityIterator ( const SubInfo &subInfo, const BeginEnd &be )
+      : Base( subInfo.gridLevel() ),
+        fBoundary_( 0 )
     {
-      sequence_ = SequenceProvider::sequence( entityImpl.entityInfo().direction().bits(), be );
+      sequence_ = SequenceProvider::sequence( subInfo.direction().bits(), be );
 
       MultiIndex &id = entityInfo().id();
 
-      id = entityImpl.entityInfo().id();
+      id = subInfo.id();
       const typename GridLevel::Mesh &globalMesh = entityInfo().gridLevel().globalMesh();
       for( int i = 0; i < dimension; ++i )
       {
@@ -72,7 +72,7 @@ namespace Dune
       }
 
       if( next( id ) )
-        entityInfo().update( entityImpl.entityInfo().partitionNumber() );
+        entityInfo().update( subInfo.partitionNumber() );
     }
 
   public:
@@ -101,7 +101,6 @@ namespace Dune
       return (sequence_ != 0);
     }
 
-  private:
     const Sequence *sequence_;
     int index_;
     unsigned int fBoundary_;

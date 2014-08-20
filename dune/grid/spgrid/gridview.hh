@@ -352,8 +352,9 @@ namespace Dune
   SPGridView< ViewTraits >::superEntityBegin ( const Entity &entity ) const
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
-    return Impl( Grid::getRealImplementation( entity ), typename Impl::Begin() );
+    return Impl( Grid::getRealImplementation( entity ).entityInfo(), typename Impl::Begin() );
   }
+
 
   template< class ViewTraits >
   template< class Entity >
@@ -361,7 +362,7 @@ namespace Dune
   SPGridView< ViewTraits >::superEntityEnd ( const Entity &entity ) const
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
-    return Impl( Grid::getRealImplementation( entity ), typename Impl::End() );
+    return Impl( Grid::getRealImplementation( entity ).entityInfo(), typename Impl::End() );
   }
 
 

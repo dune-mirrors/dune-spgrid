@@ -22,16 +22,12 @@ namespace Dune
     typedef typename Base::Entity Entity;
     typedef typename Base::EntityInfo EntityInfo;
 
-  protected:
-    typedef typename Base::EntityImpl EntityImpl;
-
-  public:
     SPHierarchicIterator () = default;
 
     SPHierarchicIterator ( const EntityInfo &entityInfo, int maxLevel )
-    : Base( entityInfo ),
-      minLevel_( entityInfo.gridLevel().level() ),
-      maxLevel_( std::min( maxLevel, entityInfo.gridLevel().grid().maxLevel() ) )
+      : Base( entityInfo ),
+        minLevel_( entityInfo.gridLevel().level() ),
+        maxLevel_( std::min( maxLevel, entityInfo.gridLevel().grid().maxLevel() ) )
     {
       increment();
     }
