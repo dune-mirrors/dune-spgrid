@@ -16,9 +16,6 @@ namespace Dune
   template< int, int, class >
   class SPEntity;
 
-  template< int, class >
-  class SPEntityPointer;
-
 
 
   // SPIntersection
@@ -50,14 +47,12 @@ namespace Dune
     static const int dimensionworld = dimension;
 
     typedef typename Traits::template Codim< 0 >::Entity Entity;
-    typedef typename Traits::template Codim< 0 >::EntityPointer EntityPointer;
 
     typedef typename Traits::template Codim< 1 >::Geometry Geometry;
     typedef typename Traits::template Codim< 1 >::LocalGeometry LocalGeometry;
 
   private:
     typedef SPEntity< 0, dimension, Grid > EntityImpl;
-    typedef SPEntityPointer< 0, Grid > EntityPointerImpl;
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
 
   public:
@@ -92,12 +87,9 @@ namespace Dune
 
     bool neighbor () const;
 
-    EntityPointer inside () const
-    {
-      return EntityPointer( entityInfo() );
-    }
+    Entity inside () const { return Entity( EntityImpl( entityInfo() ) ); }
 
-    EntityPointer outside () const;
+    Entity outside () const;
 
     bool conforming () const
     {
@@ -226,7 +218,7 @@ namespace Dune
 
 
   template< class Grid >
-  inline typename SPIntersection< Grid >::EntityPointer
+  inline typename SPIntersection< Grid >::Entity
   SPIntersection< Grid >::outside () const
   {
     const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
@@ -237,12 +229,12 @@ namespace Dune
     const int j = 2*(face_ & 1) - 1;
     id[ i ] += 2*j;
     if( (j*id[ i ] <= j*partition.bound( face_ & 1 )[ i ]) )
-      return EntityPointerImpl( gridLevel(), id, partition.number() );
+      return Entity( EntityImpl( EntityInfo( gridLevel(), id, partition.number() ) ) );
 
     assert( partition.hasNeighbor( face_ ) );
     const int bound = allPartition.partition( partition.neighbor( face_ ) ).bound( 1 - (face_ & 1) )[ i ];
     id[ i ] = bound + j*(1-(bound & 1));
-    return EntityPointerImpl( gridLevel(), id, partition.neighbor( face_ ) );
+    return Entity( EntityImpl( EntityInfo( gridLevel(), id, partition.neighbor( face_ ) ) ) );
   }
 
 } // namespace Dune
