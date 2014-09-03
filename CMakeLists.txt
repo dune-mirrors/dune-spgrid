@@ -12,8 +12,4 @@ add_subdirectory(doc)
 add_subdirectory(dune)
 add_subdirectory(m4)
 
-configure_file(${PROJECT_SOURCE_DIR}/dune/grid/spgrid/version.hh.in
-               ${PROJECT_BINARY_DIR}/dune/grid/spgrid/version.hh
-               @ONLY)
-
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)

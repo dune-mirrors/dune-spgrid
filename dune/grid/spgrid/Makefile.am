@@ -42,8 +42,7 @@ spgrid_HEADERS = \
 	referencecube.hh \
 	refinement.hh \
 	superentityiterator.hh \
-	topology.hh \
-	version.hh
+	topology.hh
 
 EXTRA_DIST = CMakeLists.txt
 

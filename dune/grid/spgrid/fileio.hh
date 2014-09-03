@@ -12,7 +12,6 @@
 #include <dune/grid/spgrid/topology.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
-#include <dune/grid/spgrid/version.hh>
 
 namespace Dune
 {
@@ -45,6 +44,11 @@ namespace Dune
     bool read ( const std::string &filename );
 
   private:
+    std::pair< unsigned int, unsigned int > version ()
+    {
+      return std::pair< unsigned int, unsigned int >( DUNE_SPGRID_VERSION_MAJOR, DUNE_SPGRID_VERSION_MINOR );
+    }
+
     static std::string readLine ( std::istream &stream, unsigned int *count = 0 );
   };
 
@@ -60,9 +64,7 @@ namespace Dune
     // write header
     stream << "SPGrid";
     stream << "  dimension=" << dim;
-    const unsigned int versionMajor = SPGridVersion::major;
-    const unsigned int versionMinor = SPGridVersion::minor;
-    stream << "  version=" << versionMajor << "." << versionMinor;
+    stream << "  version=" << version().first << "." << version().second;
     stream << std::endl << std::endl;
 
     // write generic information
@@ -137,9 +139,9 @@ namespace Dune
       if( key == "version" )
       {
         // ensure that the check passes on read failure
-        unsigned int vMajor = SPGridVersion::major, vMinor = SPGridVersion::minor;
-        valueIn >> vMajor >> match( '.' ) >> vMinor;
-        if( SPGridVersion::later( vMajor, vMinor ) )
+        std::pair< unsigned int, unsigned int > fileVersion;
+        valueIn >> fileVersion.first >> match( '.' ) >> fileVersion.second;
+        if( fileVersion > version() )
         {
           std::cerr << info << "[ " << lineNr << " ]: File was created by newer version of SPGrid." << std::endl;
           return false;
