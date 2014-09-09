@@ -1,6 +1,6 @@
 AC_PREREQ(2.50)
 DUNE_AC_INIT
-AC_CONFIG_SRCDIR([dune/grid/spgrid.hh])
+AC_CONFIG_SRCDIR([dune/grid/spgrid/declaration.hh])
 AM_CONFIG_HEADER([config.h])
 
 
