@@ -1,7 +1,7 @@
 #ifndef DUNE_SPGRID_ENTITYPOINTER_HH
 #define DUNE_SPGRID_ENTITYPOINTER_HH
 
-#include <dune/common/typetraits.hh>
+#include <type_traits>
 
 #include <dune/grid/spgrid/entity.hh>
 
@@ -25,7 +25,7 @@ namespace Dune
     typedef SPEntityPointer< codim, Grid > This;
 
   public:
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
     static const int dimension = Traits::ReferenceCube::dimension;
     static const int codimension = codim;
@@ -46,6 +46,8 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
+    SPEntityPointer () : entity_( EntityImpl( EntityInfo() ) ) {}
+
     SPEntityPointer ( const EntityInfo &entityInfo );
     SPEntityPointer ( const GridLevel &gridLevel, const MultiIndex &id,
                       const unsigned int partitionNumber );
@@ -60,7 +62,7 @@ namespace Dune
     bool operator== ( const This &other ) const;
     bool operator!= ( const This &other ) const;
 
-    Entity &dereference () const;
+    const Entity &dereference () const { return entity_; }
 
     bool equals ( const This &other ) const;
 
@@ -142,14 +144,6 @@ namespace Dune
   SPEntityPointer< codim, Grid >::operator!= ( const This &other ) const
   {
     return !equals( other );
-  }
-
-
-  template< int codim, class Grid >
-  inline typename SPEntityPointer< codim, Grid >::Entity &
-  SPEntityPointer< codim, Grid >::dereference () const
-  {
-    return const_cast< Entity & >( entity_ );
   }
 
 

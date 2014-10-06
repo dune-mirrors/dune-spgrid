@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_PARTITIONLIST_HH
 #define DUNE_SPGRID_PARTITIONLIST_HH
 
+#include <iterator>
+
 #include <dune/grid/spgrid/partition.hh>
 
 namespace Dune
@@ -25,36 +27,39 @@ namespace Dune
     
     struct Iterator;
 
-    SPPartitionList ()
-    : head_( 0 )
-    {}
+    SPPartitionList () : head_( nullptr ) {}
 
-    SPPartitionList ( const This &other )
-    : head_( other.head_ != 0 ? new Node( *other.head_ ) : 0 )
-    {}
+    SPPartitionList ( const This &other ) : head_( other.head_ ? new Node( *other.head_ ) : nullptr ) {}
 
-    ~SPPartitionList ()
+    SPPartitionList ( This &&other ) : head_( other.head_ ) { other.head_ = nullptr; }
+
+    ~SPPartitionList () { delete head_; }
+
+    This &operator= ( const This &other )
     {
       delete head_;
-    }
-
-    const This &operator= ( const This &other )
-    {
-      delete head_;
-      head_ = (other.head_ != 0 ? new Node( *other.head_ ) : 0);
+      head_ = (other.head_ ? new Node( *other.head_ ) : nullptr);
       return *this;
     }
 
-    const This &operator+= ( const Partition &partition );
+    This &operator= ( This &&other )
+    {
+      delete head_;
+      head_ = other.head_;
+      other.head_ = nullptr;
+      return *this;
+    }
 
-    Iterator begin () const;
-    Iterator end () const;
+    This &operator+= ( const Partition &partition );
 
-    bool contains ( const MultiIndex &id, const unsigned int number ) const;
+    Iterator begin () const { return Iterator( head_ ); }
+    Iterator end () const { return Iterator( nullptr ); }
+
+    bool contains ( const MultiIndex &id, unsigned int number ) const;
     const Partition *findPartition ( const MultiIndex &id ) const;
     int volume () const;
 
-    bool empty () const;
+    bool empty () const { return bool( head_ ); }
     unsigned int size () const;
 
   protected:
@@ -70,37 +75,38 @@ namespace Dune
   struct SPPartitionList< dim >::Node
   {
     explicit Node ( const Partition &partition )
-    : partition_( partition ),
-      next_( 0 )
+      : partition_( partition ),
+        next_( nullptr )
     {}
 
     Node ( const Node &other )
-    : partition_( other.partition_ ),
-      next_( other.next_ != 0 ? new Node( *other.next_ ) : 0 )
+      : partition_( other.partition_ ),
+        next_( other.next_ ? new Node( *other.next_ ) : nullptr )
     {}
 
-    ~Node ()
+    Node ( Node &&other )
+      : partition_( other.partition_ ),
+        next_( other.next_ )
     {
-      delete next_;
+      other.next_ = nullptr;
     }
+
+    ~Node () { delete next_; }
+
+    Node &operator= ( const Node & ) = delete;
+    Node &operator= ( Node && ) = delete;
 
     void append ( Node *other )
     {
-      if( next_ != 0 )
+      if( next_ )
         next_->append( other );
       else
         next_ = other;
     }
 
-    const Partition &partition () const
-    {
-      return partition_;
-    }
+    const Partition &partition () const { return partition_; }
 
-    const Node *next () const
-    {
-      return next_;
-    }
+    const Node *next () const { return next_; }
 
   private:
     Partition partition_;
@@ -114,9 +120,10 @@ namespace Dune
 
   template< int dim >
   struct SPPartitionList< dim >::Iterator
+    : public std::iterator< std::forward_iterator_tag, const Partition >
   {
-    explicit Iterator ( const Node *node )
-    : node_( node )
+    explicit Iterator ( const Node *node = nullptr )
+      : node_( node )
     {}
 
     Iterator &operator++ ()
@@ -126,32 +133,15 @@ namespace Dune
       return *this;
     }
 
-    operator bool () const
-    {
-      return bool( node_ );
-    }
+    Iterator operator++ ( int ) { Iterator copy( *this ); ++(*this); return copy; }
 
-    bool operator== ( const Iterator &other ) const
-    {
-      return (node_ == other.node_);
-    }
+    operator bool () const { return bool( node_ ); }
 
-    bool operator!= ( const Iterator &other ) const
-    {
-      return (node_ != other.node_);
-    }
+    bool operator== ( const Iterator &other ) const { return (node_ == other.node_); }
+    bool operator!= ( const Iterator &other ) const { return (node_ != other.node_); }
 
-    const Partition &operator* () const
-    {
-      assert( *this );
-      return node_->partition();
-    }
-
-    const Partition *operator-> () const
-    {
-      assert( *this );
-      return &(node_->partition());
-    }
+    const Partition &operator* () const { assert( *this ); return node_->partition(); }
+    const Partition *operator-> () const { assert( *this ); return &(node_->partition()); }
 
   private:
     const Node *node_;
@@ -163,10 +153,10 @@ namespace Dune
   // ---------------------------------
 
   template< int dim >
-  inline const typename SPPartitionList< dim >::This &
+  inline typename SPPartitionList< dim >::This &
   SPPartitionList< dim >::operator+= ( const Partition &partition )
   {
-    if( head_ != 0 )
+    if( head_ )
       head_->append( new Node( partition ) );
     else
       head_ = new Node( partition );
@@ -175,25 +165,9 @@ namespace Dune
 
 
   template< int dim >
-  inline typename SPPartitionList< dim >::Iterator
-  SPPartitionList< dim >::begin () const
-  {
-    return Iterator( head_ );
-  }
-
-
-  template< int dim >
-  inline typename SPPartitionList< dim >::Iterator
-  SPPartitionList< dim >::end () const
-  {
-    return Iterator( 0 );
-  }
-
-
-  template< int dim >
   inline bool
   SPPartitionList< dim >
-    ::contains ( const MultiIndex &id, const unsigned int number ) const
+    ::contains ( const MultiIndex &id, unsigned int number ) const
   {
     const Partition *partition = findPartition( id );
     assert( !partition || (partition->number() == number) );
@@ -205,12 +179,12 @@ namespace Dune
   inline const typename SPPartitionList< dim >::Partition *
   SPPartitionList< dim >::findPartition ( const MultiIndex &id ) const
   {
-    for( const Node *it = head_; it != 0; it = it->next() )
+    for( const Node *it = head_; it; it = it->next() )
     {
       if( it->partition().contains( id ) )
         return &(it->partition());
     }
-    return 0;
+    return nullptr;
   }
 
 
@@ -218,16 +192,9 @@ namespace Dune
   inline int SPPartitionList< dim >::volume () const
   {
     int volume = 0;
-    for( const Node *it = head_; it != 0; it = it->next() )
+    for( const Node *it = head_; it; it = it->next() )
       volume += it->partition().volume();
     return volume;
-  }
-
-
-  template< int dim >
-  inline bool SPPartitionList< dim >::empty () const
-  {
-    return (head_ == 0);
   }
 
 
@@ -235,7 +202,7 @@ namespace Dune
   inline unsigned int SPPartitionList< dim >::size () const
   {
     unsigned int size = 0;
-    for( const Node *it = head_; it != 0; it = it->next() )
+    for( const Node *it = head_; it; it = it->next() )
       ++size;
     return size;
   }
@@ -247,8 +214,7 @@ namespace Dune
 
   template< class char_type, class traits, int dim >
   inline std::basic_ostream< char_type, traits > &
-  operator<< ( std::basic_ostream< char_type, traits > &out,
-               const SPPartitionList< dim > &partition )
+  operator<< ( std::basic_ostream< char_type, traits > &out, const SPPartitionList< dim > &partition )
   {
     typedef typename SPPartitionList< dim >::Iterator Iterator;
     std::string separator = "";

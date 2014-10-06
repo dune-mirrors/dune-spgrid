@@ -80,7 +80,7 @@ namespace Dune
     for( ElementIterator elIt = gridView.template begin< 0 >(); elIt != elEnd; ++elIt )
     {
       const typename ElementIterator::Entity &entity =*elIt;
-      for( int i = 0; i < entity.template count< codim >(); ++i )
+      for( unsigned int i = 0; i < entity.subEntities( codim ); ++i )
         ++count[ indexSet.subIndex( entity, i, codim ) ];
     }
 
@@ -101,7 +101,7 @@ namespace Dune
         ++cnt;
 
         int k = 0;
-        const int numSubs = element.template count< codim >();
+        const int numSubs = element.subEntities( codim );
         while( (k < numSubs) && (element.template subEntity< codim >( k ) != codimIt) )
           ++k;
         if( k == numSubs )

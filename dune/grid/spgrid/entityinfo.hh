@@ -2,8 +2,7 @@
 #define DUNE_SPGRID_ENTITYINFO_HH
 
 #include <limits>
-
-#include <dune/common/typetraits.hh>
+#include <type_traits>
 
 #include <dune/grid/common/gridenums.hh>
 
@@ -21,47 +20,31 @@ namespace Dune
     typedef SPBasicEntityInfo< Grid, dim, codim > This;
 
   public:
-    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
+    typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
     static const int dimension = GridLevel::dimension;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
 
-    SPBasicEntityInfo ( const GridLevel &gridLevel )
-    : gridLevel_( &gridLevel )
-    {}
+    SPBasicEntityInfo () : gridLevel_( nullptr ) {}
+
+    SPBasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
 
     SPBasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
-    : gridLevel_( &gridLevel ),
-      id_( id ),
-      direction_( id.direction() )
+      : gridLevel_( &gridLevel ),
+        id_( id ),
+        direction_( id.direction() )
     {}
 
-    unsigned int direction () const
-    {
-      return direction_;
-    }
+    unsigned int direction () const { return direction_; }
 
-    const MultiIndex &id () const
-    {
-      return id_;
-    }
+    const MultiIndex &id () const { return id_; }
+    MultiIndex &id () { return id_; }
 
-    MultiIndex &id ()
-    {
-      return id_;
-    }
+    const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
 
-    const GridLevel &gridLevel () const
-    {
-      return *gridLevel_;
-    }
-
-    void update ()
-    {
-      direction_ = id_.direction();
-    }
+    void update () { direction_ = id_.direction(); }
 
   private:
     const GridLevel *gridLevel_;
@@ -80,46 +63,29 @@ namespace Dune
     typedef SPBasicEntityInfo< Grid, dim, 0 > This;
 
   public:
-    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
+    typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
     static const int dimension = GridLevel::dimension;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
 
-    SPBasicEntityInfo ( const GridLevel &gridLevel )
-    : gridLevel_( &gridLevel )
-    {}
+    SPBasicEntityInfo () : gridLevel_( nullptr ) {}
+    SPBasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
 
     SPBasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
-    : gridLevel_( &gridLevel ),
-      id_( id )
+      : gridLevel_( &gridLevel ),
+        id_( id )
     {}
 
-    unsigned int direction () const
-    {
-      return (1 << dimension) - 1;
-    }
+    unsigned int direction () const { return (1 << dimension) - 1; }
 
-    const MultiIndex &id () const
-    {
-      return id_;
-    }
+    const MultiIndex &id () const { return id_; }
+    MultiIndex &id () { return id_; }
 
-    MultiIndex &id ()
-    {
-      return id_;
-    }
+    const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
 
-    const GridLevel &gridLevel () const
-    {
-      return *gridLevel_;
-    }
-
-    void update ()
-    {
-      assert( (id_.direction() == direction()) );
-    }
+    void update () { assert( (id_.direction() == direction()) ); }
 
     void down ()
     {
@@ -158,44 +124,27 @@ namespace Dune
     typedef SPBasicEntityInfo< Grid, dim, dim > This;
 
   public:
-    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
+    typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
     typedef typename GridLevel::GlobalVector GlobalVector;
 
-    SPBasicEntityInfo ( const GridLevel &gridLevel )
-    : gridLevel_( &gridLevel )
-    {}
+    SPBasicEntityInfo () : gridLevel_( nullptr ) {}
+    SPBasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
 
     SPBasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
-    : gridLevel_( &gridLevel ),
-      id_( id )
+      : gridLevel_( &gridLevel ),
+        id_( id )
     {}
 
-    unsigned int direction () const
-    {
-      return 0;
-    }
+    unsigned int direction () const { return 0; }
 
-    const MultiIndex &id () const
-    {
-      return id_;
-    }
+    const MultiIndex &id () const { return id_; }
+    MultiIndex &id () { return id_; }
 
-    MultiIndex &id ()
-    {
-      return id_;
-    }
+    const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
 
-    const GridLevel &gridLevel () const
-    {
-      return *gridLevel_;
-    }
-
-    void update ()
-    {
-      assert( (id_.direction() == direction()) );
-    }
+    void update () { assert( (id_.direction() == direction()) ); }
 
   private:
     const GridLevel *gridLevel_;
@@ -209,10 +158,10 @@ namespace Dune
 
   template< class Grid, int codim >
   class SPEntityInfo
-  : public SPBasicEntityInfo< Grid, remove_const< Grid >::type::dimension, codim >
+    : public SPBasicEntityInfo< Grid, std::remove_const< Grid >::type::dimension, codim >
   {
     typedef SPEntityInfo< Grid, codim > This;
-    typedef SPBasicEntityInfo< Grid, remove_const< Grid >::type::dimension, codim > Base;
+    typedef SPBasicEntityInfo< Grid, std::remove_const< Grid >::type::dimension, codim > Base;
 
   public:
     typedef typename Base::GridLevel GridLevel;
@@ -230,15 +179,16 @@ namespace Dune
     typedef typename GridLevel::template Codim< codim >::GeometryCache GeometryCache;
     typedef typename GeometryCache::LocalVector LocalVector;
 
+    SPEntityInfo () : Base(), partitionNumber_( std::numeric_limits< unsigned int >::max() ) {}
+
     SPEntityInfo ( const GridLevel &gridLevel )
-    : Base( gridLevel ),
-      partitionNumber_( std::numeric_limits< unsigned int >::max() )
+      : Base( gridLevel ),
+        partitionNumber_( std::numeric_limits< unsigned int >::max() )
     {}
 
-    SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id,
-                   const unsigned int partitionNumber )
-    : Base( gridLevel, id ),
-      partitionNumber_( partitionNumber )
+    SPEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id, unsigned int partitionNumber )
+      : Base( gridLevel, id ),
+        partitionNumber_( partitionNumber )
     {}
 
     using Base::direction;
@@ -250,10 +200,7 @@ namespace Dune
       return (&gridLevel() == &other.gridLevel()) && (id() == other.id());
     }
 
-    unsigned int partitionNumber () const
-    {
-      return partitionNumber_;
-    }
+    unsigned int partitionNumber () const { return partitionNumber_; }
 
     PartitionType partitionType () const
     {
@@ -272,7 +219,7 @@ namespace Dune
       Base::update();
     }
 
-    void update ( const unsigned int partitionNumber )
+    void update ( unsigned int partitionNumber )
     {
       partitionNumber_ = partitionNumber;
       update();

@@ -12,7 +12,7 @@ namespace Dune
 
   template< int codim, class Grid >
   class SPPartitionIterator
-  : public SPEntityPointer< codim, Grid >
+    : public SPEntityPointer< codim, Grid >
   {
     typedef SPPartitionIterator< codim, Grid > This;
     typedef SPEntityPointer< codim, Grid > Base;
@@ -37,6 +37,8 @@ namespace Dune
 
   public:
     using Base::gridLevel;
+
+    SPPartitionIterator () = default;
 
     SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
                           const Begin &b, const unsigned int sweepDir = 0 );
@@ -180,27 +182,6 @@ namespace Dune
     else
       id = std::numeric_limits< MultiIndex >::max();
   }
-
-
-
-  // SPIterator
-  // ----------
-
-  template< int codim, PartitionIteratorType pitype, class Grid >
-  class SPIterator
-  : public SPPartitionIterator< codim, Grid >
-  {
-    typedef SPIterator< codim, pitype, Grid > This;
-    typedef SPPartitionIterator< codim, Grid > Base;
-
-  public:
-    typedef typename Base::GridLevel GridLevel;
-
-    template< class BeginEnd >
-    SPIterator ( const GridLevel &gridLevel, const BeginEnd &be, const unsigned int sweepDir = 0 )
-    : Base( gridLevel, gridLevel.template partition< pitype >(), be, sweepDir )
-    {}
-  };
 
 } // namespace Dune
 

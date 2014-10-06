@@ -98,10 +98,8 @@ namespace Dune
         template< PartitionIteratorType pitype >
         struct Partition
         {
-          typedef Dune::EntityIterator< codim, const Grid, SPIterator< codim, pitype, const Grid > >
-            LevelIterator;
-          typedef Dune::EntityIterator< codim, const Grid, SPIterator< codim, pitype, const Grid > >
-            LeafIterator;
+          typedef Dune::EntityIterator< codim, const Grid, SPPartitionIterator< codim, const Grid > > LevelIterator;
+          typedef Dune::EntityIterator< codim, const Grid, SPPartitionIterator< codim, const Grid > > LeafIterator;
         };
 
         typedef typename Partition< All_Partition >::LevelIterator LevelIterator;

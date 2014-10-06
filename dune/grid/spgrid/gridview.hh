@@ -1,7 +1,7 @@
 #ifndef DUNE_SPGRID_GRIDVIEW_HH
 #define DUNE_SPGRID_GRIDVIEW_HH
 
-#include <dune/common/typetraits.hh>
+#include <type_traits>
 
 #include <dune/grid/common/gridview.hh>
 
@@ -35,7 +35,9 @@ namespace Dune
   {
     typedef SPGridView< SPGridViewTraits< G, pitype > > GridViewImp;
 
-    typedef typename remove_const< G >::type Grid;
+    typedef typename std::remove_const< G >::type Grid;
+
+    static const PartitionIteratorType partitionIteratorType = pitype;
 
     typedef SPIndexSet< const Grid > IndexSet;
     typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > Intersection;
@@ -60,7 +62,7 @@ namespace Dune
       template< PartitionIteratorType pit >
       struct Partition
       {
-        typedef SPIterator< codim, pit, const Grid > IteratorImpl;
+        typedef SPPartitionIterator< codim, const Grid > IteratorImpl;
         typedef Dune::EntityIterator< codim, const Grid, IteratorImpl > Iterator;
       };
 
@@ -96,7 +98,7 @@ namespace Dune
 
     template< int codim >
     struct Codim
-    : public ViewTraits::template Codim< codim >
+      : public ViewTraits::template Codim< codim >
     {};
 
   private:
@@ -291,7 +293,7 @@ namespace Dune
   {
     typedef typename Codim< codim >::IteratorImpl IteratorImpl;
     typename IteratorImpl::Begin begin;
-    return IteratorImpl( gridLevel(), begin, sweepDir );
+    return IteratorImpl( gridLevel(), gridLevel().template partition< ViewTraits::partitionIteratorType >(), begin, sweepDir );
   }
 
 
@@ -302,7 +304,7 @@ namespace Dune
   {
     typedef typename Codim< codim >::IteratorImpl IteratorImpl;
     typename IteratorImpl::End end;
-    return IteratorImpl( gridLevel(), end, sweepDir );
+    return IteratorImpl( gridLevel(), gridLevel().template partition< ViewTraits::partitionIteratorType >(), end, sweepDir );
   }
 
 
@@ -313,7 +315,7 @@ namespace Dune
   {
     typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
     typename IteratorImpl::Begin begin;
-    return IteratorImpl( gridLevel(), begin, sweepDir );
+    return IteratorImpl( gridLevel(), gridLevel().template partition< pitype >(), begin, sweepDir );
   }
 
 
@@ -324,7 +326,7 @@ namespace Dune
   {
     typedef typename Codim< codim >::template Partition< pitype >::IteratorImpl IteratorImpl;
     typename IteratorImpl::End end;
-    return IteratorImpl( gridLevel(), end, sweepDir );
+    return IteratorImpl( gridLevel(), gridLevel().template partition< pitype >(), end, sweepDir );
   }
 
 
