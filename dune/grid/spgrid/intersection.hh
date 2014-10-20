@@ -164,12 +164,6 @@ namespace Dune
       insideInfo_ = ElementInfo( entityInfo.gridLevel(), entityInfo.id() - normalId_, entityInfo.partitionNumber() );
     }
 
-    void setFace ( const int face )
-    {
-      assert( face >= 0 );
-      normalId_ = SPNormalId< dimension >( face );
-    }
-
     EntityInfo entityInfo () const
     {
       return EntityInfo( gridLevel(), insideInfo_.id() + normalId_, insideInfo_.partitionNumber() );

@@ -8,6 +8,9 @@
 namespace Dune
 {
 
+  // SPIntersectionIterator
+  // ----------------------
+
   template< class Grid >
   class SPIntersectionIterator
   {
@@ -27,39 +30,24 @@ namespace Dune
 
     SPIntersectionIterator () = default;
 
-    SPIntersectionIterator ( const ElementInfo &insideInfo, const int face )
-      : intersection_( IntersectionImpl( insideInfo, face ) )
+    SPIntersectionIterator ( const ElementInfo &insideInfo, int face )
+      : insideInfo_( insideInfo ), face_( face )
     {}
 
-    SPIntersectionIterator ( const This &other )
-      : intersection_( Grid::getRealImplementation( other.intersection_ ) )
-    {}
-
-    const This &operator= ( const This &other )
-    {
-      Grid::getRealImplementation( intersection_ ) = Grid::getRealImplementation( other.intersection_ );
-      return *this;
-    }
-
-    const Intersection &dereference () const
-    {
-      return intersection_;
-    }
+    Intersection dereference () const { return IntersectionImpl( insideInfo(), face_ ); }
 
     bool equals ( const This &other ) const
     {
-      return Grid::getRealImplementation( intersection_ ).equals( Grid::getRealImplementation( other.intersection_ ) );
+      return (face_ == other.face_) && insideInfo().equals( other.insideInfo() );
     }
 
-    void increment ()
-    {
-      const int face = intersection_.indexInInside();
-      assert( face < GridLevel::ReferenceCube::numFaces );
-      Grid::getRealImplementation( intersection_ ).setFace( face+1 );
-    }
+    void increment () { assert( face_ < GridLevel::ReferenceCube::numFaces ); ++face_; }
+
+    const ElementInfo &insideInfo () const { return insideInfo_; }
 
   private:
-    Intersection intersection_;
+    ElementInfo insideInfo_;
+    int face_;
   };
 
 } // namespace Dune
