@@ -1,9 +1,9 @@
 #ifndef DUNE_SPGRID_INDEXSET_HH
 #define DUNE_SPGRID_INDEXSET_HH
 
+#include <array>
+#include <type_traits>
 #include <vector>
-
-#include <dune/common/array.hh>
 
 #include <dune/grid/common/indexidset.hh>
 
@@ -15,15 +15,16 @@ namespace Dune
 
   template< class Grid >
   class SPIndexSet
-  : public IndexSet< Grid, SPIndexSet< Grid >, unsigned int >
+    : public IndexSet< Grid, SPIndexSet< Grid >, unsigned int, std::array< GeometryType, 1 > >
   {
     typedef SPIndexSet< Grid > This;
-    typedef IndexSet< Grid, This, unsigned int > Base;
+    typedef IndexSet< Grid, This, unsigned int, std::array< GeometryType, 1 > > Base;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
   public:
     typedef typename Base::IndexType IndexType;
+    typedef typename Base::Types Types;
 
     static const int dimension = Traits::ReferenceCube::dimension;
 
@@ -34,7 +35,7 @@ namespace Dune
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
-    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
+    typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
     typedef typename GridLevel::PartitionList PartitionList;
 
   private:
@@ -70,6 +71,13 @@ namespace Dune
     template< int cd >
     IndexType subIndex ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const;
 
+    Types types ( int codim ) const
+    {
+      GeometryType type;
+      type.makeCube( dimension - codim );
+      return {{ GeometryType( type ) }};
+    }
+
     const std::vector< GeometryType > &geomTypes ( const int codim ) const;
 
     IndexType size ( const GeometryType &type ) const;
@@ -88,7 +96,7 @@ namespace Dune
   private:
     const GridLevel *gridLevel_;
     const PartitionList *partitions_;
-    std::vector< array< IndexType, 1 << dimension > > offsets_;
+    std::vector< std::array< IndexType, 1 << dimension > > offsets_;
     IndexType size_[ dimension+1 ];
     std::vector< GeometryType > geomTypes_[ dimension+1 ];
   };
@@ -100,8 +108,8 @@ namespace Dune
 
   template< class Grid >
   inline SPIndexSet< Grid >::SPIndexSet ()
-  : gridLevel_( 0 ),
-    partitions_( 0 )
+    : gridLevel_( 0 ),
+      partitions_( 0 )
   {
     makeGeomTypes();
   }
@@ -109,8 +117,8 @@ namespace Dune
 
   template< class Grid >
   inline SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
-  : gridLevel_( 0 ),
-    partitions_( 0 )
+    : gridLevel_( 0 ),
+      partitions_( 0 )
   {
     makeGeomTypes();
     update( gridLevel );

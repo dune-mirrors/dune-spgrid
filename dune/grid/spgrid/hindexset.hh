@@ -1,9 +1,9 @@
 #ifndef DUNE_SPGRID_HINDEXSET_HH
 #define DUNE_SPGRID_HINDEXSET_HH
 
+#include <array>
 #include <vector>
-
-#include <dune/common/array.hh>
+#include <type_traits>
 
 #include <dune/grid/spgrid/indexset.hh>
 
@@ -15,15 +15,16 @@ namespace Dune
 
   template< class Grid >
   class SPHierarchyIndexSet
-  : public IndexSet< Grid, SPHierarchyIndexSet< Grid >, unsigned int >
+    : public IndexSet< Grid, SPHierarchyIndexSet< Grid >, unsigned int, std::array< GeometryType, 1 > >
   {
     typedef SPHierarchyIndexSet< Grid > This;
-    typedef IndexSet< Grid, This, unsigned int > Base;
+    typedef IndexSet< Grid, This, unsigned int, std::array< GeometryType, 1 > > Base;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
   public:
     typedef typename Base::IndexType IndexType;
+    typedef typename Base::Types Types;
 
     static const int dimension = Traits::ReferenceCube::dimension;
 
@@ -34,12 +35,12 @@ namespace Dune
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
-    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
+    typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
   private:
     typedef SPIndexSet< Grid > LevelIndexSet;
 
-    typedef array< IndexType, dimension+1 > CodimIndexArray;
+    typedef std::array< IndexType, dimension+1 > CodimIndexArray;
 
   public:
     explicit SPHierarchyIndexSet ( const Grid &grid )
@@ -96,6 +97,13 @@ namespace Dune
       const int level = entity.level();
       const IndexType offset = offsets_[ level ][ codim ];
       return offset + levelIndexSet( level ).subIndex( entity, i, codim );
+    }
+
+    Types types ( int codim ) const
+    {
+      GeometryType type;
+      type.makeCube( dimension - codim );
+      return {{ GeometryType( type ) }};
     }
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const
