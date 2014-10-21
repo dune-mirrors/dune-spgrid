@@ -97,25 +97,12 @@ namespace Dune
       return EntitySeed( EntitySeedImpl( gridLevel().level(), entityInfo().id(), entityInfo().partitionNumber() ) );
     }
   
-    const EntityInfo &entityInfo () const
-    {
-      return entityInfo_;
-    }
+    const EntityInfo &entityInfo () const { return entityInfo_; }
+    EntityInfo &entityInfo () { return entityInfo_; }
 
-    EntityInfo &entityInfo ()
-    {
-      return entityInfo_;
-    }
+    const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
 
-    const GridLevel &gridLevel () const
-    {
-      return entityInfo().gridLevel();
-    }
-
-    const Grid &grid () const
-    {
-      return gridLevel().grid();
-    }
+    const Grid &grid () const { return gridLevel().grid(); }
 
   private:
     EntityInfo entityInfo_;

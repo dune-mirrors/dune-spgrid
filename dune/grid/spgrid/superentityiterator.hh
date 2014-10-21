@@ -47,6 +47,9 @@ namespace Dune
 
     struct SequenceProvider;
 
+  public:
+    using Base::entityInfo;
+
   protected:
     template< class EntityImpl, class BeginEnd >
     SPSuperEntityIterator ( const EntityImpl &entityImpl, const BeginEnd &be )
@@ -56,11 +59,10 @@ namespace Dune
       const unsigned int direction = entityImpl.entityInfo().direction();
       sequence_ = SequenceProvider::sequence( direction, be );
 
-      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      MultiIndex &id = entityInfo.id();
+      MultiIndex &id = entityInfo().id();
 
       id = entityImpl.entityInfo().id();
-      const typename GridLevel::Mesh &globalMesh = entityInfo.gridLevel().globalMesh();
+      const typename GridLevel::Mesh &globalMesh = entityInfo().gridLevel().globalMesh();
       for( int i = 0; i < dimension; ++i )
       {
         const bool bndLow = (id[ i ] == 2*globalMesh.begin()[ i ]);
@@ -69,15 +71,14 @@ namespace Dune
       }
 
       if( next( id ) )
-        entityInfo.update( entityImpl.entityInfo().partitionNumber() );
+        entityInfo().update( entityImpl.entityInfo().partitionNumber() );
     }
 
   public:
     void increment ()
     {
-      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-      if( next( entityInfo.id() ) )
-        entityInfo.update();
+      if( next( entityInfo().id() ) )
+        entityInfo().update();
     }
 
     int index () const
@@ -98,9 +99,6 @@ namespace Dune
       } while( skip );
       return (sequence_ != 0);
     }
-
-  protected:
-    using Base::entity_;
 
   private:
     const Sequence *sequence_;

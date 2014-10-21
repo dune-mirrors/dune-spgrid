@@ -69,7 +69,10 @@ namespace Dune
     int level () const;
     const GridLevel &gridLevel () const;
 
-  protected:
+    const EntityInfo &entityInfo () const { return Grid::getRealImplementation( entity_ ).entityInfo(); }
+    EntityInfo &entityInfo () { return Grid::getRealImplementation( entity_ ).entityInfo(); }
+
+  private:
     Entity entity_;
   };
 

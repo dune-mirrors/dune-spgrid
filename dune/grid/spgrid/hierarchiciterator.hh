@@ -8,9 +8,12 @@
 namespace Dune
 {
 
+  // SPHierarchicIterator
+  // --------------------
+
   template< class Grid >
   class SPHierarchicIterator
-  : public SPEntityPointer< 0, Grid >
+    : public SPEntityPointer< 0, Grid >
   {
     typedef SPHierarchicIterator< Grid > This;
     typedef SPEntityPointer< 0, Grid > Base;
@@ -36,24 +39,20 @@ namespace Dune
     }
 
   public:
+    using Base::entityInfo;
     using Base::level;
-    using Base::dereference;
 
     void increment ()
     {
-      EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
       if( level() >= maxLevel_ )
       {
-        while( (level() > minLevel_) && !entityInfo.nextChild() )
-          entityInfo.up();
+        while( (level() > minLevel_) && !entityInfo().nextChild() )
+          entityInfo().up();
       }
       else
-        entityInfo.down();
-      entityInfo.update();
+        entityInfo().down();
+      entityInfo().update();
     }
-
-  protected:
-    using Base::entity_;
 
   private:
     int minLevel_, maxLevel_;

@@ -36,6 +36,7 @@ namespace Dune
     typedef typename EntityInfo::MultiIndex MultiIndex;
 
   public:
+    using Base::entityInfo;
     using Base::gridLevel;
 
     SPPartitionIterator () = default;
@@ -55,9 +56,6 @@ namespace Dune
     int end ( const int i, const unsigned int dir ) const;
 
     void init ();
-
-  protected:
-    using Base::entity_;
 
   private:
     typename PartitionList::Iterator partition_;
@@ -107,25 +105,24 @@ namespace Dune
   template< int codim, class Grid >
   inline void SPPartitionIterator< codim, Grid >::increment ()
   {
-    EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-    MultiIndex &id = entityInfo.id();
+    MultiIndex &id = entityInfo().id();
     for( int i = 0; i < dimension; ++i )
     {
       const unsigned int sweep = (sweepDirection_ >> i) & 1;
       id[ i ] += (2 - 4*sweep);
-      if( id[ i ] != end( i, entityInfo.direction() ) )
-        return entityInfo.update();
-      id[ i ] = begin( i, entityInfo.direction() );
+      if( id[ i ] != end( i, entityInfo().direction() ) )
+        return entityInfo().update();
+      id[ i ] = begin( i, entityInfo().direction() );
     }
 
-    unsigned int dir = entityInfo.direction()+1;
+    unsigned int dir = entityInfo().direction()+1;
     const unsigned int mydim = mydimension;
     for( ; (dir < numDirections) && ((bitCount( dir ) != mydim) || partition_->empty( dir )); ++dir );
     if( dir < numDirections )
     {
       for( int i = 0; i < dimension; ++i )
         id[ i ] = begin( i, dir );
-      entityInfo.update();
+      entityInfo().update();
     }
     else
     {
@@ -160,8 +157,7 @@ namespace Dune
   inline void
   SPPartitionIterator< codim, Grid >::init ()
   {
-    EntityInfo &entityInfo = Grid::getRealImplementation( entity_ ).entityInfo();
-    MultiIndex &id = entityInfo.id();
+    MultiIndex &id = entityInfo().id();
     if( partition_ )
     {
       unsigned int dir = 0;
@@ -171,7 +167,7 @@ namespace Dune
       {
         for( int i = 0; i < dimension; ++i )
           id[ i ] = begin( i, dir );
-        entityInfo.update( partition_->number() );
+        entityInfo().update( partition_->number() );
       }
       else
       {
