@@ -199,6 +199,7 @@ namespace Dune
 
   template< class C >
   class SPPackedMessageReadBuffer< CollectiveCommunication< C > >
+    : public SPBasicPackedMessageReadBuffer
   {
     typedef SPPackedMessageReadBuffer< CollectiveCommunication< C > > This;
     typedef SPBasicPackedMessageReadBuffer Base;
