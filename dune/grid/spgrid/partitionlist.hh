@@ -59,7 +59,7 @@ namespace Dune
     const Partition *findPartition ( const MultiIndex &id ) const;
     int volume () const;
 
-    bool empty () const { return bool( head_ ); }
+    bool empty () const { return !head_; }
     unsigned int size () const;
 
   protected:
