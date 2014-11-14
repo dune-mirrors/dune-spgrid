@@ -419,11 +419,20 @@ namespace Dune
 
     const CollectiveCommunication &comm () const;
 
-    template< class EntitySeed >
-    typename Traits::template Codim< EntitySeed::codimension >::EntityPointer
-    entityPointer ( const EntitySeed &seed ) const
+    template< class Seed >
+    typename Traits::template Codim< Seed::codimension >::Entity entity ( const Seed &seed ) const
     {
-      typedef typename Traits::template Codim< EntitySeed::codimension >::EntityPointerImpl EntityPointerImpl;
+      typedef typename Traits::template Codim< Seed::codimension >::Entity Entity;
+      typedef SPEntity< Seed::codimension, dimension, const This > EntityImpl;
+      typename EntityImpl::EntityInfo entityInfo( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
+      return Entity( EntityImpl( std::move( entityInfo ) ) );
+    }
+
+    template< class Seed >
+    typename Traits::template Codim< Seed::codimension >::EntityPointer
+    entityPointer ( const Seed &seed ) const
+    {
+      typedef typename Traits::template Codim< Seed::codimension >::EntityPointerImpl EntityPointerImpl;
       return EntityPointerImpl( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
     }
 
