@@ -115,7 +115,7 @@ namespace Dune
 
   template< int codim, int dim, class Grid >
   class SPEntity
-  : public SPBasicEntity< codim, Grid >
+    : public SPBasicEntity< codim, Grid >
   {
     typedef SPEntity< codim, dim, Grid > This;
     typedef SPBasicEntity< codim, Grid > Base;
@@ -124,7 +124,7 @@ namespace Dune
     typedef typename Base::EntityInfo EntityInfo;
 
     explicit SPEntity ( const EntityInfo &entityInfo )
-    : Base( entityInfo )
+     : Base( entityInfo )
     {}
   };
 
@@ -158,10 +158,11 @@ namespace Dune
     template< int codim >
     struct Codim
     {
+      typedef typename Traits::template Codim< codim >::Entity Entity;
       typedef typename Traits::template Codim< codim >::EntityPointer EntityPointer;
     };
 
-    typedef typename Codim< 0 >::EntityPointer EntityPointer;
+    typedef typename Codim< 0 >::Entity Entity;
 
   protected:
     typedef typename EntityInfo::MultiIndex MultiIndex;
@@ -175,7 +176,7 @@ namespace Dune
 
   public:
     explicit SPEntity ( const EntityInfo &entityInfo )
-    : Base( entityInfo )
+     : Base( entityInfo )
     {}
 
     using Base::entityInfo;
@@ -224,7 +225,7 @@ namespace Dune
       return (level() > 0);
     }
 
-    EntityPointer father () const;
+    Entity father () const;
 
     LocalGeometry geometryInFather () const
     {
@@ -295,13 +296,12 @@ namespace Dune
 
 
   template< int dim, class Grid >
-  inline typename SPEntity< 0, dim, Grid >::EntityPointer
-  SPEntity< 0, dim, Grid >::father () const
+  inline typename SPEntity< 0, dim, Grid >::Entity SPEntity< 0, dim, Grid >::father () const
   {
     EntityInfo fatherInfo( entityInfo() );
     fatherInfo.up();
     fatherInfo.update();
-    return EntityPointer( fatherInfo );
+    return Entity( This( fatherInfo ) );
   }
 
 } // namespace Dune
