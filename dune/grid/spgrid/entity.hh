@@ -20,9 +20,6 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< int, class >
-  class SPEntityPointer;
-
   template< class >
   class SPHierarchicIterator;
 
@@ -159,7 +156,6 @@ namespace Dune
     struct Codim
     {
       typedef typename Traits::template Codim< codim >::Entity Entity;
-      typedef typename Traits::template Codim< codim >::EntityPointer EntityPointer;
     };
 
     typedef typename Codim< 0 >::Entity Entity;
@@ -196,7 +192,7 @@ namespace Dune
     }
 
     template< int codim >
-    typename Codim< codim >::EntityPointer subEntity ( const int i ) const;
+    typename Codim< codim >::Entity subEntity ( int i ) const;
 
     LeafIntersectionIterator ileafbegin () const
     {
@@ -268,14 +264,18 @@ namespace Dune
 
   template< int dim, class Grid >
   template< int codim >
-  inline typename SPEntity< 0, dim, Grid >::template Codim< codim >::EntityPointer
-  SPEntity< 0, dim, Grid >::subEntity ( const int i ) const
+  inline typename SPEntity< 0, dim, Grid >::template Codim< codim >::Entity
+  SPEntity< 0, dim, Grid >::subEntity ( int i ) const
   {
+    typedef typename SPEntity< 0, dim, Grid >::template Codim< codim >::Entity SubEntity;
+    typedef SPEntity< codim, dimension, Grid > SubEntityImpl;
+
     // warning: this is only true for closed partitions
     const unsigned int partitionNumber = entityInfo().partitionNumber();
     MultiIndex id = entityInfo().id();
     id += gridLevel().referenceCube().subId( codim, i );
-    return SPEntityPointer< codim, Grid >( gridLevel(), id, partitionNumber );
+    SPEntityInfo< Grid, codim > subInfo( gridLevel(), id, partitionNumber );
+    return SubEntity( SubEntityImpl( std::move( subInfo ) ) );
   }
 
 
