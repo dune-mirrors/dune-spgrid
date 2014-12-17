@@ -60,7 +60,7 @@ namespace Dune
 
     int level () const
     {
-      return entityInfo().gridLevel().level();
+      return gridLevel().level();
     }
 
     bool isLeaf () const
@@ -91,7 +91,7 @@ namespace Dune
 
     EntitySeed seed () const
     {
-      return EntitySeed( EntitySeedImpl( gridLevel().level(), entityInfo().id(), entityInfo().partitionNumber() ) );
+      return EntitySeed( EntitySeedImpl( level(), entityInfo().id(), entityInfo().partitionNumber() ) );
     }
   
     const EntityInfo &entityInfo () const { return entityInfo_; }
@@ -119,9 +119,16 @@ namespace Dune
 
   public:
     typedef typename Base::EntityInfo EntityInfo;
+    typedef typename Base::GridLevel GridLevel;
+
+    typedef typename GridLevel::MultiIndex MultiIndex;
 
     explicit SPEntity ( const EntityInfo &entityInfo )
      : Base( entityInfo )
+    {}
+
+    SPEntity ( const GridLevel &gridLevel, const MultiIndex &id, unsigned int partitionNumber )
+      : Base( EntityInfo( gridLevel, id, partitionNumber ) )
     {}
   };
 
@@ -160,9 +167,9 @@ namespace Dune
 
     typedef typename Codim< 0 >::Entity Entity;
 
-  protected:
-    typedef typename EntityInfo::MultiIndex MultiIndex;
+    typedef typename GridLevel::MultiIndex MultiIndex;
 
+  protected:
     typedef typename GridLevel::Mesh Mesh;
 
     static const int numFaces = GridLevel::ReferenceCube::numFaces;
@@ -173,6 +180,10 @@ namespace Dune
   public:
     explicit SPEntity ( const EntityInfo &entityInfo )
      : Base( entityInfo )
+    {}
+
+    SPEntity ( const GridLevel &gridLevel, const MultiIndex &id, unsigned int partitionNumber )
+      : Base( EntityInfo( gridLevel, id, partitionNumber ) )
     {}
 
     using Base::entityInfo;

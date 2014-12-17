@@ -36,7 +36,6 @@ namespace Dune
   public:
     typedef typename Grid::ctype ctype;
     typedef typename Grid::template Codim< 0 >::Entity Entity;
-    typedef typename Grid::template Codim< 0 >::EntityPointer EntityPointer;
 
     static const int dimension = Grid::dimension;
 
@@ -46,9 +45,9 @@ namespace Dune
     : grid_( grid )
     {}
 
-    EntityPointer findEntity ( const GlobalVector &global, int level ) const
+    Entity findEntity ( const GlobalVector &global, int level ) const
     {
-      typedef SPEntityPointer< 0, const Grid > EntityPointerImpl;
+      typedef SPEntity< 0, dimension, const Grid > EntityImpl;
       typedef typename Grid::GridLevel GridLevel;
       typedef typename GridLevel::PartitionList PartitionList;
 
@@ -66,7 +65,7 @@ namespace Dune
 
       const typename PartitionList::Partition *partition = partitionList.findPartition( id );
       if( partition )
-        return EntityPointerImpl( gridLevel, id, partition->number() );
+        return Entity( EntityImpl( gridLevel, id, partition->number() ) );
       else
       {
         for( int i = 0; i < dimension; ++i )
@@ -78,13 +77,13 @@ namespace Dune
         const typename PartitionList::Partition *leftPartition = partitionList.findPartition( id );
 
         if( leftPartition ) 
-          return EntityPointerImpl( gridLevel, id, leftPartition->number() );
+          return Entity( EntityImpl( gridLevel, id, leftPartition->number() ) );
         else  
           DUNE_THROW( GridError, "Coordinate " << global << " is outside the grid." );
       }
     }
     
-  private:
+  protected:
     const Grid &grid_;
   };
 
@@ -102,7 +101,6 @@ namespace Dune
   public:
     typedef typename Base::ctype ctype;
     typedef typename Base::Entity Entity;
-    typedef typename Base::EntityPointer EntityPointer;
 
     using Base::dimension;
 
@@ -113,17 +111,17 @@ namespace Dune
       indexSet_( indexSet )
     {}
 
-    EntityPointer findEntity ( const GlobalVector &global ) const
+    Entity findEntity ( const GlobalVector &global ) const
     {
-      EntityPointer ep = Base::findEntity( global, 0 );
-      return (indexSet_.contains( *ep ) ? ep : hFindEntity( *ep, global ));
+      const Entity e = Base::findEntity( global, 0 );
+      return (indexSet_.contains( e ) ? e : hFindEntity( e, global ));
     }
   
   private:
     typedef GlobalVector LocalVector;
     typedef typename Entity::HierarchicIterator HierarchicIterator;
 
-    EntityPointer hFindEntity ( const Entity &e, const GlobalVector &global ) const
+    Entity hFindEntity ( const Entity &e, const GlobalVector &global ) const
     {
       // To Do: This method should use the Cartesian structure, too
       const HierarchicIterator end = e.hend( e.level()+1 );
@@ -132,11 +130,15 @@ namespace Dune
         const Entity &child = *it;
         LocalVector local = child.geometry().local( global );
         if( ReferenceElements< ctype, dimension >::cube().checkInside( local ) )
-          return (indexSet_.contains( *it ) ? EntityPointer( it ) : hFindEntity( *it, global ));
+          return (indexSet_.contains( child ) ? child : hFindEntity( child, global ));
       }
       DUNE_THROW( Exception, "Unexpected internal Error" );
     }
 
+  protected:
+    using Base::grid_;
+
+  private:
     const IndexSet &indexSet_;
   };
 
@@ -153,16 +155,16 @@ namespace Dune
     typedef SPIndexSet< Grid > IndexSet;
 
   public:
-    typedef typename Base::EntityPointer EntityPointer;
+    typedef typename Base::Entity Entity;
 
     typedef typename Base::GlobalVector GlobalVector;
 
     SPHierarchicSearch ( const Grid &grid, const IndexSet &indexSet )
-    : Base( grid ),
-      indexSet_( indexSet )
+      : Base( grid ),
+        indexSet_( indexSet )
     {}
 
-    EntityPointer findEntity ( const GlobalVector &global ) const
+    Entity findEntity ( const GlobalVector &global ) const
     {
       return Base::findEntity( global, indexSet_.gridLevel().level() );
     }
@@ -202,25 +204,25 @@ namespace Dune
     typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
   public:
-    typedef typename Base::EntityPointer EntityPointer;
+    typedef typename Base::Entity Entity;
     typedef typename Base::GlobalVector GlobalVector;
 
     HierarchicSearch ( const Grid &grid, const IndexSet &indexSet )
     : Base( grid, indexSet )
     {}
 
-    EntityPointer findEntity ( const GlobalVector &global ) const
+    Entity findEntity ( const GlobalVector &global ) const
     {
       return Base::findEntity( global );
     }
 
     template< PartitionIteratorType pitype >
-    EntityPointer findEntity ( const GlobalVector &global ) const
+    Entity findEntity ( const GlobalVector &global ) const
     {
-      const EntityPointer entityPointer = Base::findEntity( global );
-      if( !contains< pitype >( entityPointer->partitionType() ) )
+      const Entity entity = Base::findEntity( global );
+      if( !contains< pitype >( entity.partitionType() ) )
         DUNE_THROW( GridError, "Coordinate " << global << " does not belong to partition " << pitype );
-      return entityPointer;
+      return entity;
     }
 
   private:
