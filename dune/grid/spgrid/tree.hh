@@ -11,7 +11,6 @@
 #include <dune/grid/spgrid/declaration.hh>
 #include <dune/grid/spgrid/entityinfo.hh>
 #include <dune/grid/spgrid/entity.hh>
-#include <dune/grid/spgrid/entitypointer.hh>
 #include <dune/grid/spgrid/intersection.hh>
 
 namespace Dune
@@ -42,31 +41,40 @@ namespace Dune
     // TreeIterator for Entity
     // -----------------------
 
-    template< int codim, int dim, class Grid, template< int, int, class > class EntityImpl, class IsLeaf >
-    class TreeIterator< Dune::Entity< codim, dim, Grid, EntityImpl >, IsLeaf >
-      : public SPEntityPointer< codim, Grid >
+    template< int codim, int dim, class Grid, template< int, int, class > class EImpl, class IsLeaf >
+    class TreeIterator< Dune::Entity< codim, dim, Grid, EImpl >, IsLeaf >
     {
-      typedef TreeIterator< Dune::Entity< codim, dim, Grid, EntityImpl >, IsLeaf > This;
-      typedef SPEntityPointer< codim, Grid > Base;
+      typedef TreeIterator< Dune::Entity< codim, dim, Grid, EImpl >, IsLeaf > This;
 
     public:
-      typedef typename Base::Entity Entity;
-      typedef typename Base::EntityInfo EntityInfo;
-      typedef typename Base::GridLevel GridLevel;
+      typedef typename std::remove_const< Grid >::type::Traits Traits;
 
-      using Base::dereference;
-      using Base::entityInfo;
-      using Base::gridLevel;
+      static const int dimension = Traits::ReferenceCube::dimension;
+      static const int codimension = codim;
+      static const int mydimension = dimension - codimension;
+
+      typedef typename Traits::template Codim< codimension >::Entity Entity;
+
+    private:
+      typedef EImpl< codimension, dimension, Grid > EntityImpl;
+
+    public:
+      typedef typename EntityImpl::EntityInfo EntityInfo;
+      typedef typename EntityImpl::GridLevel GridLevel;
 
       TreeIterator () = default;
 
       explicit TreeIterator ( const IsLeaf &isLeaf ) : isLeaf_( isLeaf ) {}
 
       explicit TreeIterator ( const Entity &entity, const IsLeaf &isLeaf )
-        : Base( Grid::getRealImplementation( entity ) ),
+        : entityInfo_( Grid::getRealImplementation( entity ).entityInfo() ),
           rootLevel_( &gridLevel() ),
           isLeaf_( isLeaf )
       {}
+
+      Entity dereference () const { return EntityImpl( entityInfo() ); }
+
+      bool equals ( const This &other ) const { return entityInfo().equals( other.entityInfo() ); }
 
       void increment ()
       {
@@ -84,11 +92,17 @@ namespace Dune
           entityInfo().down();
       }
 
+      const EntityInfo &entityInfo () const { return entityInfo_; }
+      EntityInfo &entityInfo () { return entityInfo_; }
+
+      const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
+
     private:
       const GridLevel &leafLevel () const { return gridLevel().grid().leafLevel(); }
 
       bool isDone () const { return (&gridLevel() == rootLevel_); }
 
+      EntityInfo entityInfo_;
       const GridLevel *rootLevel_;
       IsLeaf isLeaf_;
     };

@@ -13,7 +13,6 @@ spgrid_HEADERS = \
 	dgfparser.hh \
 	entity.hh \
 	entityinfo.hh \
-	entitypointer.hh \
 	entityseed.hh \
 	fileio.hh \
 	geometricgridlevel.hh \

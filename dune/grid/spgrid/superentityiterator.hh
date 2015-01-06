@@ -1,12 +1,13 @@
 #ifndef DUNE_SPGRID_SUPERENTITYITERATOR_HH
 #define DUNE_SPGRID_SUPERENTITYITERATOR_HH
 
+#include <type_traits>
+
 #include <dune/grid/extensions/superentityiterator.hh>
 
 #include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/entity.hh>
 #include <dune/grid/spgrid/referencecube.hh>
-#include <dune/grid/spgrid/entitypointer.hh>
 
 namespace Dune
 {
@@ -16,29 +17,31 @@ namespace Dune
 
   template< class Grid >
   class SPSuperEntityIterator
-  : public SPEntityPointer< 0, Grid >
   {
     typedef SPSuperEntityIterator< Grid > This;
-    typedef SPEntityPointer< 0, Grid > Base;
-
-    template< class > friend class SPGridView;
 
   public:
-    typedef typename Base::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
-    typedef typename Base::Entity Entity;
-    typedef typename Base::EntityInfo EntityInfo;
-    typedef typename Base::GridLevel GridLevel;
+    static const int dimension = Traits::ReferenceCube::dimension;
+    static const int codimension = 0;
+    static const int mydimension = dimension - codimension;
 
-    static const int dimension = Base::dimension;
+    typedef typename Traits::template Codim< codimension >::Entity Entity;
 
-  protected:
-    typedef typename EntityInfo::MultiIndex MultiIndex;
+  private:
+    typedef SPEntity< codimension, dimension, Grid > EntityImpl;
+
+  public:
+    typedef typename EntityImpl::EntityInfo EntityInfo;
+    typedef typename EntityImpl::GridLevel GridLevel;
 
     struct Begin {};
     struct End {};
 
   private:
+    typedef typename EntityInfo::MultiIndex MultiIndex;
+
     struct Sequence
     {
       const Sequence *next;
@@ -50,12 +53,11 @@ namespace Dune
     struct SequenceProvider;
 
   public:
-    using Base::entityInfo;
+    SPSuperEntityIterator () = default;
 
-  protected:
     template< class SubInfo, class BeginEnd >
     SPSuperEntityIterator ( const SubInfo &subInfo, const BeginEnd &be )
-      : Base( subInfo.gridLevel() ),
+      : entityInfo_( subInfo.gridLevel() ),
         fBoundary_( 0 )
     {
       sequence_ = SequenceProvider::sequence( subInfo.direction().bits(), be );
@@ -75,17 +77,33 @@ namespace Dune
         entityInfo().update( subInfo.partitionNumber() );
     }
 
-  public:
+    SPSuperEntityIterator ( const This & ) = default;
+    SPSuperEntityIterator ( This && ) = default;
+
+    This &operator= ( const This & ) = default;
+    This &operator= ( This && ) = default;
+
+    Entity operator* () const { return dereference(); }
+
+    bool operator== ( const This &other ) const { return equals( other ); }
+    bool operator!= ( const This &other ) const { return !equals( other ); }
+
+    Entity dereference () const { return EntityImpl( entityInfo() ); }
+
+    bool equals ( const This &other ) const { return entityInfo().equals( other.entityInfo() ); }
+
     void increment ()
     {
       if( next( entityInfo().id() ) )
         entityInfo().update();
     }
 
-    int index () const
-    {
-      return index_;
-    }
+    int index () const { return index_; }
+
+    const EntityInfo &entityInfo () const { return entityInfo_; }
+    EntityInfo &entityInfo () { return entityInfo_; }
+
+    const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
 
   private:
     bool next ( MultiIndex &id )
@@ -101,6 +119,7 @@ namespace Dune
       return (sequence_ != 0);
     }
 
+    EntityInfo entityInfo_;
     const Sequence *sequence_;
     int index_;
     unsigned int fBoundary_;

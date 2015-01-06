@@ -1,9 +1,11 @@
 #ifndef DUNE_SPGRID_HITERATOR_HH
 #define DUNE_SPGRID_HITERATOR_HH
 
+#include <type_traits>
+
 #include <dune/grid/common/entityiterator.hh>
 
-#include <dune/grid/spgrid/entitypointer.hh>
+#include <dune/grid/spgrid/entity.hh>
 
 namespace Dune
 {
@@ -13,34 +15,44 @@ namespace Dune
 
   template< class Grid, int codim >
   class SPHierarchicIterator
-    : public SPEntityPointer< codim, Grid >
   {
     typedef SPHierarchicIterator< Grid, codim > This;
-    typedef SPEntityPointer< codim, Grid > Base;
 
   public:
-    typedef typename Base::Entity Entity;
-    typedef typename Base::EntityInfo EntityInfo;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
+
+    static const int dimension = Traits::ReferenceCube::dimension;
+    static const int codimension = 0;
+    static const int mydimension = dimension - codimension;
+
+    typedef typename Traits::template Codim< codimension >::Entity Entity;
+
+  private:
+    typedef SPEntity< codimension, dimension, Grid > EntityImpl;
+
+  public:
+    typedef typename EntityImpl::EntityInfo EntityInfo;
+    typedef typename EntityImpl::GridLevel GridLevel;
 
     SPHierarchicIterator () = default;
 
     SPHierarchicIterator ( const EntityInfo &entityInfo, int maxLevel )
-      : Base( entityInfo ),
+      : entityInfo_( entityInfo ),
         minLevel_( entityInfo.gridLevel().level() ),
         maxLevel_( std::min( maxLevel, entityInfo.gridLevel().grid().maxLevel() ) )
     {
       increment();
     }
 
-  public:
-    using Base::entityInfo;
-    using Base::level;
+    Entity dereference () const { return EntityImpl( entityInfo() ); }
+
+    bool equals ( const This &other ) const { return entityInfo().equals( other.entityInfo() ); }
 
     void increment ()
     {
-      if( level() >= maxLevel_ )
+      if( gridLevel().level() >= maxLevel_ )
       {
-        while( (level() > minLevel_) && !entityInfo().nextChild() )
+        while( (gridLevel().level() > minLevel_) && !entityInfo().nextChild() )
           entityInfo().up();
       }
       else
@@ -48,7 +60,13 @@ namespace Dune
       entityInfo().update();
     }
 
+    const EntityInfo &entityInfo () const { return entityInfo_; }
+    EntityInfo &entityInfo () { return entityInfo_; }
+
+    const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
+
   private:
+    EntityInfo entityInfo_;
     int minLevel_, maxLevel_;
   };
 

@@ -2,10 +2,11 @@
 #define DUNE_SPGRID_ITERATOR_HH
 
 #include <algorithm>
+#include <type_traits>
 
 #include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/misc.hh>
-#include <dune/grid/spgrid/entitypointer.hh>
+#include <dune/grid/spgrid/entity.hh>
 
 namespace Dune
 {
@@ -15,18 +16,24 @@ namespace Dune
 
   template< int codim, class Grid >
   class SPPartitionIterator
-    : public SPEntityPointer< codim, Grid >
   {
     typedef SPPartitionIterator< codim, Grid > This;
-    typedef SPEntityPointer< codim, Grid > Base;
 
   public:
-    typedef typename Base::EntityInfo EntityInfo;
-    typedef typename Base::GridLevel GridLevel;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
-    static const int dimension = Base::dimension;
-    static const int codimension = Base::codimension;
-    static const int mydimension = Base::mydimension;
+    static const int dimension = Traits::ReferenceCube::dimension;
+    static const int codimension = codim;
+    static const int mydimension = dimension - codimension;
+
+    typedef typename Traits::template Codim< codimension >::Entity Entity;
+
+  private:
+    typedef SPEntity< codimension, dimension, Grid > EntityImpl;
+
+  public:
+    typedef typename EntityImpl::EntityInfo EntityInfo;
+    typedef typename EntityImpl::GridLevel GridLevel;
 
     typedef SPPartitionList< dimension > PartitionList;
 
@@ -43,9 +50,6 @@ namespace Dune
     typedef SPDirectionIterator< dimension, codimension > DirectionIterator;
 
   public:
-    using Base::entityInfo;
-    using Base::gridLevel;
-
     SPPartitionIterator () = default;
 
     SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
@@ -54,9 +58,24 @@ namespace Dune
                           const End &e, const unsigned int sweepDir = 0 );
 
     operator bool () const { return bool( partition_ ); }
+
+    Entity operator* () const { return dereference(); }
+
+    bool operator== ( const This &other ) const { return equals( other ); }
+    bool operator!= ( const This &other ) const { return !equals( other ); }
+
     This &operator++ () { increment(); return *this; }
 
+    Entity dereference () const { return EntityImpl( entityInfo() ); }
+
+    bool equals ( const This &other ) const { return entityInfo().equals( other.entityInfo() ); }
+
     void increment ();
+
+    const EntityInfo &entityInfo () const { return entityInfo_; }
+    EntityInfo &entityInfo () { return entityInfo_; }
+
+    const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
 
   private:
     int begin ( int i, Direction dir ) const;
@@ -65,6 +84,7 @@ namespace Dune
     void init ();
 
   private:
+    EntityInfo entityInfo_;
     typename PartitionList::Iterator partition_;
     unsigned int sweepDirection_;
   };
@@ -77,10 +97,10 @@ namespace Dune
   template< int codim, class Grid >
   inline SPPartitionIterator< codim, Grid >
     ::SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
-                            const Begin &b, const unsigned int sweepDir )
-  : Base( gridLevel ),
-    partition_( partitionList.begin() ),
-    sweepDirection_( sweepDir )
+                            const Begin &b, unsigned int sweepDir )
+    : entityInfo_( gridLevel ),
+      partition_( partitionList.begin() ),
+      sweepDirection_( sweepDir )
   {
     assert( sweepDir < numDirections );
     init();
@@ -90,10 +110,10 @@ namespace Dune
   template< int codim, class Grid >
   inline SPPartitionIterator< codim, Grid >
     ::SPPartitionIterator ( const GridLevel &gridLevel, const PartitionList &partitionList,
-                            const End &e, const unsigned int sweepDir )
-  : Base( gridLevel ),
-    partition_( partitionList.end() ),
-    sweepDirection_( sweepDir )
+                            const End &e, unsigned int sweepDir )
+    : entityInfo_( gridLevel ),
+      partition_( partitionList.end() ),
+      sweepDirection_( sweepDir )
   {
     assert( sweepDir < numDirections );
     init();
