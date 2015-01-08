@@ -14,7 +14,6 @@ AC_CONFIG_FILES([
   Makefile
   cmake/Makefile
   cmake/modules/Makefile
-  cmake/pkg/Makefile
   dune/Makefile
   dune/common/Makefile
   dune/grid/Makefile
