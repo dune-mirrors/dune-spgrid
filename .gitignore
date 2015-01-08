@@ -9,6 +9,7 @@
 /config.lt
 /config.status
 /config.sub
+/compile
 /depcomp
 /dependencies.m4
 /dune-spgrid.pc
