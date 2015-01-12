@@ -452,22 +452,6 @@ namespace Dune
     static std::string type () { return "bisection"; }
   };
 
-
-
-  // Auxilliary Functions for SPRefinement
-  // -------------------------------------
-
-  template< int dim, SPRefinementStrategy strategy >
-  inline SPMultiIndex< dim >
-  operator* ( const SPMultiIndex< dim > &width,
-              const SPRefinement< dim, strategy > &refinement )
-  {
-    SPMultiIndex< dim > result;
-    for( int i = 0; i < dim; ++i )
-      result[ i ] = width[ i ] * refinement.factor( i );
-    return result;
-  }
-
 } // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_REFINEMENT_HH

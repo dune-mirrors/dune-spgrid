@@ -112,6 +112,7 @@ namespace Dune
 
     static MultiIndex coarseMacroFactor ();
     static GlobalVector meshWidth ( const Domain &domain, const Mesh &mesh );
+    static MultiIndex refineWidth ( const MultiIndex &width, const Refinement &refinement );
 
     MultiIndex overlap () const;
 
@@ -161,7 +162,7 @@ namespace Dune
       grid_( father.grid_ ),
       level_( father.level() + 1 ),
       refinement_( father.refinement(), policy ),
-      macroFactor_( father.macroFactor_ * refinement_ ),
+      macroFactor_( refineWidth( father.macroFactor_, refinement_ ) ),
       domain_( father.domain() ),
       decomposition_( transform( father.decomposition_, [ this ]( const Mesh &mesh ) { return mesh.refine( refinement_ ); } ) ),
       localMesh_( father.localMesh().refine( refinement_ ) ),
@@ -370,6 +371,17 @@ namespace Dune
     for( int i = 0; i < dimension; ++i )
       h[ i ] /= ctype( meshWidth[ i ] );
     return h;
+  }
+
+
+  template< class Grid >
+  inline typename SPGridLevel< Grid >::MultiIndex
+  SPGridLevel< Grid >::refineWidth ( const MultiIndex &id, const Refinement &refinement )
+  {
+    MultiIndex result;
+    for( int i = 0; i < dimension; ++i )
+      result[ i ] = id[ i ] * refinement.factor( i );
+    return result;
   }
 
 
