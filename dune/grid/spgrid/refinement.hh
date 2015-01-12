@@ -20,7 +20,7 @@ namespace Dune
   class SPRefinementPolicy;
 
   template< int dim, SPRefinementStrategy strategy >
-  class SPBasicRefinement;
+  class SPRefinement;
 
 
 
@@ -71,7 +71,7 @@ namespace Dune
   {
     typedef SPRefinementPolicy< dim, SPAnisotropicRefinement > This;
 
-    friend class SPBasicRefinement< dim, SPAnisotropicRefinement >;
+    friend class SPRefinement< dim, SPAnisotropicRefinement >;
 
   public:
     static const int dimension = dim;
@@ -130,7 +130,7 @@ namespace Dune
   {
     typedef SPRefinementPolicy< dim, SPBisectionRefinement > This;
 
-    friend class SPBasicRefinement< dim, SPBisectionRefinement >;
+    friend class SPRefinement< dim, SPBisectionRefinement >;
 
   public:
     static const int dimension = dim;
@@ -318,14 +318,14 @@ namespace Dune
 
 
 
-  // SPBasicRefinement (for SPIsotropicRefinement)
-  // ---------------------------------------------
+  // SPRefinement (for SPIsotropicRefinement)
+  // ----------------------------------------
 
   template< int dim >
-  class SPBasicRefinement< dim, SPIsotropicRefinement >
-  : public SPDefaultRefinement< dim, SPIsotropicRefinement >
+  class SPRefinement< dim, SPIsotropicRefinement >
+    : public SPDefaultRefinement< dim, SPIsotropicRefinement >
   {
-    typedef SPBasicRefinement< dim, SPIsotropicRefinement > This;
+    typedef SPRefinement< dim, SPIsotropicRefinement > This;
     typedef SPDefaultRefinement< dim, SPIsotropicRefinement > Base;
 
   public:
@@ -334,34 +334,25 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-  protected:
-    SPBasicRefinement ()
-    : Base( Policy() )
-    {}
+    SPRefinement () : Base( Policy() ) {}
 
-    explicit SPBasicRefinement ( const This &father, const Policy &policy )
-    : Base( policy )
-    {}
+    explicit SPRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
 
-  public:
-    unsigned int numChildren () const
-    {
-      return (1 << dimension);
-    }
+    constexpr unsigned int numChildren () const { return (1 << dimension); }
 
     static std::string type () { return "isotropic"; }
   };
 
 
 
-  // SPBasicRefinement (for SPAnisotropicRefinement)
-  // -----------------------------------------------
+  // SPRefinement (for SPAnisotropicRefinement)
+  // ------------------------------------------
 
   template< int dim >
-  class SPBasicRefinement< dim, SPAnisotropicRefinement >
-  : public SPDefaultRefinement< dim, SPAnisotropicRefinement >
+  class SPRefinement< dim, SPAnisotropicRefinement >
+    : public SPDefaultRefinement< dim, SPAnisotropicRefinement >
   {
-    typedef SPBasicRefinement< dim, SPAnisotropicRefinement > This;
+    typedef SPRefinement< dim, SPAnisotropicRefinement > This;
     typedef SPDefaultRefinement< dim, SPAnisotropicRefinement > Base;
 
   public:
@@ -370,16 +361,10 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-  protected:
-    SPBasicRefinement ()
-    : Base( Policy() )
-    {}
+    SPRefinement () : Base( Policy() ) {}
 
-    explicit SPBasicRefinement ( const This &father, const Policy &policy )
-    : Base( policy )
-    {}
+    explicit SPRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
 
-  public:
     using Base::policy;
 
     unsigned int numChildren () const
@@ -392,14 +377,14 @@ namespace Dune
 
 
 
-  // SPBasicRefinement (for SPBisectionRefinement)
-  // ---------------------------------------------
+  // SPRefinement (for SPBisectionRefinement)
+  // ----------------------------------------
 
   template< int dim >
-  class SPBasicRefinement< dim, SPBisectionRefinement >
-  : public SPDefaultRefinement< dim, SPBisectionRefinement >
+  class SPRefinement< dim, SPBisectionRefinement >
+    : public SPDefaultRefinement< dim, SPBisectionRefinement >
   {
-    typedef SPBasicRefinement< dim, SPBisectionRefinement > This;
+    typedef SPRefinement< dim, SPBisectionRefinement > This;
     typedef SPDefaultRefinement< dim, SPBisectionRefinement > Base;
 
   public:
@@ -408,16 +393,12 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-  protected:
-    SPBasicRefinement ()
-    : Base( Policy() )
+    SPRefinement () : Base( Policy() ) {}
+
+    SPRefinement ( const This &father, const Policy &policy )
+      : Base( Policy( father.policy(), policy ) )
     {}
 
-    explicit SPBasicRefinement ( const This &father, const Policy &policy )
-    : Base( Policy( father.policy(), policy ) )
-    {}
-
-  public:
     using Base::policy;
 
     unsigned int numChildren () const
@@ -476,62 +457,6 @@ namespace Dune
 
 
 
-
-  // SPRefinement
-  // ------------
-
-  template< int dim, SPRefinementStrategy strategy >
-  class SPRefinement
-  : public SPBasicRefinement< dim, strategy >
-  {
-    typedef SPRefinement< dim, strategy > This;
-    typedef SPBasicRefinement< dim, strategy > Base;
-
-  public:
-    typedef typename Base::Policy Policy;
-
-    SPRefinement ()
-    {}
-
-    explicit SPRefinement ( const This &father, const Policy &policy )
-    : Base( father, policy )
-    {}
-
-    template< class Mesh >
-    Mesh operator() ( const Mesh &mesh ) const;
-
-    template< class Mesh >
-    std::vector< Mesh > operator() ( const std::vector< Mesh > &coarseMeshes ) const;
-  };
-
-
-
-  // Implementation of SPRefinement
-  // ------------------------------
-
-  template< int dim, SPRefinementStrategy strategy >
-  template< class Mesh >
-  inline Mesh SPRefinement< dim, strategy >::operator() ( const Mesh &mesh ) const
-  {
-    return mesh.refine( *this );
-  }
-
-
-  template< int dim, SPRefinementStrategy strategy >
-  template< class Mesh >
-  inline std::vector< Mesh > SPRefinement< dim, strategy >
-    ::operator() ( const std::vector< Mesh > &coarseMeshes ) const
-  {
-    std::vector< Mesh > fineMeshes;
-    const size_t size = coarseMeshes.size();
-    fineMeshes.reserve( size );
-    for( size_t i = 0; i < size; ++i )
-      fineMeshes.push_back( coarseMeshes[ i ].refine( *this ) );
-    return fineMeshes;
-  }
-
-
-
   // Auxilliary Functions for SPRefinement
   // -------------------------------------
 
@@ -546,6 +471,6 @@ namespace Dune
     return result;
   }
 
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_SPGRID_REFINEMENT_HH

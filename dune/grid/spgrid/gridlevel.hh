@@ -156,18 +156,17 @@ namespace Dune
 
 
   template< class Grid >
-  inline SPGridLevel< Grid >
-    ::SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy )
-  : Base( father.grid().refCubes_, meshWidth( father.domain(), Refinement( father.refinement(), policy )( father.globalMesh() ) ) ),
-    grid_( father.grid_ ),
-    level_( father.level() + 1 ),
-    refinement_( father.refinement(), policy ),
-    macroFactor_( father.macroFactor_ * refinement_ ),
-    domain_( father.domain() ),
-    decomposition_( refinement_( father.decomposition_ ) ),
-    localMesh_( refinement_( father.localMesh() ) ),
-    partitionPool_( localMesh_, refinement_( father.globalMesh() ), overlap(), domain_.topology() ),
-    linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
+  inline SPGridLevel< Grid >::SPGridLevel ( const GridLevel &father, const RefinementPolicy &policy )
+    : Base( father.grid().refCubes_, meshWidth( father.domain(), father.globalMesh().refine( Refinement( father.refinement(), policy ) ) ) ),
+      grid_( father.grid_ ),
+      level_( father.level() + 1 ),
+      refinement_( father.refinement(), policy ),
+      macroFactor_( father.macroFactor_ * refinement_ ),
+      domain_( father.domain() ),
+      decomposition_( transform( father.decomposition_, [ this ]( const Mesh &mesh ) { return mesh.refine( refinement_ ); } ) ),
+      localMesh_( father.localMesh().refine( refinement_ ) ),
+      partitionPool_( localMesh_, father.globalMesh().refine( refinement_ ), overlap(), domain_.topology() ),
+      linkage_( father.grid().comm().rank(), partitionPool_, decomposition_ )
   {
     buildLocalGeometry();
     buildBoundaryPartitions();
