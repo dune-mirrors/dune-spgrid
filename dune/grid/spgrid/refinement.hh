@@ -17,20 +17,17 @@ namespace Dune
   // -----------------------------
 
   template< int dim, SPRefinementStrategy strategy >
-  class SPRefinementPolicy;
-
-  template< int dim, SPRefinementStrategy strategy >
   class SPRefinement;
 
 
 
-  // SPRefinementPolicy (for SPIsotropicRefinement)
-  // ----------------------------------------------
+  // SPIsotropicRefinementPolicy
+  // ---------------------------
 
   template< int dim >
-  class SPRefinementPolicy< dim, SPIsotropicRefinement >
+  class SPIsotropicRefinementPolicy
   {
-    typedef SPRefinementPolicy< dim, SPIsotropicRefinement > This;
+    typedef SPIsotropicRefinementPolicy< dim > This;
 
   public:
     static const int dimension = dim;
@@ -63,25 +60,25 @@ namespace Dune
 
 
 
-  // SPRefinementPolicy (for SPAnisotropicRefinement)
-  // ------------------------------------------------
+  // SPAnisotropicRefinementPolicy
+  // -----------------------------
 
   template< int dim >
-  class SPRefinementPolicy< dim, SPAnisotropicRefinement >
+  class SPAnisotropicRefinementPolicy
   {
-    typedef SPRefinementPolicy< dim, SPAnisotropicRefinement > This;
+    typedef SPAnisotropicRefinementPolicy< dim > This;
 
     friend class SPRefinement< dim, SPAnisotropicRefinement >;
 
   public:
     static const int dimension = dim;
 
-    SPRefinementPolicy ()
-    : refDir_( (1 << dimension)-1 )
+    SPAnisotropicRefinementPolicy ()
+      : refDir_( (1 << dimension)-1 )
     {}
 
-    explicit SPRefinementPolicy ( const unsigned int refDir )
-    : refDir_( refDir )
+    explicit SPAnisotropicRefinementPolicy ( unsigned int refDir )
+      : refDir_( refDir )
     {
       if( refDir >= (1 << dimension) )
         DUNE_THROW( GridError, "Trying to create anisotropic refinement policy from invalid value " << refDir << "." );
@@ -122,33 +119,33 @@ namespace Dune
 
 
 
-  // SPRefinementPolicy (for SPBisectionRefinement)
-  // ----------------------------------------------
+  // SPBisectionRefinementPolicy
+  // ---------------------------
 
   template< int dim >
-  class SPRefinementPolicy< dim, SPBisectionRefinement >
+  class SPBisectionRefinementPolicy
   {
-    typedef SPRefinementPolicy< dim, SPBisectionRefinement > This;
+    typedef SPBisectionRefinementPolicy< dim > This;
 
     friend class SPRefinement< dim, SPBisectionRefinement >;
 
   public:
     static const int dimension = dim;
 
-    SPRefinementPolicy ()
-    : dir_( -1 )
+    SPBisectionRefinementPolicy ()
+      : dir_( -1 )
     {}
 
-    explicit SPRefinementPolicy ( const int dir )
-    : dir_( dir )
+    explicit SPBisectionRefinementPolicy ( int dir )
+      : dir_( dir )
     {
       if( (dir < 0) || (dir >= dimension) )
         DUNE_THROW( GridError, "Trying to create bisection refinement policy for invalid direction " << dir << "." );
     }
 
   private:
-    SPRefinementPolicy ( const This &father, const This &policy )
-    : dir_( policy.dir_ < 0 ? (father.dir_ + 1) % dimension : policy.dir_ )
+    SPBisectionRefinementPolicy ( const This &father, const This &policy )
+      : dir_( policy.dir_ < 0 ? (father.dir_ + 1) % dimension : policy.dir_ )
     {}
 
   public:
@@ -198,14 +195,14 @@ namespace Dune
   // SPDefaultRefinement
   // -------------------
 
-  template< int dim, SPRefinementStrategy strategy >
+  template< class P >
   struct SPDefaultRefinement
   {
-    static const int dimension = dim;
+    typedef P Policy;
+
+    static const int dimension = Policy::dimension;
 
     typedef SPMultiIndex< dimension > MultiIndex;
-
-    typedef SPRefinementPolicy< dim, strategy > Policy;
 
   protected:
     explicit SPDefaultRefinement ( const Policy &policy )
@@ -323,10 +320,10 @@ namespace Dune
 
   template< int dim >
   class SPRefinement< dim, SPIsotropicRefinement >
-    : public SPDefaultRefinement< dim, SPIsotropicRefinement >
+    : public SPDefaultRefinement< SPIsotropicRefinementPolicy< dim > >
   {
     typedef SPRefinement< dim, SPIsotropicRefinement > This;
-    typedef SPDefaultRefinement< dim, SPIsotropicRefinement > Base;
+    typedef SPDefaultRefinement< SPIsotropicRefinementPolicy< dim > > Base;
 
   public:
     using Base::dimension;
@@ -350,10 +347,10 @@ namespace Dune
 
   template< int dim >
   class SPRefinement< dim, SPAnisotropicRefinement >
-    : public SPDefaultRefinement< dim, SPAnisotropicRefinement >
+    : public SPDefaultRefinement< SPAnisotropicRefinementPolicy< dim > >
   {
     typedef SPRefinement< dim, SPAnisotropicRefinement > This;
-    typedef SPDefaultRefinement< dim, SPAnisotropicRefinement > Base;
+    typedef SPDefaultRefinement< SPAnisotropicRefinementPolicy< dim > > Base;
 
   public:
     using Base::dimension;
@@ -382,10 +379,10 @@ namespace Dune
 
   template< int dim >
   class SPRefinement< dim, SPBisectionRefinement >
-    : public SPDefaultRefinement< dim, SPBisectionRefinement >
+    : public SPDefaultRefinement< SPBisectionRefinementPolicy< dim > >
   {
     typedef SPRefinement< dim, SPBisectionRefinement > This;
-    typedef SPDefaultRefinement< dim, SPBisectionRefinement > Base;
+    typedef SPDefaultRefinement< SPBisectionRefinementPolicy< dim > > Base;
 
   public:
     using Base::dimension;
