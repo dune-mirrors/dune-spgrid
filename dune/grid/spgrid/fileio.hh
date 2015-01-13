@@ -19,14 +19,14 @@ namespace Dune
   // SPGridIOData
   // ------------
 
-  template< class ctype, int dim, SPRefinementStrategy strategy >
+  template< class ctype, int dim, template< int > class Ref >
   struct SPGridIOData
   {
     typedef SPTopology< dim > Topology;
     typedef SPCube< ctype, dim > Cube;
     typedef typename Cube::GlobalVector GlobalVector;
     typedef SPMultiIndex< dim > MultiIndex;
-    typedef SPRefinement< dim, strategy > Refinement;
+    typedef Ref< dim > Refinement;
     typedef typename Refinement::Policy RefinementPolicy;
 
     ctype time;
@@ -57,9 +57,8 @@ namespace Dune
   // Implementation of SPGridIOData
   // ------------------------------
 
-  template< class ctype, int dim, SPRefinementStrategy strategy >
-  inline bool
-  SPGridIOData< ctype, dim, strategy >::write ( std::ostream &stream ) const
+  template< class ctype, int dim, template< int > class Ref >
+  inline bool SPGridIOData< ctype, dim, Ref >::write ( std::ostream &stream ) const
   {
     // write header
     stream << "SPGrid";
@@ -102,18 +101,17 @@ namespace Dune
   }
 
 
-  template< class ctype, int dim, SPRefinementStrategy strategy >
-  inline bool
-  SPGridIOData< ctype, dim, strategy >::write ( const std::string &filename ) const
+  template< class ctype, int dim, template< int > class Ref >
+  inline bool SPGridIOData< ctype, dim, Ref >::write ( const std::string &filename ) const
   {
     std::ofstream stream( filename.c_str() );
     return (stream ? write( stream ) : false);
   }
 
 
-  template< class ctype, int dim, SPRefinementStrategy strategy >
+  template< class ctype, int dim, template< int > class Ref >
   inline bool
-  SPGridIOData< ctype, dim, strategy >::read ( std::istream &stream, const std::string &info )
+  SPGridIOData< ctype, dim, Ref >::read ( std::istream &stream, const std::string &info )
   {
     unsigned int lineNr = 0;
     std::string line = readLine( stream, &lineNr );
@@ -271,18 +269,16 @@ namespace Dune
   }
 
 
-  template< class ctype, int dim, SPRefinementStrategy strategy >
-  inline bool
-  SPGridIOData< ctype, dim, strategy >::read ( const std::string &filename )
+  template< class ctype, int dim, template< int > class Ref >
+  inline bool SPGridIOData< ctype, dim, Ref >::read ( const std::string &filename )
   {
     std::ifstream stream( filename.c_str() );
     return (stream ? read( stream, filename ) : false);
   }
 
 
-  template< class ctype, int dim, SPRefinementStrategy strategy >
-  inline std::string
-  SPGridIOData< ctype, dim, strategy >::readLine ( std::istream &stream, unsigned int *count )
+  template< class ctype, int dim, template< int > class Ref >
+  inline std::string SPGridIOData< ctype, dim, Ref >::readLine ( std::istream &stream, unsigned int *count )
   {
     std::string line;
     while( line.empty() && !stream.eof() )

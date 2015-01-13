@@ -14,18 +14,18 @@ namespace Dune
   // PersistentContainer for SPGrid
   // ------------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm, class T >
-  class PersistentContainer< SPGrid< ct, dim, strategy, Comm >, T >
-  : public PersistentContainerVector< SPGrid< ct, dim, strategy, Comm >, typename SPGrid< ct, dim, strategy, Comm >::HierarchicIndexSet, std::vector< T > >
+  template< class ct, int dim, template< int > class Ref, class Comm, class T >
+  class PersistentContainer< SPGrid< ct, dim, Ref, Comm >, T >
+    : public PersistentContainerVector< SPGrid< ct, dim, Ref, Comm >, typename SPGrid< ct, dim, Ref, Comm >::HierarchicIndexSet, std::vector< T > >
   {
-    typedef PersistentContainerVector< SPGrid< ct, dim, strategy, Comm >, typename SPGrid< ct, dim, strategy, Comm >::HierarchicIndexSet, std::vector< T > > Base;
+    typedef PersistentContainerVector< SPGrid< ct, dim, Ref, Comm >, typename SPGrid< ct, dim, Ref, Comm >::HierarchicIndexSet, std::vector< T > > Base;
 
   public:
     typedef typename Base::Grid Grid;
     typedef typename Base::Value Value;
 
     PersistentContainer ( const Grid &grid, int codim, const Value &value = Value() )
-    : Base( grid.hierarchicIndexSet(), codim, value )
+      : Base( grid.hierarchicIndexSet(), codim, value )
     {}
   };
 

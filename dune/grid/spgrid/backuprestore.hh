@@ -32,10 +32,10 @@ namespace Dune
    *
    *  \tparam  Grid  type of grid
    */
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  struct BackupRestoreFacility< SPGrid< ct, dim, strategy, Comm > >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  struct BackupRestoreFacility< SPGrid< ct, dim, Ref, Comm > >
   {
-    typedef SPGrid< ct, dim, strategy, Comm > Grid;
+    typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
 
@@ -57,7 +57,7 @@ namespace Dune
      */
     static void backup ( const Grid &grid, const std::string &filename )
     {
-      SPGridIOData< ct, dim, strategy > ioData;
+      SPGridIOData< ct, dim, Ref > ioData;
       backup( grid, ioData );
 
       int result = 0;
@@ -79,7 +79,7 @@ namespace Dune
      */
     static void backup ( const Grid &grid, std::ostream &stream )
     {
-      SPGridIOData< ct, dim, strategy > ioData;
+      SPGridIOData< ct, dim, Ref > ioData;
       backup( grid, ioData );
 
       int result = 0;
@@ -119,7 +119,7 @@ namespace Dune
         DUNE_THROW( IOError, "Unable to open file: " + filename );
 
       Grid *grid = 0;
-      SPGridIOData< ct, dim, strategy > ioData;
+      SPGridIOData< ct, dim, Ref > ioData;
       if( ioData.read( stream, filename ) )
         grid = restore( ioData, comm );
 
@@ -140,7 +140,7 @@ namespace Dune
                            const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       Grid *grid = 0;
-      SPGridIOData< ct, dim, strategy > ioData;
+      SPGridIOData< ct, dim, Ref > ioData;
       if( ioData.read( stream ) )
         grid = restore( ioData, comm );
 
@@ -153,7 +153,7 @@ namespace Dune
     }
 
   private:
-    static void backup ( const Grid &grid, SPGridIOData< ct, dim, strategy > &ioData )
+    static void backup ( const Grid &grid, SPGridIOData< ct, dim, Ref > &ioData )
     {
       ioData.time = 0;
       ioData.cubes.push_back( grid.domain().cube() );
@@ -167,7 +167,7 @@ namespace Dune
         ioData.refinements[ level ] = grid.gridLevel( level+1 ).refinement().policy();
     }
 
-    static Grid *restore ( const SPGridIOData< ct, dim, strategy > &ioData,
+    static Grid *restore ( const SPGridIOData< ct, dim, Ref > &ioData,
                            const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       if( ioData.partitions != comm.size() )

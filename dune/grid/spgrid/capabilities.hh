@@ -32,8 +32,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct hasSingleGeometryType< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct hasSingleGeometryType< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief all elements in \ref Dune::SPGrid "SPGrid" have the same
        *         geometry type */
@@ -55,8 +55,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct isCartesian< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct isCartesian< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" is a Cartesian grid */
       static const bool v = true;
@@ -67,8 +67,8 @@ namespace Dune
      *  \tparam  Grid   grid for which the information is desired
      *  \tparam  codim  codimension in question
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
-    struct hasEntity< SPGrid< ct, dim, strategy, Comm >, codim >
+    template< class ct, int dim, template< int > class Ref, class Comm, int codim >
+    struct hasEntity< SPGrid< ct, dim, Ref, Comm >, codim >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" implements entities for all
        *         codimensions */
@@ -80,8 +80,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy >
-    struct isParallel< SPGrid< ct, dim, strategy, MPI_Comm > >
+    template< class ct, int dim, template< int > class Ref >
+    struct isParallel< SPGrid< ct, dim, Ref, MPI_Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" with MPI_Comm supports
        *         parallelism */
@@ -96,8 +96,8 @@ namespace Dune
      *  \note In order to communicate on a given codimension, the grid has to
      *        implement entities for that codimension.
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, int codim >
-    struct canCommunicate< SPGrid< ct, dim, strategy, MPI_Comm >, codim >
+    template< class ct, int dim, template< int > class Ref, int codim >
+    struct canCommunicate< SPGrid< ct, dim, Ref, MPI_Comm >, codim >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" with MPI_Comm can communicate on
        *         all codimensions */
@@ -109,8 +109,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct isLevelwiseConforming< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct isLevelwiseConforming< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief All levels of a \ref Dune::SPGrid "SPGrid" are always conform */
       static const bool v = true;
@@ -120,8 +120,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct isLeafwiseConforming< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct isLeafwiseConforming< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief The leaf level of a \ref Dune::SPGrid "SPGrid" are always conform */
       static const bool v = true;
@@ -131,8 +131,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct hasBackupRestoreFacilities< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct hasBackupRestoreFacilities< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" provides backup and restore facilities */
       static const bool v = true;
@@ -142,8 +142,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct threadSafe< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct threadSafe< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" is not thread safe */
       static const bool v = false;
@@ -153,8 +153,8 @@ namespace Dune
      *
      *  \tparam  Grid  grid for which the information is desired
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct viewThreadSafe< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct viewThreadSafe< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" is not thread safe */
       static const bool v = false;
@@ -168,8 +168,8 @@ namespace Dune
     template< class Grid >
     struct hasHierarchicIndexSet;
 
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct hasHierarchicIndexSet< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct hasHierarchicIndexSet< SPGrid< ct, dim, Ref, Comm > >
     {
       static const bool v = true;
     };
@@ -184,8 +184,8 @@ namespace Dune
      *
      *  \note This is not a standard dune-grid capability.
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-    struct supportsCallbackAdaptation< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct supportsCallbackAdaptation< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" supports callback adaptation */
       static const bool v = true;
@@ -206,8 +206,8 @@ namespace Dune
      *  \tparam  Grid   grid for which the information is desired
      *  \tparam  codim  codimension in question
      */
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm, int codim >
-    struct SuperEntityIterator< SPGrid< ct, dim, strategy, Comm >, codim >
+    template< class ct, int dim, template< int > class Ref, class Comm, int codim >
+    struct SuperEntityIterator< SPGrid< ct, dim, Ref, Comm >, codim >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" supports superentity iterators for all
        *         codimensions */

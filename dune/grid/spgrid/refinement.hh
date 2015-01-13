@@ -13,14 +13,6 @@
 namespace Dune
 {
 
-  // Internal Forward Declarations
-  // -----------------------------
-
-  template< int dim, SPRefinementStrategy strategy >
-  class SPRefinement;
-
-
-
   // SPIsotropicRefinementPolicy
   // ---------------------------
 
@@ -68,7 +60,7 @@ namespace Dune
   {
     typedef SPAnisotropicRefinementPolicy< dim > This;
 
-    friend class SPRefinement< dim, SPAnisotropicRefinement >;
+    friend class SPAnisotropicRefinement< dim >;
 
   public:
     static const int dimension = dim;
@@ -127,7 +119,7 @@ namespace Dune
   {
     typedef SPBisectionRefinementPolicy< dim > This;
 
-    friend class SPRefinement< dim, SPBisectionRefinement >;
+    friend class SPBisectionRefinement< dim >;
 
   public:
     static const int dimension = dim;
@@ -315,14 +307,20 @@ namespace Dune
 
 
 
-  // SPRefinement (for SPIsotropicRefinement)
-  // ----------------------------------------
+  // SPIsotropicRefinement
+  // ---------------------
 
+  /**
+   * \class SPIsotropicRefinement
+   * \brief each element is split into 2<sup>dim</sup> children.
+   *
+   * \note This is the default refinement technique.
+   */
   template< int dim >
-  class SPRefinement< dim, SPIsotropicRefinement >
+  class SPIsotropicRefinement
     : public SPDefaultRefinement< SPIsotropicRefinementPolicy< dim > >
   {
-    typedef SPRefinement< dim, SPIsotropicRefinement > This;
+    typedef SPIsotropicRefinement< dim > This;
     typedef SPDefaultRefinement< SPIsotropicRefinementPolicy< dim > > Base;
 
   public:
@@ -331,9 +329,9 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-    SPRefinement () : Base( Policy() ) {}
+    SPIsotropicRefinement () : Base( Policy() ) {}
 
-    explicit SPRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
+    explicit SPIsotropicRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
 
     constexpr unsigned int numChildren () const { return (1 << dimension); }
 
@@ -342,14 +340,20 @@ namespace Dune
 
 
 
-  // SPRefinement (for SPAnisotropicRefinement)
-  // ------------------------------------------
+  // SPAnisotropicRefinement
+  // -----------------------
 
+  /**
+   * \class SPAnisotropicRefinement
+   * \brief the user may choose freely along which axes the grid should be refined
+   *
+   * \note By default, this coincides with SPIsotropicRefinement.
+   */
   template< int dim >
-  class SPRefinement< dim, SPAnisotropicRefinement >
+  class SPAnisotropicRefinement
     : public SPDefaultRefinement< SPAnisotropicRefinementPolicy< dim > >
   {
-    typedef SPRefinement< dim, SPAnisotropicRefinement > This;
+    typedef SPAnisotropicRefinement< dim > This;
     typedef SPDefaultRefinement< SPAnisotropicRefinementPolicy< dim > > Base;
 
   public:
@@ -358,9 +362,9 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-    SPRefinement () : Base( Policy() ) {}
+    SPAnisotropicRefinement () : Base( Policy() ) {}
 
-    explicit SPRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
+    explicit SPAnisotropicRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
 
     using Base::policy;
 
@@ -374,14 +378,22 @@ namespace Dune
 
 
 
-  // SPRefinement (for SPBisectionRefinement)
-  // ----------------------------------------
+  // SPBisectionRefinement
+  // ---------------------
 
+  /**
+   * \class SPBisectionRefinement
+   * \brief  each element is split into 2 children.
+   *
+   * \note The axis along which the elements are split may be chosen by the
+   *       user.
+   *       By default, the axes are cycled periodically.
+   */
   template< int dim >
-  class SPRefinement< dim, SPBisectionRefinement >
+  class SPBisectionRefinement
     : public SPDefaultRefinement< SPBisectionRefinementPolicy< dim > >
   {
-    typedef SPRefinement< dim, SPBisectionRefinement > This;
+    typedef SPBisectionRefinement< dim > This;
     typedef SPDefaultRefinement< SPBisectionRefinementPolicy< dim > > Base;
 
   public:
@@ -390,9 +402,9 @@ namespace Dune
     typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
-    SPRefinement () : Base( Policy() ) {}
+    SPBisectionRefinement () : Base( Policy() ) {}
 
-    SPRefinement ( const This &father, const Policy &policy )
+    SPBisectionRefinement ( const This &father, const Policy &policy )
       : Base( Policy( father.policy(), policy ) )
     {}
 

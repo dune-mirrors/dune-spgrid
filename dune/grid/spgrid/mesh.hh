@@ -1,7 +1,9 @@
 #ifndef DUNE_SPGRID_MESH_HH
 #define DUNE_SPGRID_MESH_HH
 
-#include <dune/common/array.hh>
+#include <array>
+#include <type_traits>
+
 #include <dune/common/iostream.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
@@ -37,8 +39,9 @@ namespace Dune
 
     bool empty () const;
 
-    template< SPRefinementStrategy strategy >
-    This refine ( const SPRefinement< dimension, strategy > &refinement ) const;
+    template< class Refinement >
+    typename std::enable_if< Refinement::dimension == dim, SPMesh< dim > >::type
+    refine ( const Refinement &refinement ) const;
 
     This grow ( int size ) const;
     This grow ( const MultiIndex &size ) const;
@@ -135,9 +138,9 @@ namespace Dune
 
 
   template< int dim >
-  template< SPRefinementStrategy strategy >
-  inline typename SPMesh< dim >::This
-  SPMesh< dim >::refine ( const SPRefinement< dimension, strategy > &refinement ) const
+  template< class Refinement >
+  inline typename std::enable_if< Refinement::dimension == dim, SPMesh< dim > >::type
+  SPMesh< dim >::refine ( const Refinement &refinement ) const
   {
     MultiIndex childBegin, childEnd;
     for( int i = 0; i < dimension; ++i )
@@ -151,8 +154,7 @@ namespace Dune
 
 
   template< int dim >
-  inline typename SPMesh< dim >::This
-  SPMesh< dim >::grow ( const int size ) const
+  inline typename SPMesh< dim >::This SPMesh< dim >::grow ( int size ) const
   {
     MultiIndex begin, end;
     for( int i = 0; i < dim; ++i )

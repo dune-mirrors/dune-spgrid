@@ -7,6 +7,7 @@
 #include <dune/grid/common/indexidset.hh>
 #include <dune/grid/common/gridenums.hh>
 
+#include <dune/grid/spgrid/declaration.hh>
 #include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
@@ -17,9 +18,6 @@ namespace Dune
 
   template< int codim, class Grid >
   class SPEntityPointer;
-
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  class SPGrid;
 
   template< class Grid >
   class SPIndexSet;
@@ -196,12 +194,12 @@ namespace Dune
   // HierarchicSearch for SPGrid
   // ---------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm, class IndexSet >
-  class HierarchicSearch< SPGrid< ct, dim, strategy, Comm >, IndexSet >
-  : public SPHierarchicSearch< SPGrid< ct, dim, strategy, Comm >, IndexSet >
+  template< class ct, int dim, template< int > class Ref, class Comm, class IndexSet >
+  class HierarchicSearch< SPGrid< ct, dim, Ref, Comm >, IndexSet >
+    : public SPHierarchicSearch< SPGrid< ct, dim, Ref, Comm >, IndexSet >
   {
-    typedef SPHierarchicSearch< SPGrid< ct, dim, strategy, Comm >, IndexSet > Base;
-    typedef SPGrid< ct, dim, strategy, Comm > Grid;
+    typedef SPHierarchicSearch< SPGrid< ct, dim, Ref, Comm >, IndexSet > Base;
+    typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
   public:
     typedef typename Base::EntityPointer EntityPointer;

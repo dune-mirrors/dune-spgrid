@@ -74,11 +74,11 @@ namespace Dune
   // DGFGridFactory< SPGrid >
   // ------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  class DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  class DGFGridFactory< SPGrid< ct, dim, Ref, Comm > >
   {
   public:
-    typedef SPGrid< ct, dim, strategy, Comm > Grid;
+    typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
     typedef typename Grid::CollectiveCommunication CollectiveCommunication;
@@ -182,16 +182,16 @@ namespace Dune
   // Implementation of DGFGridFactory< SPGrid >
   // ------------------------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline DGFGridFactory< SPGrid< ct, dim, Ref, Comm > >
     ::DGFGridFactory ( std::istream &input, MPICommunicatorType comm )
   {
     generate( input, SPCommunicationTraits< Comm >::comm( comm ) );
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline DGFGridFactory< SPGrid< ct, dim, Ref, Comm > >
     ::DGFGridFactory ( const std::string &filename, MPICommunicatorType comm )
   {
     std::ifstream input( filename.c_str() );
@@ -202,9 +202,9 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   inline void
-  DGFGridFactory< SPGrid< ct, dim, strategy, Comm > >
+  DGFGridFactory< SPGrid< ct, dim, Ref, Comm > >
     ::generate ( std::istream &input, const CollectiveCommunication &comm )
   {
     dgf::IntervalBlock intervalBlock( input );
@@ -280,10 +280,10 @@ namespace Dune
   // DGFGridInfo< SPGrid >
   // ---------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  struct DGFGridInfo< SPGrid< ct, dim, strategy, Comm > >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  struct DGFGridInfo< SPGrid< ct, dim, Ref, Comm > >
   {
-    typedef SPGrid< ct, dim, strategy, Comm > Grid;
+    typedef SPGrid< ct, dim, Ref, Comm > Grid;
     typedef typename Grid::RefinementPolicy RefinementPolicy;
 
     static int refineStepsForHalf ( const RefinementPolicy &policy = RefinementPolicy() )

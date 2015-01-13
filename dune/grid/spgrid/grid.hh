@@ -34,10 +34,10 @@ namespace Dune
   // -----------------------------
 
 #if HAVE_MPI
-  template< class ct, int dim, SPRefinementStrategy strategy = SPIsotropicRefinement, class Comm = MPI_Comm >
+  template< class ct, int dim, template< int > class Ref = SPIsotropicRefinement, class Comm = MPI_Comm >
   class SPGrid;
 #else
-  template< class ct, int dim, SPRefinementStrategy strategy = SPIsotropicRefinement, class Comm = No_Comm >
+  template< class ct, int dim, template< int > class Ref = SPIsotropicRefinement, class Comm = No_Comm >
   class SPGrid;
 #endif // #if !HAVE_MPI
 
@@ -46,18 +46,18 @@ namespace Dune
   // SPGridFamily
   // ------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   struct SPGridFamily
   {
     struct Traits
     {
-      typedef SPGrid< ct, dim, strategy, Comm > Grid;
+      typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
       typedef SPReferenceCubeContainer< ct, dim > ReferenceCubeContainer;
       typedef typename ReferenceCubeContainer::ReferenceCube ReferenceCube;
       typedef SPDomain< ct, dim > Domain;
       typedef SPMesh< dim > Mesh;
-      typedef SPRefinement< dim, strategy > Refinement;
+      typedef Ref< dim > Refinement;
       typedef typename Refinement::Policy RefinementPolicy;
 
       typedef typename SPCommunicationTraits< Comm >::CollectiveCommunication CollectiveCommunication;
@@ -122,22 +122,22 @@ namespace Dune
    *
    *  \tparam  ct        coordinate type (e.g., double)
    *  \tparam  dim       dimension of the grid
-   *  \tparam  strategy  refinement strategy (default is \ref SPRefinementStrategy "SPIsotropicRefinement")
+   *  \tparam  Ref       refinement (default is SPIsotropicRefinement)
    *  \tparam  Comm      type of communicator (default depends on HAVE_MPI)
    */
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   class SPGrid
-  : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > >
+    : public GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, Ref, Comm > >
   {
-    typedef SPGrid< ct, dim, strategy, Comm > This;
-    typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, strategy, Comm > > Base;
+    typedef SPGrid< ct, dim, Ref, Comm > This;
+    typedef GridDefaultImplementation< dim, dim, ct, SPGridFamily< ct, dim, Ref, Comm > > Base;
 
     friend struct BackupRestoreFacility< This >;
     friend class SPIntersection< const This >;
     friend class SPGridLevel< This >;
 
   public:
-    typedef SPGridFamily< ct, dim, strategy, Comm > GridFamily;
+    typedef SPGridFamily< ct, dim, Ref, Comm > GridFamily;
 
     typedef typename GridFamily::Traits Traits;
 
@@ -473,8 +473,8 @@ namespace Dune
   // Implementation of SPGrid
   // ------------------------
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >::SPGrid ( const CollectiveCommunication &comm )
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >::SPGrid ( const CollectiveCommunication &comm )
   : domain_( Domain::unitCube() ),
     globalMesh_( Mesh::unitMesh() ),
     overlap_( MultiIndex::zero() ),
@@ -487,8 +487,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells,
                const CollectiveCommunication &comm )
   : domain_( domain ),
@@ -503,8 +503,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
                const CollectiveCommunication &comm )
   : domain_( domain ),
@@ -519,8 +519,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const CollectiveCommunication &comm )
   : domain_( a, b ),
@@ -535,8 +535,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
                const MultiIndex &overlap, const CollectiveCommunication &comm )
   : domain_( a, b ),
@@ -551,10 +551,10 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   template< PartitionIteratorType pitype >
-  typename SPGrid< ct, dim, strategy, Comm >::Traits::template Partition< pitype >::LevelGridView
-  SPGrid< ct, dim, strategy, Comm >::levelGridView ( const int level ) const
+  typename SPGrid< ct, dim, Ref, Comm >::Traits::template Partition< pitype >::LevelGridView
+  SPGrid< ct, dim, Ref, Comm >::levelGridView ( const int level ) const
   {
     typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
     typedef typename GridView::Traits::GridViewImp GridViewImpl;
@@ -564,10 +564,10 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   template< PartitionIteratorType pitype >
-  typename SPGrid< ct, dim, strategy, Comm >::Traits::template Partition< pitype >::LeafGridView
-  SPGrid< ct, dim, strategy, Comm >::leafGridView () const
+  typename SPGrid< ct, dim, Ref, Comm >::Traits::template Partition< pitype >::LeafGridView
+  SPGrid< ct, dim, Ref, Comm >::leafGridView () const
   {
     typedef typename Traits::template Partition< pitype >::LeafGridView GridView;
     typedef typename GridView::Traits::GridViewImp GridViewImpl;
@@ -576,69 +576,69 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  typename SPGrid< ct, dim, strategy, Comm >::LevelGridView
-  SPGrid< ct, dim, strategy, Comm >::levelGridView ( const int level ) const
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  typename SPGrid< ct, dim, Ref, Comm >::LevelGridView
+  SPGrid< ct, dim, Ref, Comm >::levelGridView ( const int level ) const
   {
     assert( (level >= 0) && (level <= maxLevel()) );
     return levelGridViews_[ level ];
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  typename SPGrid< ct, dim, strategy, Comm >::LeafGridView
-  SPGrid< ct, dim, strategy, Comm >::leafGridView () const
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  typename SPGrid< ct, dim, Ref, Comm >::LeafGridView
+  SPGrid< ct, dim, Ref, Comm >::leafGridView () const
   {
     return leafGridView_;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline bool SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline bool SPGrid< ct, dim, Ref, Comm >
     ::mark ( const int refCount, const typename Codim< 0 >::Entity &e )
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline int SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline int SPGrid< ct, dim, Ref, Comm >
     ::getMark ( const typename Codim< 0 >::Entity &e ) const
   {
     return 0;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline bool SPGrid< ct, dim, strategy, Comm >::preAdapt ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline bool SPGrid< ct, dim, Ref, Comm >::preAdapt ()
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline bool SPGrid< ct, dim, strategy, Comm >::adapt ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline bool SPGrid< ct, dim, Ref, Comm >::adapt ()
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   template< class DataHandle >
-  inline bool SPGrid< ct, dim, strategy, Comm >
+  inline bool SPGrid< ct, dim, Ref, Comm >
     ::adapt ( AdaptDataHandleInterface< This, DataHandle > &handle )
   {
     return false;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline void SPGrid< ct, dim, strategy, Comm >::postAdapt ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >::postAdapt ()
   {}
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline void SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >
     ::globalRefine ( const int refCount, const RefinementPolicy &policy )
   {
     for( int i = 0; i < refCount; ++i )
@@ -651,9 +651,9 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
   template< class DataHandle >
-  inline void SPGrid< ct, dim, strategy, Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >
     ::globalRefine ( const int refCount,
                      AdaptDataHandleInterface< This, DataHandle > &handle,
                      const RefinementPolicy &policy )
@@ -678,42 +678,42 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline const typename SPGrid< ct, dim, strategy, Comm >::CollectiveCommunication &
-  SPGrid< ct, dim, strategy, Comm >::comm () const
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline const typename SPGrid< ct, dim, Ref, Comm >::CollectiveCommunication &
+  SPGrid< ct, dim, Ref, Comm >::comm () const
   {
     return comm_;
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline const typename SPGrid< ct, dim, strategy, Comm >::GridLevel &
-  SPGrid< ct, dim, strategy, Comm >::gridLevel ( const int level ) const
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline const typename SPGrid< ct, dim, Ref, Comm >::GridLevel &
+  SPGrid< ct, dim, Ref, Comm >::gridLevel ( const int level ) const
   {
     assert( (level >= 0) && (level < int( gridLevels_.size() )) );
     return *gridLevels_[ level ];
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline const typename SPGrid< ct, dim, strategy, Comm >::GridLevel &
-  SPGrid< ct, dim, strategy, Comm >::leafLevel () const
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline const typename SPGrid< ct, dim, Ref, Comm >::GridLevel &
+  SPGrid< ct, dim, Ref, Comm >::leafLevel () const
   {
     assert( !gridLevels_.empty() );
     return *gridLevels_.back();
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline size_t SPGrid< ct, dim, strategy, Comm >::numBoundarySegments () const
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline size_t SPGrid< ct, dim, Ref, Comm >::numBoundarySegments () const
   {
     return boundarySize_;
   }
 
 
   // note: this method ignores the last bit of the macroId
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline size_t SPGrid< ct, dim, strategy, Comm >
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline size_t SPGrid< ct, dim, Ref, Comm >
     ::boundaryIndex ( const MultiIndex &macroId,
                       const unsigned int partitionNumber,
                       const int face ) const
@@ -743,8 +743,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline void SPGrid< ct, dim, strategy, Comm >::clear ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >::clear ()
   {
     levelGridViews_.clear();
     leafGridView_ = LeafGridView( LeafGridViewImpl() );
@@ -757,8 +757,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline void SPGrid< ct, dim, strategy, Comm >::createLocalGeometries ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >::createLocalGeometries ()
   {
     typedef typename Codim< 1 >::LocalGeometryImpl LocalGeometryImpl;
 
@@ -774,8 +774,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline void SPGrid< ct, dim, strategy, Comm >::setupMacroGrid ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >::setupMacroGrid ()
   {
     clear();
 
@@ -790,8 +790,8 @@ namespace Dune
   }
 
 
-  template< class ct, int dim, SPRefinementStrategy strategy, class Comm >
-  inline void SPGrid< ct, dim, strategy, Comm >::setupBoundaryIndices ()
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline void SPGrid< ct, dim, Ref, Comm >::setupBoundaryIndices ()
   {
     const LevelGridView &macroView = levelGridView( 0 );
     const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();

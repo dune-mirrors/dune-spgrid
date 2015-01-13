@@ -26,9 +26,9 @@ namespace Dune
     // TwistUtility for SPGrid
     // -----------------------
 
-    template< class ct, int dim, SPRefinementStrategy strategy, class Comm > 
-    struct TwistUtility< SPGrid< ct, dim, strategy, Comm > > 
-    : public TwistFreeTwistUtility< SPGrid< ct, dim, strategy, Comm > >
+    template< class ct, int dim, template< int > class Ref, class Comm > 
+    struct TwistUtility< SPGrid< ct, dim, Ref, Comm > > 
+      : public TwistFreeTwistUtility< SPGrid< ct, dim, Ref, Comm > >
     {};
 
   } // end namespace Fem 
