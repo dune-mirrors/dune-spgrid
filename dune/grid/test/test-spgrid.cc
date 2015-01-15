@@ -1,7 +1,6 @@
 #include <config.h>
 
 #define NEW_SUBENTITY_NUMBERING 1
-#define DISABLE_DEPRECATED_METHOD_CHECK 1
 
 #ifndef DIMGRID
 #error "DIMGRID not defined. Please compile with -DDIMGRID=n"
