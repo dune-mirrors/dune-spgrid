@@ -34,6 +34,8 @@ namespace Dune
       return 2;
     }
 
+    static std::string type () { return "isotropic"; }
+
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
     operator<< ( std::basic_ostream< char_type, traits > &out, const This &policy )
@@ -86,6 +88,8 @@ namespace Dune
       assert( (i >= 0) && (i < dimension) );
       return ((refDir_ >> i) & 1)+1;
     }
+
+    static std::string type () { return "anisotropic"; }
 
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
@@ -152,6 +156,8 @@ namespace Dune
       return (i == dir_ ? 2 : 1);
     }
 
+    static std::string type () { return "bisection"; }
+
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
     operator<< ( std::basic_ostream< char_type, traits > &out, const This &policy )
@@ -188,24 +194,24 @@ namespace Dune
   // -------------------
 
   template< class P >
-  struct SPDefaultRefinement
+  class SPDefaultRefinement
   {
+    typedef SPDefaultRefinement< P > This;
+
+  public:
     typedef P Policy;
 
     static const int dimension = Policy::dimension;
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
-  protected:
-    explicit SPDefaultRefinement ( const Policy &policy )
-    : policy_( policy )
-    {}
+    explicit SPDefaultRefinement ( const Policy &policy = Policy() ) : policy_( policy ) {}
 
-  public:
-    unsigned int factor ( const int i ) const
-    {
-      return policy().factor( i );
-    }
+    SPDefaultRefinement ( const This &father, const Policy &policy ) : policy_( policy ) {}
+
+    static std::string type () { return Policy::type(); }
+
+    unsigned int factor ( int i ) const { return policy().factor( i ); }
 
     unsigned int numChildren () const
     {
@@ -249,7 +255,7 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
       {
         const unsigned int alpha = factor( i );
-        id[ i ] = alpha*id[ i ] - (alpha / 2);
+        id[ i ] = (alpha * (id[ i ] & ~1)) | (id[ i ] & 1);
       }
     }
 
@@ -257,13 +263,24 @@ namespace Dune
     {
       for( int i = 0; i < dimension; ++i )
       {
-        if( factor( i ) < 2 )
-          continue;
-        id[ i ] ^= 2;
-        if( (id[ i ] & 2) != 0 )
+        const unsigned int alpha = factor( i );
+        id[ i ] = id[ i ] + 2;
+        if( ((id[ i ] % (2*alpha)) & ~1) != 0 )
           return true;
+        id[ i ] -= 2*alpha;
       }
       return false;
+    }
+
+    bool isCopy ( const MultiIndex id ) const
+    {
+      bool copy = true;
+      for( int i = 0; i < dimension; ++i )
+      {
+        const unsigned int alpha = factor( i );
+        copy &= (alpha == 1) | ((id[ i ] % (2*alpha)) == 0);
+      }
+      return copy;
     }
 
     template< class ctype >
@@ -288,6 +305,58 @@ namespace Dune
       return origin;
     }
 
+    const Policy &policy () const { return policy_; }
+
+  private:
+    Policy policy_;
+  };
+
+
+
+  // SPBinaryRefinement
+  // ------------------
+
+  template< class P >
+  class SPBinaryRefinement
+    : public SPDefaultRefinement< P >
+  {
+    typedef SPBinaryRefinement< P > This;
+    typedef SPDefaultRefinement< P > Base;
+
+  public:
+    using Base::dimension;
+
+    typedef typename Base::Policy Policy;
+    typedef typename Base::MultiIndex MultiIndex;
+
+    explicit SPBinaryRefinement ( const Policy &policy = Policy() ) : Base ( policy ) {}
+
+    SPBinaryRefinement ( const This &father, const Policy &policy ) : Base( father, policy ) {}
+
+    using Base::factor;
+
+    void firstChild ( MultiIndex &id ) const
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        const unsigned int alpha = factor( i );
+        id[ i ] = alpha*id[ i ] - (alpha / 2);
+      }
+    }
+
+    bool nextChild ( MultiIndex &id ) const
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        if( factor( i ) < 2 )
+          continue;
+        id[ i ] ^= 2;
+        if( (id[ i ] & 2) != 0 )
+          return true;
+      }
+      return false;
+    }
+
     bool isCopy ( const MultiIndex id ) const
     {
       bool copy = true;
@@ -295,14 +364,6 @@ namespace Dune
         copy &= (factor( i ) == 1) | ((id[ i ] & 3) == 0);
       return copy;
     }
-
-    const Policy &policy () const
-    {
-      return policy_;
-    }
-
-  private:
-    Policy policy_;
   };
 
 
@@ -318,15 +379,14 @@ namespace Dune
    */
   template< int dim >
   class SPIsotropicRefinement
-    : public SPDefaultRefinement< SPIsotropicRefinementPolicy< dim > >
+    : public SPBinaryRefinement< SPIsotropicRefinementPolicy< dim > >
   {
     typedef SPIsotropicRefinement< dim > This;
-    typedef SPDefaultRefinement< SPIsotropicRefinementPolicy< dim > > Base;
+    typedef SPBinaryRefinement< SPIsotropicRefinementPolicy< dim > > Base;
 
   public:
     using Base::dimension;
-    
-    typedef typename Base::MultiIndex MultiIndex;
+
     typedef typename Base::Policy Policy;
 
     SPIsotropicRefinement () : Base( Policy() ) {}
@@ -334,8 +394,6 @@ namespace Dune
     explicit SPIsotropicRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
 
     constexpr unsigned int numChildren () const { return (1 << dimension); }
-
-    static std::string type () { return "isotropic"; }
   };
 
 
@@ -351,15 +409,14 @@ namespace Dune
    */
   template< int dim >
   class SPAnisotropicRefinement
-    : public SPDefaultRefinement< SPAnisotropicRefinementPolicy< dim > >
+    : public SPBinaryRefinement< SPAnisotropicRefinementPolicy< dim > >
   {
     typedef SPAnisotropicRefinement< dim > This;
-    typedef SPDefaultRefinement< SPAnisotropicRefinementPolicy< dim > > Base;
+    typedef SPBinaryRefinement< SPAnisotropicRefinementPolicy< dim > > Base;
 
   public:
     using Base::dimension;
 
-    typedef typename Base::MultiIndex MultiIndex;
     typedef typename Base::Policy Policy;
 
     SPAnisotropicRefinement () : Base( Policy() ) {}
@@ -368,12 +425,7 @@ namespace Dune
 
     using Base::policy;
 
-    unsigned int numChildren () const
-    {
-      return (1 << bitCount( policy().refDir_ ));
-    }
-
-    static std::string type () { return "anisotropic"; }
+    unsigned int numChildren () const { return (1 << bitCount( policy().refDir_ )); }
   };
 
 
@@ -460,8 +512,6 @@ namespace Dune
       assert( dir >= 0 );
       return ((id[ dir ] & 3) == 0);
     }
-
-    static std::string type () { return "bisection"; }
   };
 
 } // namespace Dune
