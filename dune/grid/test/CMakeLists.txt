@@ -1,14 +1,31 @@
-set(DIMGRID 3)
+set( GRIDFILES
+  1dcube.dgf
+  2dcube.dgf
+  3dcube.dgf
+  4dcube.dgf
+  5dcube.dgf
+  6dcube.dgf
+)
 
-set(TESTS bndsegcheck decomposition test-spgrid)
+foreach( gridfile ${GRIDFILES} )
+  configure_file( ${gridfile} ${CMAKE_CURRENT_BINARY_DIR}/${gridfile} COPYONLY )
+endforeach()
 
-foreach(_executable ${TESTS})
-  add_executable(${_executable} EXCLUDE_FROM_ALL ${_executable}.cc)
-  set_property(TARGET ${_executable} APPEND PROPERTY COMPILE_DEFINITIONS "DIMGRID=${DIMGRID}")
-  target_link_libraries(${_executable} ${DUNE_LIBS})
-  add_test(${_executable} ${_executable})
-  add_dune_mpi_flags(${_executable})
-endforeach(_executable ${TESTS})
+foreach( test bndsegcheck decomposition test-spgrid )
+  foreach( dimgrid RANGE 1 6 )
+    set( testtarget ${test}-${dimgrid} )
+    add_executable( ${testtarget} EXCLUDE_FROM_ALL ${test}.cc )
+    target_compile_definitions( ${testtarget} PRIVATE "DIMGRID=${dimgrid}" )
+    add_dune_mpi_flags( ${testtarget} )
+    target_link_dune_default_libraries( ${testtarget} )
+  endforeach()
+endforeach()
 
-add_directory_test_target(test_target)
-add_dependencies(${test_target} ${TESTS}) 
+add_directory_test_target( alltests )
+foreach( test test-spgrid )
+  foreach( dimgrid RANGE 1 6 )
+    set( testtarget ${test}-${dimgrid} )
+    add_test( ${testtarget} ${testtarget} )
+    add_dependencies( ${alltests} ${testtarget} ) 
+  endforeach()
+endforeach()

@@ -3,15 +3,11 @@ DGF
 INTERVAL
 0 0 0 0         % lower left corner
 1 1 1 1         % upper right corner
-3 3 3 3         % number of cells in each direction
-#
-
-BOUNDARYDOMAIN
-DEFAULT 1
+3 2 2 1         % number of cells in each direction
 #
 
 GRIDPARAMETER
-OVERLAP 0
+OVERLAP 1
 #
 
 #

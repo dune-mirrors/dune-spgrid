@@ -6,12 +6,8 @@ INTERVAL
 4 4 4           % number of cells in each direction
 #
 
-BOUNDARYDOMAIN
-DEFAULT 1
-#
-
 GRIDPARAMETER
-OVERLAP 0
+OVERLAP 1
 #
 
 #

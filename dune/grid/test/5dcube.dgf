@@ -1,0 +1,13 @@
+DGF
+
+INTERVAL
+0 0 0 0 0       % lower left corner
+1 1 1 1 1       % upper right corner
+3 2 1 1 1       % number of cells in each direction
+#
+
+GRIDPARAMETER
+OVERLAP 1
+#
+
+#

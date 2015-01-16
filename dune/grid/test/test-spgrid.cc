@@ -161,16 +161,17 @@ void performCheck ( Grid &grid, int maxLevel )
 int main ( int argc, char **argv )
 try
 {
-  Dune::MPIHelper::instance( argc, argv );
+  const Dune::MPIHelper &mpi = Dune::MPIHelper::instance( argc, argv );
 
-  if( argc < 3 )
+  if( (argc > 1) && (std::string( argv[ 1 ] ) == std::string( "--help" )) )
   {
-    std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;
-    return 1;
+    if( mpi.rank() == 0 )
+      std::cerr << "Usage: " << argv[ 0 ] << " <dgf file> <max level>" << std::endl;
+    return 0;
   }
 
-  std::string dgfFile( argv[ 1 ] );
-  const int maxLevel = atoi( argv[ 2 ] );
+  std::string dgfFile( argc > 1 ? argv[ 1 ] : std::to_string( dimGrid ) + "dcube.dgf" );
+  const int maxLevel = (argc > 2 ? atoi( argv[ 2 ] ) : 1);
 
   std::cout << "Isotropic grid" << std::endl;
   Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPIsotropicRefinement > > isoGrid( dgfFile );
