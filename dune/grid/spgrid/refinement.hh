@@ -205,7 +205,7 @@ namespace Dune
 
     typedef SPMultiIndex< dimension > MultiIndex;
 
-    DUNE_INLINE explicit SPArbitraryRefinementPolicy ( int factor = 2 )
+    explicit SPArbitraryRefinementPolicy ( int factor = 2 )
     {
       if( factor <= 0 )
         DUNE_THROW( GridError, "Trying to create arbitrary refinement policy with non-positive factor." );
@@ -222,11 +222,11 @@ namespace Dune
       }
     }
 
-    DUNE_INLINE constexpr unsigned int weight () const { return dimension; }
+    constexpr unsigned int weight () const { return dimension; }
 
     unsigned int factor ( int i ) const { return factor_[ i ]; }
 
-    DUNE_INLINE static std::string type () { return "arbitrary"; }
+    static std::string type () { return "arbitrary"; }
 
     template< class char_type, class traits >
     friend std::basic_ostream< char_type, traits > &
