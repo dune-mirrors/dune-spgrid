@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_REFINEMENT_HH
 #define DUNE_SPGRID_REFINEMENT_HH
 
+#include <algorithm>
+
 #include <dune/common/fvector.hh>
 #include <dune/common/iostream.hh>
 
@@ -186,6 +188,62 @@ namespace Dune
 
   private:
     int dir_;
+  };
+
+
+
+  // SPArbitratyRefinementPolicy
+  // ---------------------------
+
+  template< int dim >
+  class SPArbitraryRefinementPolicy
+  {
+    typedef SPArbitraryRefinementPolicy< dim > This;
+
+  public:
+    static const int dimension = dim;
+
+    typedef SPMultiIndex< dimension > MultiIndex;
+
+    DUNE_INLINE explicit SPArbitraryRefinementPolicy ( int factor = 2 )
+    {
+      if( factor <= 0 )
+        DUNE_THROW( GridError, "Trying to create arbitrary refinement policy with non-positive factor." );
+      std::fill( factor_.begin(), factor_.end(), factor );
+    }
+
+    explicit SPArbitraryRefinementPolicy ( const MultiIndex &factor )
+      : factor_( factor )
+    {
+      for( int i = 0; i < dimension; ++i )
+      {
+        if( factor_[ i ] <= 0 )
+          DUNE_THROW( GridError, "Trying to create arbitrary refinement policy with non-positive factor." );
+      }
+    }
+
+    DUNE_INLINE constexpr unsigned int weight () const { return dimension; }
+
+    unsigned int factor ( int i ) const { return factor_[ i ]; }
+
+    DUNE_INLINE static std::string type () { return "arbitrary"; }
+
+    template< class char_type, class traits >
+    friend std::basic_ostream< char_type, traits > &
+    operator<< ( std::basic_ostream< char_type, traits > &out, const This &policy )
+    {
+      return out << policy.factor_;
+    }
+
+    template< class char_type, class traits >
+    friend std::basic_istream< char_type, traits > &
+    operator>> ( std::basic_istream< char_type, traits > &in, This &policy )
+    {
+      return in >> policy.factor_;
+    }
+
+  private:
+    MultiIndex factor_;
   };
 
 
@@ -513,6 +571,14 @@ namespace Dune
       return ((id[ dir ] & 3) == 0);
     }
   };
+
+
+
+  // SPArbitratyRefinementPolicy
+  // ---------------------------
+
+  template< int dim >
+  using SPArbitraryRefinement = SPDefaultRefinement< SPArbitraryRefinementPolicy< dim > >;
 
 } // namespace Dune
 

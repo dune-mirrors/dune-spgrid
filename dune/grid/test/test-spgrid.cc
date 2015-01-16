@@ -91,14 +91,14 @@ void checkHierarchicSearch ( const GridView &gridView )
 
 
 template< class Grid >
-void performCheck ( Grid &grid, int maxLevel )
+void performCheck ( Grid &grid, int maxLevel, const typename Grid::RefinementPolicy &policy = typename Grid::RefinementPolicy() )
 {
   for( int i = 0; i <= maxLevel; ++i )
   {
     if( i > 0 )
     {
       std::cerr << ">>> Refining grid globally..." << std::endl;
-      grid.globalRefine( 1 );
+      grid.globalRefine( 1, policy );
     }
     std::cerr << ">>> Checking grid..." << std::endl;
     gridcheck( grid );
@@ -186,6 +186,11 @@ try
   std::cout << "Bisection grid" << std::endl;
   Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPBisectionRefinement > > bisectionGrid( dgfFile );
   performCheck( *bisectionGrid, dimGrid*maxLevel );
+
+  std::cout << std::endl;
+  std::cout << "Arbitrary grid" << std::endl;
+  Dune::GridPtr< Dune::SPGrid< double, dimGrid, Dune::SPArbitraryRefinement > > arbitraryGrid( dgfFile );
+  performCheck( *arbitraryGrid, maxLevel, Dune::SPArbitraryRefinementPolicy< dimGrid >( 3 ) );
 
   return 0;
 }
