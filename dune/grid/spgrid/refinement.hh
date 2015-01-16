@@ -1,8 +1,6 @@
 #ifndef DUNE_SPGRID_REFINEMENT_HH
 #define DUNE_SPGRID_REFINEMENT_HH
 
-#include <algorithm>
-
 #include <dune/common/fvector.hh>
 #include <dune/common/iostream.hh>
 
@@ -209,7 +207,8 @@ namespace Dune
     {
       if( factor <= 0 )
         DUNE_THROW( GridError, "Trying to create arbitrary refinement policy with non-positive factor." );
-      std::fill( factor_.begin(), factor_.end(), factor );
+      for( int i = 0; i < dimension; ++i )
+        factor_[ i ] = factor;
     }
 
     explicit SPArbitraryRefinementPolicy ( const MultiIndex &factor )
