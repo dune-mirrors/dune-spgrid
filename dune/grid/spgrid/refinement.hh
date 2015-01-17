@@ -573,11 +573,23 @@ namespace Dune
 
 
 
-  // SPArbitratyRefinementPolicy
-  // ---------------------------
+  // SPArbitratyRefinement
+  // ---------------------
 
   template< int dim >
-  using SPArbitraryRefinement = SPDefaultRefinement< SPArbitraryRefinementPolicy< dim > >;
+  class SPArbitraryRefinement
+    : public SPDefaultRefinement< SPArbitraryRefinementPolicy< dim > >
+  {
+    typedef SPArbitraryRefinement< dim > This;
+    typedef SPDefaultRefinement< SPArbitraryRefinementPolicy< dim > > Base;
+
+  public:
+    typedef typename Base::Policy Policy;
+
+    SPArbitraryRefinement () : Base( Policy() ) {}
+
+    explicit SPArbitraryRefinement ( const This &father, const Policy &policy ) : Base( policy ) {}
+  };
 
 } // namespace Dune
 
