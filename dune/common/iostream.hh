@@ -49,7 +49,20 @@ namespace Dune
       T value_;
     };
 
-  }
+
+
+    template< class char_type, class traits, class T >
+    inline std::basic_istream< char_type, traits > &
+    operator>> ( std::basic_istream< char_type, traits > &in, const Match< T > &match )
+    {
+      T value;
+      in >> value;
+      if( !match( value ) )
+        in.clear( std::ios_base::failbit );
+      return in;
+    }
+
+  } // namespace iostream
 
 
   template< class char_type, class traits >
@@ -76,18 +89,6 @@ namespace Dune
     return iostream::Match< typename iostream::MatchTraits< T >::Type >( value );
   }
 
-
-  template< class char_type, class traits, class T >
-  inline std::basic_istream< char_type, traits > &
-  operator>> ( std::basic_istream< char_type, traits > &in, const iostream::Match< T > &match )
-  {
-    T value;
-    in >> value;
-    if( !match( value ) )
-      in.clear( std::ios_base::failbit );
-    return in;
-  }
-
-}
+} // namespace Dune
 
 #endif // #ifndef DUNE_COMMON_IOSTREAM_HH
