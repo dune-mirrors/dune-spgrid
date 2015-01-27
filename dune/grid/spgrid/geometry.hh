@@ -94,7 +94,7 @@ namespace Dune
     static const int dimension = Base::dimension;
     static const int codimension = Base::codimension;
 
-    typedef SPEntityInfo< Grid, codimension > EntityInfo;
+    typedef __SPGrid::EntityInfo< Grid, codimension > EntityInfo;
     typedef typename EntityInfo::GridLevel GridLevel;
 
     typedef typename Base::ReferenceCube ReferenceCube;

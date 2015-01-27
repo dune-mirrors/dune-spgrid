@@ -37,7 +37,7 @@ namespace Dune
     typedef SPBasicEntity< codim, Grid > This;
 
   public:
-    typedef SPEntityInfo< Grid, codim > EntityInfo;
+    typedef __SPGrid::EntityInfo< Grid, codim > EntityInfo;
     typedef typename EntityInfo::GridLevel GridLevel;
     typedef typename EntityInfo::Traits Traits;
 
@@ -285,7 +285,7 @@ namespace Dune
     const unsigned int partitionNumber = entityInfo().partitionNumber();
     MultiIndex id = entityInfo().id();
     id += gridLevel().referenceCube().subId( codim, i );
-    SPEntityInfo< Grid, codim > subInfo( gridLevel(), id, partitionNumber );
+    __SPGrid::EntityInfo< Grid, codim > subInfo( gridLevel(), id, partitionNumber );
     return SubEntity( SubEntityImpl( std::move( subInfo ) ) );
   }
 

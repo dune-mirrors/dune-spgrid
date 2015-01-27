@@ -108,7 +108,7 @@ namespace Dune
 
     Geometry geometry () const
     {
-      typedef SPEntityInfo< Grid, 1 > EntityInfo;
+      typedef __SPGrid::EntityInfo< Grid, 1 > EntityInfo;
 
       const unsigned int partitionNumber = entityInfo().partitionNumber();
       MultiIndex id = entityInfo().id();

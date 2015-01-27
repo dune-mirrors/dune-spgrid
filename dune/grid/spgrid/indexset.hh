@@ -31,7 +31,7 @@ namespace Dune
     template< int codim >
     struct Codim
     {
-      typedef SPEntityInfo< Grid, codim > EntityInfo;
+      typedef __SPGrid::EntityInfo< Grid, codim > EntityInfo;
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
