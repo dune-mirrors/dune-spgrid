@@ -15,15 +15,11 @@ namespace Dune
   // SPMultiIndex
   // ------------
 
-  /** \class SPMultiIndex
-   *  \brief multiindex
+  /**
+   * \class SPMultiIndex
+   * \brief multiindex
    *
-   *  A structured grid is most easily addressed using a multiindex, which is
-   *  realized through this class.
-   *
-   *  \todo describe increment, codimension and direction - i.e., numbering concept
-   *
-   *  \tparam  dim  dimension of the multiindex
+   * \tparam  dim  dimension of the multiindex
    */
   template< int dim >
   class SPMultiIndex
@@ -196,15 +192,6 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
         codim -= (index_[ i ] & 1);
       return codim;
-    }
-
-    /** \todo please doc me */
-    unsigned int direction () const
-    {
-      unsigned int dir = 0;
-      for( int i = 0; i < dimension; ++i )
-        dir |= (index_[ i ] & 1) << i;
-      return dir;
     }
 
     /** \brief obtain the zero multiindex */
