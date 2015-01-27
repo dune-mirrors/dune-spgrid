@@ -30,41 +30,6 @@ namespace Dune
 
 
   /**
-   * \brief obtain index with greater value in array
-   *
-   * \param[in]  array  array of comparable values
-   * \param[in]  i      first index
-   * \param[in]  j      second index
-   *
-   * \note The array values must implement the operator <.
-   *
-   * \returns i if array[ i ] > array[ j ], j otherwise
-   */
-  template< class Array, class Index >
-  inline Index argmax( const Array &array, Index i, Index j )
-  {
-    return (array[ j ] < array[ i ] ? i : j);
-  }
-
-  /**
-   * \brief obtain index with lesser value in array
-   *
-   * \param[in]  array  array of comparable values
-   * \param[in]  i      first index
-   * \param[in]  j      second index
-   *
-   * \note The array values must implement the operator <.
-   *
-   * \returns i if array[ i ] < array[ j ], j otherwise
-   */
-  template< class Array, class Index >
-  inline Index argmin( const Array &array, Index i, Index j )
-  {
-    return (array[ i ] < array[ j ] ? i : j);
-  }
-
-
-  /**
    * \brief copy a vector, performing an operation on each element
    *
    * \param[in]  in  vector of input data

@@ -1,8 +1,10 @@
 #ifndef DUNE_SPGRID_DECOMPOSITION_HH
 #define DUNE_SPGRID_DECOMPOSITION_HH
 
-#include <dune/grid/spgrid/multiindex.hh>
+#include <algorithm>
+
 #include <dune/grid/spgrid/mesh.hh>
+#include <dune/grid/spgrid/multiindex.hh>
 
 namespace Dune
 {
@@ -72,7 +74,7 @@ namespace Dune
 
       const MultiIndex &width = mesh.width();
       const std::pair< Mesh, Mesh > split
-        = mesh_.split( argmax( width ), leftWeight, rightWeight );
+        = mesh_.split( std::max_element( width.begin(), width.end() ) - width.begin(), leftWeight, rightWeight );
       left_ = new Node( split.first, leftWeight );
       right_ = new Node( split.second, rightWeight );
     }

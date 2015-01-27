@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_MULTIINDEX_HH
 #define DUNE_SPGRID_MULTIINDEX_HH
 
+#include <algorithm>
 #include <limits>
 
 #include <dune/common/array.hh>
@@ -33,6 +34,9 @@ namespace Dune
   public:
     /** \brief dimension of the multiindex */
     static const int dimension = dim;
+
+    typedef const int *ConstIterator;
+    typedef int *Iterator;
 
     /** \brief default constructor
      *
@@ -161,12 +165,18 @@ namespace Dune
         index_[ i ] += a*other.index_[ i ];
     }
 
+    ConstIterator begin () const { return index_; }
+    Iterator begin () { return index_; }
+
+    ConstIterator cbegin () const { return index_; }
+
+    ConstIterator end () const { return index_ + dimension; }
+    Iterator end () { return index_ + dimension; }
+
+    ConstIterator cend () const { return index_ + dimension; }
+
     /** \brief initialize to zero */
-    void clear ()
-    {
-      for( int i = 0; i < dimension; ++i )
-        index_[ i ] = 0;
-    }
+    void clear () { std::fill( begin(), end(), 0 ); }
 
     /** \todo please doc me */
     void increment ( const This &bound, const int k = 1 )
@@ -286,26 +296,6 @@ namespace Dune
     SPMultiIndex< dim > c = a;
     c /= b;
     return c;
-  }
-
-
-  template< int dim >
-  inline int argmax( const SPMultiIndex< dim > &multiIndex )
-  {
-    int m = 0;
-    for( int i = 1; i < dim; ++i )
-      m = argmax( multiIndex, i, m );
-    return m;
-  }
-
-
-  template< int dim >
-  inline int argmin( const SPMultiIndex< dim > &multiIndex )
-  {
-    int m = 0;
-    for( int i = 1; i < dim; ++i )
-      m = argmin( multiIndex, i, m );
-    return m;
   }
 
 } // namespace Dune
