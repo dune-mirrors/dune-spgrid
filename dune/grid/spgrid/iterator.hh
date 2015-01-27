@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ITERATOR_HH
 #define DUNE_SPGRID_ITERATOR_HH
 
+#include <algorithm>
+
 #include <dune/grid/spgrid/misc.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
 
@@ -176,7 +178,7 @@ namespace Dune
       }
     }
     else
-      id = std::numeric_limits< MultiIndex >::max();
+      std::fill( id.begin(), id.end(), std::numeric_limits< int >::max() );
   }
 
 } // namespace Dune

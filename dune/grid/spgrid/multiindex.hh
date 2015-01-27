@@ -2,7 +2,6 @@
 #define DUNE_SPGRID_MULTIINDEX_HH
 
 #include <algorithm>
-#include <limits>
 
 #include <dune/common/array.hh>
 
@@ -327,33 +326,6 @@ namespace std
       c[ i ] = max( a[ i ], b[ i ] );
     return c;
   }
-
-
-
-  // numeric_limits for SPMultiIndex
-  // -------------------------------
-
-  template< int dim >
-  struct numeric_limits< Dune::SPMultiIndex< dim > >
-  {
-    typedef Dune::SPMultiIndex< dim > MultiIndex;
-
-    static MultiIndex min ()
-    {
-      MultiIndex multiIndex;
-      for( int i = 0; i < dim; ++i )
-        multiIndex[ i ] = numeric_limits< int >::min();
-      return multiIndex;
-    }
-
-    static MultiIndex max ()
-    {
-      MultiIndex multiIndex;
-      for( int i = 0; i < dim; ++i )
-        multiIndex[ i ] = numeric_limits< int >::max();
-      return multiIndex;
-    }
-  };
 
 } // namespace std
 

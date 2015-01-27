@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_ENTITYINFO_HH
 #define DUNE_SPGRID_ENTITYINFO_HH
 
+#include <algorithm>
 #include <limits>
 #include <type_traits>
 
@@ -214,7 +215,7 @@ namespace Dune
 
     void update ()
     {
-      assert( id() != std::numeric_limits< MultiIndex >::max() );
+      assert( std::find( id().begin(), id().end(), std::numeric_limits< int >::max() ) == id().end() );
       assert( gridLevel().template partition< All_Partition >().contains( id(), partitionNumber() ) );
       Base::update();
     }
