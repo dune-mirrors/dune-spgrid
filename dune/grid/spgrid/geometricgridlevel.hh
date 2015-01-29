@@ -91,7 +91,7 @@ namespace Dune
     {
       typedef typename Codim< codim >::GeometryCache GeometryCache;
       for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
-        geometryCache[ dirIt->bits() ] = new GeometryCache( h, *dirIt );
+        geometryCache[ (*dirIt).bits() ] = new GeometryCache( h, *dirIt );
     }
   };
 
@@ -107,14 +107,10 @@ namespace Dune
     static void apply ( void *(&geometryCache)[ 1 << dimension ] )
     {
       typedef typename Codim< codim >::GeometryCache GeometryCache;
-      for( unsigned int dir = 0; dir < (1 << dimension); ++dir )
+      for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
       {
-        const int mydim = bitCount( dir );
-        if( mydim == dimension - codim )
-        {
-          delete static_cast< GeometryCache * >( geometryCache[ dir ] );
-          geometryCache[ dir ] = nullptr;
-        }
+        delete static_cast< GeometryCache * >( geometryCache[ (*dirIt).bits() ] );
+        geometryCache[ (*dirIt).bits() ] = nullptr;
       }
     }
   };

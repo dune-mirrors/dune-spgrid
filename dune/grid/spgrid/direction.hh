@@ -1,6 +1,7 @@
 #ifndef DUNE_GRID_SPGRID_DIRECTION_HH
 #define DUNE_GRID_SPGRID_DIRECTION_HH
 
+#include <bitset>
 #include <cassert>
 
 #include <dune/grid/spgrid/misc.hh>
@@ -17,10 +18,8 @@ namespace Dune
   {
     typedef SPDirection< dim > This;
 
-    static_assert( (dim >= 0) && (dim < 8*sizeof( unsigned int )), "Invalid dimension." );
+    static_assert( (dim >= 0) && (dim < 8*sizeof( unsigned long )), "Invalid dimension." );
 
-    template< int, int >
-    friend class SPEntityDirection;
     template< int, int >
     friend class SPDirectionIterator;
 
@@ -29,21 +28,20 @@ namespace Dune
 
     explicit SPDirection ( const SPMultiIndex< dimension > &id );
 
-  private:
-    explicit SPDirection ( unsigned int bits ) : bits_( bits ) { assert( (bits_ & ~((1u << dimension) - 1u)) == 0 ); }
+    explicit SPDirection ( unsigned long bits ) : bits_( bits ) {}
 
-  public:
     bool operator== ( const This &other ) const { return (bits_ == other.bits_); }
     bool operator!= ( const This &other ) const { return (bits_ != other.bits_); }
 
-    unsigned int operator[] ( int i ) const { return ((bits_ >> i) & 1u); }
+    unsigned int operator[] ( int i ) const { return bits_[ i ]; }
 
-    int mydimension () const { return bitCount( bits_, dim ); }
+    int mydimension () const { return bits_.count(); }
+    int codimension () const { return dimension - mydimension(); }
 
-    unsigned int bits () const { return bits_; }
+    unsigned long bits () const { return bits_.to_ulong(); }
 
   private:
-    unsigned int bits_;
+    std::bitset< dimension > bits_;
   };
 
 
@@ -162,8 +160,8 @@ namespace Dune
   public:
     typedef SPDirection< dim > Direction;
 
-    SPDirectionIterator () : direction_( (1u << (dim - codim)) - 1u ) {}
-    explicit SPDirectionIterator ( const Direction &direction ) : direction_( direction ) {}
+    SPDirectionIterator () : bits_( (1u << (dim - codim)) - 1u ) {}
+    explicit SPDirectionIterator ( const Direction &direction ) : bits_( direction.bits() ) {}
 
     SPDirectionIterator ( const This & ) = default;
     SPDirectionIterator ( This && ) = default;
@@ -171,15 +169,14 @@ namespace Dune
     This &operator= ( const This & ) = default;
     This &operator= ( This && ) = default;
 
-    operator bool () const { return (direction_.bits_ != (1u << dim) - (1u << codim) + 1u); }
+    operator bool () const { return (bits_ != ((1u << dim) - (1u << codim) + 1u)); }
 
-    const Direction &operator* () const { return direction_; }
-    const Direction *operator-> () const { return &direction_; }
+    Direction operator* () const { return Direction( bits_ ); }
 
     const This &operator++ ();
 
   private:
-    Direction direction_;
+    unsigned long bits_;
   };
 
 
@@ -192,12 +189,10 @@ namespace Dune
 
 
   template< int dim >
-  inline SPDirection< dim >
-  ::SPDirection ( const SPMultiIndex< dimension > &id )
-    : bits_( 0 )
+  inline SPDirection< dim >::SPDirection ( const SPMultiIndex< dimension > &id )
   {
     for( int i = 0; i < dimension; ++i )
-      bits_ |= ((unsigned int)( id[ i ] & 1 ) << i);
+      bits_[ i ] = (id[ i ] & 1);
   }
 
 
@@ -219,8 +214,8 @@ namespace Dune
   {
     assert( *this );
     do {
-      ++direction_.bits_;
-    } while( *this && (direction_.mydimension() != (dim - codim)) );
+      ++bits_;
+    } while( *this && (Direction( bits_ ).mydimension() != (dim - codim)) );
     return *this;
   }
 

@@ -154,7 +154,7 @@ namespace Dune
 
     for( unsigned int dir = 0; dir < numDirections; ++dir )
     {
-      const int codim = dimension - bitCount( dir );
+      const int codim = SPDirection< dimension >( dir ).codimension();
 
       Sequence *head = new Sequence;
 

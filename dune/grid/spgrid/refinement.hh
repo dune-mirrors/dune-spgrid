@@ -1,6 +1,9 @@
 #ifndef DUNE_SPGRID_REFINEMENT_HH
 #define DUNE_SPGRID_REFINEMENT_HH
 
+#include <algorithm>
+#include <bitset>
+
 #include <dune/common/fvector.hh>
 #include <dune/common/iostream.hh>
 
@@ -68,25 +71,22 @@ namespace Dune
     static const int dimension = dim;
 
     SPAnisotropicRefinementPolicy ()
-      : refDir_( (1 << dimension)-1 )
+      : refDir_( (1u << dimension) - 1u )
     {}
 
-    explicit SPAnisotropicRefinementPolicy ( unsigned int refDir )
+    SPAnisotropicRefinementPolicy ( std::bitset< dimension > refDir )
       : refDir_( refDir )
-    {
-      if( refDir >= (1 << dimension) )
-        DUNE_THROW( GridError, "Trying to create anisotropic refinement policy from invalid value " << refDir << "." );
-    }
+    {}
 
     unsigned int weight () const
     {
-      return bitCount( refDir_ );
+      return refDir_.count();
     }
 
     unsigned int factor ( const int i ) const
     {
       assert( (i >= 0) && (i < dimension) );
-      return ((refDir_ >> i) & 1)+1;
+      return refDir_[ i ]+1;
     }
 
     static std::string type () { return "anisotropic"; }
@@ -95,22 +95,22 @@ namespace Dune
     friend std::basic_ostream< char_type, traits > &
     operator<< ( std::basic_ostream< char_type, traits > &out, const This &policy )
     {
-      return out << policy.refDir_;
+      return out << policy.refDir_.to_ulong();
     }
 
     template< class char_type, class traits >
     friend std::basic_istream< char_type, traits > &
     operator>> ( std::basic_istream< char_type, traits > &in, This &policy )
     {
-      unsigned int refDir;
+      unsigned long refDir;
       in >> refDir;
       if( !in.fail() )
-        policy = This( refDir );
+        policy.refDir_ = refDir;
       return in;
     }
 
   private:
-    unsigned int refDir_;
+    std::bitset< dimension > refDir_;
   };
 
 
@@ -163,23 +163,22 @@ namespace Dune
     operator<< ( std::basic_ostream< char_type, traits > &out, const This &policy )
     {
       assert( (policy.dir_ >= 0) && (policy.dir_ < dimension) );
-      return out << (1 << policy.dir_);
+      return out << (1u << policy.dir_);
     }
 
     template< class char_type, class traits >
     friend std::basic_istream< char_type, traits > &
     operator>> ( std::basic_istream< char_type, traits > &in, This &policy )
     {
-      unsigned int refDir;
-      in >> refDir;
+      unsigned long rd( 0 );
+      in >> rd;
+      std::bitset< dimension > refDir( rd );
       if( !in.fail() )
       {
-        if( bitCount( refDir ) != 1 )
+        if( refDir.count() != 1 )
           DUNE_THROW( GridError, "Trying to create bisection refinement with multiple refined directions." );
-        int dir = -1;
-        for( ; refDir != 0; ++dir )
-          refDir = refDir >> 1;
-        policy = This( dir );
+        for( policy.dir_ = 0; !refDir[ policy.dir_ ]; ++policy.dir_ )
+          continue;
       }
       return in;
     }
@@ -482,7 +481,7 @@ namespace Dune
 
     using Base::policy;
 
-    unsigned int numChildren () const { return (1 << bitCount( policy().refDir_ )); }
+    unsigned int numChildren () const { return (1u << policy().refDir_.count()); }
   };
 
 
