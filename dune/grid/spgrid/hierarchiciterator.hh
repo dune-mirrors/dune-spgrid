@@ -27,9 +27,9 @@ namespace Dune
   protected:
     typedef typename Base::EntityImpl EntityImpl;
 
-  private:
     SPHierarchicIterator () = default;
 
+  private:
     SPHierarchicIterator ( const EntityImpl &entityImpl, int maxLevel )
     : Base( entityImpl ),
       minLevel_( entityImpl.level() ),
