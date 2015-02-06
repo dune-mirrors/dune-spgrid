@@ -13,12 +13,12 @@
 #include <dune/grid/spgrid.hh>
 #include <dune/grid/spgrid/dgfparser.hh>
 
-#include <dune/grid/test/gridcheck.cc>
-#include <dune/grid/test/checkintersectionit.cc>
-#include <dune/grid/test/checkgeometryinfather.cc>
-#include <dune/grid/test/checkiterators.cc>
-#include <dune/grid/test/checkpartition.cc>
-#include <dune/grid/test/checkcommunicate.cc>
+#include <dune/grid/test/gridcheck.hh>
+#include <dune/grid/test/checkintersectionit.hh>
+#include <dune/grid/test/checkgeometryinfather.hh>
+#include <dune/grid/test/checkiterators.hh>
+#include <dune/grid/test/checkpartition.hh>
+#include <dune/grid/test/checkcommunicate.hh>
 
 #include "checkidcommunication.hh"
 #include "checkseiterator.hh"
