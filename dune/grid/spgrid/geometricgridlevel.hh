@@ -1,12 +1,16 @@
 #ifndef DUNE_SPGRID_GEOMETRICGRIDLEVEL_HH
 #define DUNE_SPGRID_GEOMETRICGRIDLEVEL_HH
 
+#include <array>
 #include <cassert>
 
 #include <dune/common/forloop.hh>
 
+#include <dune/geometry/dimension.hh>
+
 #include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/geometrycache.hh>
+#include <dune/grid/spgrid/normal.hh>
 #include <dune/grid/spgrid/referencecube.hh>
 
 namespace Dune
@@ -62,10 +66,20 @@ namespace Dune
     const GlobalVector &h () const { return h_; }
 
     template< int codim >
-    const typename Codim< codim >::GeometryCache &geometryCache ( Direction dir ) const;
+    const typename Codim< codim >::GeometryCache &
+    geometryCache ( Direction dir, Dune::Codim< codim > = Dune::Codim< codim >() ) const
+    {
+      assert( dir.mydimension() == dimension - codim );
+      return *static_cast< const typename Codim< codim >::GeometryCache * >( geometryCache_[ dir.bits() ] );
+    }
 
-    ctype faceVolume ( const int i ) const;
-    const GlobalVector &volumeNormal ( const int i ) const;
+    const typename Codim< 0 >::GeometryCache &geometryCache ( Dune::Codim< 0 > ) const
+    {
+      SPDirectionIterator< dimension, 0 > dirIt;
+      return geometryCache< 0 >( *dirIt );
+    }
+
+    ctype faceVolume ( int i ) const { assert( (i >= 0) && (i < ReferenceCube::numFaces) ); return faceVolume_[ i ]; }
 
   private:
     void buildGeometry ();
@@ -73,9 +87,8 @@ namespace Dune
     const ReferenceCubeContainer &refCubes_;
 
     GlobalVector h_;
-    void *geometryCache_[ numDirections ];
-    ctype faceVolume_[ ReferenceCube::numFaces ];
-    GlobalVector normal_[ ReferenceCube::numFaces ];
+    std::array< void *, numDirections > geometryCache_;
+    std::array< ctype, ReferenceCube::numFaces > faceVolume_;
   };
 
 
@@ -87,7 +100,7 @@ namespace Dune
   template< int codim >
   struct SPGeometricGridLevel< ct, dim >::BuildGeometryCache
   {
-    static void apply ( const GlobalVector &h, void *(&geometryCache)[ 1 << dimension ] )
+    static void apply ( const GlobalVector &h, std::array< void *, numDirections > &geometryCache )
     {
       typedef typename Codim< codim >::GeometryCache GeometryCache;
       for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
@@ -104,12 +117,11 @@ namespace Dune
   template< int codim >
   struct SPGeometricGridLevel< ct, dim >::DestroyGeometryCache
   {
-    static void apply ( void *(&geometryCache)[ 1 << dimension ] )
+    static void apply ( std::array< void *, numDirections > &geometryCache )
     {
-      typedef typename Codim< codim >::GeometryCache GeometryCache;
       for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
       {
-        delete static_cast< GeometryCache * >( geometryCache[ (*dirIt).bits() ] );
+        delete static_cast< typename Codim< codim >::GeometryCache * >( geometryCache[ (*dirIt).bits() ] );
         geometryCache[ (*dirIt).bits() ] = nullptr;
       }
     }
@@ -147,46 +159,16 @@ namespace Dune
 
 
   template< class ct, int dim >
-  template< int codim >
-  inline const typename SPGeometricGridLevel< ct, dim >::template Codim< codim >::GeometryCache &
-  SPGeometricGridLevel< ct, dim >::geometryCache ( Direction dir ) const
-  {
-    typedef typename Codim< codim >::GeometryCache GeometryCache;
-    assert( dir.mydimension() == dimension - codim );
-    return *static_cast< const GeometryCache * >( geometryCache_[ dir.bits() ] );
-  }
-
-
-  template< class ct, int dim >
-  inline typename SPGeometricGridLevel< ct, dim >::ctype
-  SPGeometricGridLevel< ct, dim >::faceVolume ( const int i ) const
-  {
-    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
-    return faceVolume_[ i ];
-  }
-
-
-  template< class ct, int dim >
-  inline const typename SPGeometricGridLevel< ct, dim >::GlobalVector &
-  SPGeometricGridLevel< ct, dim >::volumeNormal ( const int i ) const
-  {
-    assert( (i >= 0) && (i < ReferenceCube::numFaces) );
-    return normal_[ i ];
-  }
-
-
-  template< class ct, int dim >
   inline void SPGeometricGridLevel< ct, dim >::buildGeometry ()
   {
     ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
     
-    SPDirectionIterator< dimension, 0 > dirIt;
-    const ctype volume = geometryCache< 0 >( *dirIt ).volume();
+    const ctype volume = geometryCache( Dune::Codim< 0 >() ).volume();
     for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {
-      normal_[ face ] = referenceCube().normal( face );
-      faceVolume_[ face ] = std::abs( volume / (normal_[ face ] * h_) );
-      normal_[ face ] *= faceVolume_[ face ];
+      SPNormalId< dimension > normalId( face );
+      SPNormalVector< ctype, dimension > normal( normalId );
+      faceVolume_[ face ] = std::abs( volume / (normal * h_) );
     }
   }
 

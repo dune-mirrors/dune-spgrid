@@ -48,7 +48,6 @@ namespace Dune
     static const int dimension = dim;
 
     typedef FieldVector< ctype, dimension > GlobalVector;
-    typedef SPNormalVector< ctype, dimension > NormalVector;
     typedef SPMultiIndex< dimension > MultiIndex;
 
     static const int numCorners = (1 << dimension);
@@ -74,15 +73,6 @@ namespace Dune
     /** \brief return center */
     static GlobalVector center ();
 
-
-    NormalVector normal ( const int i ) const
-    {
-      assert( (i >= 0) && (i < numFaces) );
-      NormalVector normal( i / 2, 2*(i&1)-1 );
-      assert( normal == normal_[ i ] );
-      return normal;
-    }
-
   private:
     void subId ( const unsigned int dimension, const unsigned int codim,
                  const unsigned int i, MultiIndex &sId ) const
@@ -107,7 +97,6 @@ namespace Dune
     }
 
     std::vector< MultiIndex > subId_[ dimension+1 ];
-    GlobalVector normal_[ numFaces ];
   };
 
 
@@ -121,15 +110,6 @@ namespace Dune
       subId_[ codim ].resize( size );
       for( unsigned int i = 0; i < size; ++i )
         subId( dimension, codim, i, subId_[ codim ][ i ] );
-    }
-
-    for( int i = 0; i < numFaces; ++i )
-    {
-      for( int j = 0; j < dimension; ++j )
-      {
-        const MultiIndex &sid = subId( 1, i );
-        normal_[ i ][ j ] = ctype( sid[ j ] );
-      }
     }
   }
 

@@ -58,7 +58,7 @@ namespace Dune
     typedef typename EntityImpl::GridLevel GridLevel;
 
     typedef typename GeometryImpl::LocalVector LocalVector;
-    typedef typename ReferenceCube::NormalVector NormalVector;
+    typedef SPNormalVector< ctype, dimensionworld > NormalVector;
 
   private:
     typedef typename EntityInfo::MultiIndex MultiIndex;
