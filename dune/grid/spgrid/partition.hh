@@ -1,13 +1,15 @@
 #ifndef DUNE_SPGRID_PARTITION_HH
 #define DUNE_SPGRID_PARTITION_HH
 
+#include <array>
 #include <limits>
 
-#include <dune/common/array.hh>
 #include <dune/common/iostream.hh>
 
+#include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/mesh.hh>
+#include <dune/grid/spgrid/normal.hh>
 
 namespace Dune
 {
@@ -27,16 +29,25 @@ namespace Dune
 
     typedef SPDirection< dimension > Direction;
 
-    SPBasicPartition ( const MultiIndex &begin, const MultiIndex &end );
+    SPBasicPartition ( const MultiIndex &begin, const MultiIndex &end ) : bound_{{ begin, end }} {}
 
-    const MultiIndex &begin () const;
-    const MultiIndex &end () const;
+    const MultiIndex &begin () const { return bound( 0 ); }
+    const MultiIndex &end () const { return bound( 1 ); }
 
-    const MultiIndex &bound ( const unsigned int b ) const;
-    int bound ( const unsigned int b, const int i,
-                const unsigned int d ) const;
+    const MultiIndex &bound ( unsigned int b ) const { assert( b == (b & 1) ); return bound_[ b ]; }
 
-    This intersect ( const This &other ) const;
+    int bound ( unsigned int b, int i, unsigned int d ) const
+    {
+      assert( d == (d & 1) );
+      return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ d) & 1);
+    }
+
+    int bound ( const SPNormalId< dimension > &id ) const { return bound( id.face() & 1 ) * id; }
+
+    This intersect ( const This &other ) const
+    {
+      return This( std::max( begin(), other.begin() ), std::min( end(), other.end() ) );
+    }
 
     bool contains ( const MultiIndex &id ) const;
 
@@ -45,7 +56,7 @@ namespace Dune
 
     int volume () const;
     MultiIndex width () const;
-    int width ( const int i ) const;
+    int width ( int i ) const { return std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 ); }
 
     template< class char_type, class traits >
     void print ( std::basic_ostream< char_type, traits > &out ) const;
@@ -54,7 +65,7 @@ namespace Dune
     void print ( std::basic_ostream< char_type, traits > &out, const int i ) const;
 
   private:
-    Dune::array< MultiIndex, 2 > bound_;
+    std::array< MultiIndex, 2 > bound_;
   };
 
 
@@ -64,7 +75,7 @@ namespace Dune
 
   template< int dim >
   class SPPartition
-  : public SPBasicPartition< dim >
+    : public SPBasicPartition< dim >
   {
     typedef SPPartition< dim > This;
     typedef SPBasicPartition< dim > Base;
@@ -101,58 +112,6 @@ namespace Dune
 
   // Implementation of SPBasicPartition
   // ----------------------------------
-
-  template< int dim >
-  SPBasicPartition< dim >
-   ::SPBasicPartition ( const MultiIndex &begin, const MultiIndex &end )
-  {
-    bound_[ 0 ] = begin;
-    bound_[ 1 ] = end;
-  }
-
-
-  template< int dim >
-  inline const typename SPBasicPartition< dim >::MultiIndex &
-  SPBasicPartition< dim >::begin () const
-  {
-    return bound_[ 0 ];
-  }
-
-
-  template< int dim >
-  inline const typename SPBasicPartition< dim >::MultiIndex &
-  SPBasicPartition< dim >::end () const
-  {
-    return bound_[ 1 ];
-  }
-
-
-  template< int dim >
-  inline const typename SPBasicPartition< dim >::MultiIndex &
-  SPBasicPartition< dim >::bound ( const unsigned int b ) const
-  {
-    assert( b == (b & 1) );
-    return bound_[ b ];
-  }
-
-
-  template< int dim >
-  inline int
-  SPBasicPartition< dim >::bound ( const unsigned int b, const int i,
-                                   const unsigned int d ) const
-  {
-    assert( d == (d & 1) );
-    return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ d) & 1);
-  }
-
-
-  template< int dim >
-  inline typename SPBasicPartition< dim >::This
-  SPBasicPartition< dim >::intersect ( const This &other ) const
-  {
-    return This( std::max( begin(), other.begin() ), std::min( end(), other.end() ) );
-  }
-
 
   template< int dim >
   inline bool SPBasicPartition< dim >::contains ( const MultiIndex &id ) const
@@ -202,13 +161,6 @@ namespace Dune
     for( int i = 0; i < dimension; ++i )
       w[ i ] = width( i );
     return w;
-  }
-
-
-  template< int dim >
-  inline int SPBasicPartition< dim >::width ( const int i ) const
-  {
-    return std::max( (end()[ i ]+1)/2 - begin()[ i ]/2, 0 );
   }
 
 

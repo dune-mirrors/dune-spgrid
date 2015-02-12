@@ -3,6 +3,8 @@
 
 #include <dune/common/fvector.hh>
 
+#include <dune/grid/spgrid/multiindex.hh>
+
 namespace Dune
 {
 
@@ -24,7 +26,7 @@ namespace Dune
 
     typedef Dune::FieldVector< field_type, dim > FieldVector;
 
-    SPNormalVector ( const size_type i, const field_type &p );
+    SPNormalVector ( size_type i, const field_type &p ) : i_( i ), p_( p ) {}
 
     operator FieldVector () const
     {
@@ -50,6 +52,35 @@ namespace Dune
   private:
     size_type i_;
     field_type p_;
+  };
+
+
+
+  // SPNormalId
+  // ----------
+
+  template< int dim >
+  class SPNormalId
+  {
+    typedef SPNormalId< dim > This;
+
+  public:
+    static const int dimension = dim;
+
+    explicit SPNormalId ( int face ) : face_( face ) {}
+
+    template< class ct >
+    operator SPNormalVector< ct, dimension > () const
+    {
+      return SPNormalVector< ct, dimension >( face() >> 1, 2*(face() & 1)-1 );
+    }
+
+    This operator- () const { return This( face_ ^ 1 ); }
+
+    int face () const { return face_; }
+
+  private:
+    int face_;
   };
 
 
@@ -111,13 +142,6 @@ namespace Dune
 
   // Implementation of SPNormalVector
   // --------------------------------
-
-  template< class ct, int dim >
-  inline SPNormalVector< ct, dim >
-    ::SPNormalVector ( const size_type i, const field_type &p )
-  : i_( i ), p_( p )
-  {}
-
 
   template< class ct, int dim >
   inline typename SPNormalVector< ct, dim >::This &
@@ -196,6 +220,59 @@ namespace Dune
   SPNormalVector< ct, dim >::infinity_norm () const
   {
     return std::abs( p_ );
+  }
+
+
+
+  // Auxilliary Functions for SPNormalId
+  // -----------------------------------
+
+  template< int dim >
+  inline SPMultiIndex< dim > operator+ ( const SPMultiIndex< dim > &idA, const SPNormalId< dim > &idB )
+  {
+    SPMultiIndex< dim > idC( idA );
+    idC[ idB.face() >> 1 ] += 2*(idB.face() & 1) - 1;
+    return idC;
+  }
+
+
+  template< int dim >
+  inline SPMultiIndex< dim > operator+ ( const SPNormalId< dim > &idA, const SPMultiIndex< dim > &idB )
+  {
+    SPMultiIndex< dim > idC( idB );
+    idC[ idA.face() >> 1 ] += 2*(idA.face() & 1) - 1;
+    return idC;
+  }
+
+
+  template< int dim >
+  inline SPMultiIndex< dim > operator- ( const SPMultiIndex< dim > &idA, const SPNormalId< dim > &idB )
+  {
+    SPMultiIndex< dim > idC( idA );
+    idC[ idB.face() >> 1 ] -= 2*(idB.face() & 1) - 1;
+    return idC;
+  }
+
+
+  template< int dim >
+  inline SPMultiIndex< dim > operator- ( const SPNormalId< dim > &idA, const SPMultiIndex< dim > &idB )
+  {
+    SPMultiIndex< dim > idC( -idB );
+    idC[ idA.face() >> 1 ] += 2*(idA.face() & 1) - 1;
+    return idC;
+  }
+
+
+  template< int dim >
+  inline int operator* ( const SPMultiIndex< dim > &idA, const SPNormalId< dim > &idB )
+  {
+    return (2*(idB.face() & 1) - 1) * idA[ idB.face() >> 1 ];
+  }
+
+  template< int dim >
+  inline int operator* ( const SPNormalId< dim > &idA, const SPMultiIndex< dim > &idB )
+  {
+    return (2*(idA.face() & 1) - 1) * idB[ idA.face() >> 1 ];
   }
 
 } // namespace Dune

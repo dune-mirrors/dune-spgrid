@@ -8,6 +8,7 @@
 
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/refinement.hh>
+#include <dune/grid/spgrid/normal.hh>
 
 namespace Dune
 {
@@ -32,10 +33,12 @@ namespace Dune
     const This &operator+= ( const MultiIndex &shift );
     const This &operator-= ( const MultiIndex &shift );
 
-    const MultiIndex &begin () const;
-    const MultiIndex &end () const;
+    const MultiIndex &begin () const { return bound( 0 ); }
+    const MultiIndex &end () const { return bound( 1 ); }
 
-    const MultiIndex &bound ( const int b ) const;
+    const MultiIndex &bound ( int b ) const { assert( (b == 0) || (b == 1) ); return bound_[ b ]; }
+
+    int bound ( const SPNormalId< dimension > &id ) const { return bound( id.face() & 1 ) * id; }
 
     bool empty () const;
 
@@ -99,31 +102,6 @@ namespace Dune
     for( int b = 0; b < 2; ++b )
       bound_[ b ] -= shift;
     return *this;
-  }
-
-
-  template< int dim >
-  inline const typename SPMesh< dim >::MultiIndex &
-  SPMesh< dim >::begin () const
-  {
-    return bound( 0 );
-  }
-
-
-  template< int dim >
-  inline const typename SPMesh< dim >::MultiIndex &
-  SPMesh< dim >::end () const
-  {
-    return bound( 1 );
-  }
-
-
-  template< int dim >
-  inline const typename SPMesh< dim >::MultiIndex &
-  SPMesh< dim >::bound ( const int b ) const
-  {
-    assert( (b == 0) || (b == 1) );
-    return bound_[ b ];
   }
 
 
