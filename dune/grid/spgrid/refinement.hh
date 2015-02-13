@@ -317,10 +317,7 @@ namespace Dune
     void firstChild ( MultiIndex &id ) const
     {
       for( int i = 0; i < dimension; ++i )
-      {
-        const unsigned int alpha = factor( i );
-        id[ i ] = (alpha * (id[ i ] & ~1)) | (id[ i ] & 1);
-      }
+        id[ i ] = (factor( i ) * (id[ i ] & ~1)) | (id[ i ] & 1);
     }
 
     bool nextChild ( MultiIndex &id ) const
@@ -328,10 +325,11 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
       {
         const unsigned int alpha = factor( i );
-        id[ i ] = id[ i ] + 2;
+        const int step = 2*(id[ i ] & 1);
+        id[ i ] += step;
         if( ((id[ i ] % (2*alpha)) & ~1) != 0 )
           return true;
-        id[ i ] -= 2*alpha;
+        id[ i ] -= alpha*step;
       }
       return false;
     }
@@ -412,7 +410,7 @@ namespace Dune
       for( int i = 0; i < dimension; ++i )
       {
         const unsigned int alpha = factor( i );
-        id[ i ] = alpha*id[ i ] - (alpha / 2);
+        id[ i ] = alpha*id[ i ] - (alpha / 2)*(id[ i ] & 1);
       }
     }
 
@@ -422,7 +420,7 @@ namespace Dune
       {
         if( factor( i ) < 2 )
           continue;
-        id[ i ] ^= 2;
+        id[ i ] ^= 2*(id[ i ] & 1);
         if( (id[ i ] & 2) != 0 )
           return true;
       }
@@ -574,14 +572,14 @@ namespace Dune
     {
       const int dir = policy().dir_;
       assert( dir >= 0 );
-      id[ dir ] = 2*id[ dir ] - 1;
+      id[ dir ] = 2*id[ dir ] - (id[ dir ] & 1);
     }
 
     bool nextChild ( MultiIndex &id ) const
     {
       const int dir = policy().dir_;
       assert( dir >= 0 );
-      id[ dir ] ^= 2;
+      id[ dir ] ^= 2*(id[ dir ] & 1);
       return ((id[ dir ] & 2) != 0);
     }
 
