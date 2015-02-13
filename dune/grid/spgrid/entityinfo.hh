@@ -16,42 +16,78 @@ namespace Dune
   namespace __SPGrid
   {
 
-    // BasicEntityInfo
-    // ---------------
+    // EntityInfo
+    // ----------
 
-    template< class Grid, int dim, int codim >
-    class BasicEntityInfo
+    template< class Grid, int codim >
+    class EntityInfo
     {
-      typedef BasicEntityInfo< Grid, dim, codim > This;
-
-      typedef SPEntityDirection< dim, dim - codim > EntityDirection;
+      typedef EntityInfo< Grid, codim > This;
 
     public:
       typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
       static const int dimension = GridLevel::dimension;
+      static const int codimension = codim;
+      static const int mydimension = dimension - codimension;
+
+    private:
+      typedef SPEntityDirection< dimension, mydimension > EntityDirection;
+
+    public:
+      typedef typename EntityDirection::Direction Direction;
 
       typedef typename GridLevel::MultiIndex MultiIndex;
       typedef typename GridLevel::GlobalVector GlobalVector;
 
-      typedef typename EntityDirection::Direction Direction;
+      typedef typename GridLevel::Traits Traits;
 
-      BasicEntityInfo () : gridLevel_( nullptr ) {}
+      typedef typename GridLevel::template Codim< codimension >::GeometryCache GeometryCache;
 
-      BasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
-
-      BasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id )
-        : gridLevel_( &gridLevel ), id_( id ), direction_( id )
+      EntityInfo ()
+        : gridLevel_( nullptr ),
+          partitionNumber_( std::numeric_limits< unsigned int >::max() )
       {}
 
-      Direction direction () const { return direction_; }
+      EntityInfo ( const GridLevel &gridLevel )
+        : gridLevel_( &gridLevel ),
+          partitionNumber_( std::numeric_limits< unsigned int >::max() )
+      {}
+
+      EntityInfo ( const GridLevel &gridLevel, const MultiIndex &id, unsigned int partitionNumber )
+        : gridLevel_( &gridLevel ),
+          id_( id ),
+          direction_( id ),
+          partitionNumber_( partitionNumber )
+      {}
+
+      // access member data
+
+      const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
 
       const MultiIndex &id () const { return id_; }
       MultiIndex &id () { return id_; }
 
-      const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
+      Direction direction () const { return direction_; }
 
-      void update () { direction_ = EntityDirection( id() ); }
+      unsigned int partitionNumber () const { return partitionNumber_; }
+
+      // convenience to implement entity
+
+      bool equals ( const This &other ) const
+      {
+        return (&gridLevel() == &other.gridLevel()) && (id() == other.id());
+      }
+
+      PartitionType partitionType () const
+      {
+        return gridLevel().template partitionType< codimension >( id(), partitionNumber() );
+      }
+
+      const GeometryCache &geometryCache () const
+      {
+        return gridLevel().template geometryCache< codimension >( direction() );
+      }
 
       // hierarchic traversal
 
@@ -81,78 +117,13 @@ namespace Dune
         return gridLevel().refinement().nextChild( id() );
       }
 
-    private:
-      const GridLevel *gridLevel_;
-      MultiIndex id_;
-      EntityDirection direction_;
-    };
-
-
-
-    // EntityInfo
-    // ----------
-
-    template< class Grid, int codim >
-    class EntityInfo
-      : public BasicEntityInfo< Grid, std::remove_const< Grid >::type::dimension, codim >
-    {
-      typedef EntityInfo< Grid, codim > This;
-      typedef BasicEntityInfo< Grid, std::remove_const< Grid >::type::dimension, codim > Base;
-
-    public:
-      typedef typename Base::GridLevel GridLevel;
-
-      typedef typename GridLevel::Traits Traits;
-      typedef typename GridLevel::ctype ctype;
-
-      static const int dimension = GridLevel::dimension;
-      static const int codimension = codim;
-      static const int mydimension = dimension - codimension;
-
-      typedef typename GridLevel::MultiIndex MultiIndex;
-      typedef typename GridLevel::GlobalVector GlobalVector;
-
-      typedef typename GridLevel::template Codim< codim >::GeometryCache GeometryCache;
-      typedef typename GeometryCache::LocalVector LocalVector;
-
-      EntityInfo () : Base(), partitionNumber_( std::numeric_limits< unsigned int >::max() ) {}
-
-      EntityInfo ( const GridLevel &gridLevel )
-        : Base( gridLevel ),
-          partitionNumber_( std::numeric_limits< unsigned int >::max() )
-      {}
-
-      EntityInfo ( const GridLevel &gridLevel, const MultiIndex &id, unsigned int partitionNumber )
-        : Base( gridLevel, id ),
-          partitionNumber_( partitionNumber )
-      {}
-
-      using Base::direction;
-      using Base::id;
-      using Base::gridLevel;
-
-      bool equals ( const This &other ) const
-      {
-        return (&gridLevel() == &other.gridLevel()) && (id() == other.id());
-      }
-
-      unsigned int partitionNumber () const { return partitionNumber_; }
-
-      PartitionType partitionType () const
-      {
-        return gridLevel().template partitionType< codim >( id(), partitionNumber() );
-      }
-
-      const GeometryCache &geometryCache () const
-      {
-        return gridLevel().template geometryCache< codim >( direction() );
-      }
+      // manipulation methods
 
       void update ()
       {
         assert( std::find( id().begin(), id().end(), std::numeric_limits< int >::max() ) == id().end() );
         assert( gridLevel().template partition< All_Partition >().contains( id(), partitionNumber() ) );
-        Base::update();
+        direction_ = EntityDirection( id() );
       }
 
       void update ( unsigned int partitionNumber )
@@ -162,6 +133,9 @@ namespace Dune
       }
 
     private:
+      const GridLevel *gridLevel_;
+      MultiIndex id_;
+      EntityDirection direction_;
       unsigned int partitionNumber_;
     };
 
