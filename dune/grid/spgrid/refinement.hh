@@ -280,7 +280,15 @@ namespace Dune
     void father ( MultiIndex &id ) const
     {
       for( int i = 0; i < dimension; ++i )
-        id[ i ] = ((id[ i ] / factor( i )) & ~1) | (id[ i ] & 1);
+        id[ i ] = (id[ i ] / factor( i )) | (id[ i ] & 1);
+    }
+
+    bool hasFather ( const MultiIndex &id ) const
+    {
+      bool hasFather = true;
+      for( int i = 0; i < dimension; ++i )
+        hasFather &= (id[ i ] & 1) | ((id[ i ] % (2*factor( i ))) == 0);
+      return hasFather;
     }
 
     void child ( MultiIndex &id, unsigned int index ) const
@@ -390,6 +398,14 @@ namespace Dune
     SPBinaryRefinement ( const This &father, const Policy &policy ) : Base( father, policy ) {}
 
     using Base::factor;
+
+    bool hasFather ( const MultiIndex &id ) const
+    {
+      bool hasFather = true;
+      for( int i = 0; i < dimension; ++i )
+        hasFather &= ((id[ i ] & 3) != 2);
+      return hasFather;
+    }
 
     void firstChild ( MultiIndex &id ) const
     {
@@ -527,7 +543,14 @@ namespace Dune
     {
       const int dir = policy().dir_;
       assert( dir >= 0 );
-      id[ dir ] = ((id[ dir ] / 2) & ~1) | (id[ dir ] & 1);
+      id[ dir ] = (id[ dir ] / 2) | (id[ dir ] & 1);
+    }
+
+    bool hasFather ( const MultiIndex &id ) const
+    {
+      const int dir = policy().dir_;
+      assert( dir >= 0 );
+      return ((id[ dir ] & 3) != 2);
     }
 
     void child ( MultiIndex &id, unsigned int index ) const
