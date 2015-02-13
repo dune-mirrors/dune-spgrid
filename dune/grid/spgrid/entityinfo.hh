@@ -53,66 +53,32 @@ namespace Dune
 
       void update () { direction_ = EntityDirection( id() ); }
 
-    private:
-      const GridLevel *gridLevel_;
-      MultiIndex id_;
-      EntityDirection direction_;
-    };
+      // hierarchic traversal
 
-
-
-    // BasicEntityInfo (for codim = 0)
-    // -------------------------------
-
-    template< class Grid, int dim >
-    class BasicEntityInfo< Grid, dim, 0 >
-    {
-      typedef BasicEntityInfo< Grid, dim, 0 > This;
-
-      typedef SPEntityDirection< dim, dim > EntityDirection;
-
-    public:
-      typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
-
-      static const int dimension = GridLevel::dimension;
-
-      typedef typename GridLevel::MultiIndex MultiIndex;
-      typedef typename GridLevel::GlobalVector GlobalVector;
-
-      typedef typename EntityDirection::Direction Direction;
-
-      BasicEntityInfo () : gridLevel_( nullptr ) {}
-      BasicEntityInfo ( const GridLevel &gridLevel ) : gridLevel_( &gridLevel ) {}
-      BasicEntityInfo ( const GridLevel &gridLevel, const MultiIndex &id ) : gridLevel_( &gridLevel ), id_( id ), direction_( id ) {}
-
-      Direction direction () const { return direction_; }
-
-      const MultiIndex &id () const { return id_; }
-      MultiIndex &id () { return id_; }
-
-      const GridLevel &gridLevel () const { assert( gridLevel_ ); return *gridLevel_; }
-
-      void update () { direction_ = EntityDirection( id() ); }
-
-      void down ()
+      bool hasFather () const
       {
-        const Grid &grid = gridLevel().grid();
-        const int level = gridLevel().level();
-        gridLevel_ = &grid.gridLevel( level+1 );
-        gridLevel().refinement().firstChild( id_ );
+        return ((codim == 0) || gridLevel().refinement().hasFather( id() ));
       }
 
       void up ()
       {
         const Grid &grid = gridLevel().grid();
         const int level = gridLevel().level();
-        gridLevel().refinement().father( id_ );
+        gridLevel().refinement().father( id() );
         gridLevel_ = &grid.gridLevel( level-1 );
+      }
+
+      void down ()
+      {
+        const Grid &grid = gridLevel().grid();
+        const int level = gridLevel().level();
+        gridLevel_ = &grid.gridLevel( level+1 );
+        gridLevel().refinement().firstChild( id() );
       }
 
       bool nextChild ()
       {
-        return gridLevel().refinement().nextChild( id_ );
+        return gridLevel().refinement().nextChild( id() );
       }
 
     private:
