@@ -11,14 +11,12 @@ namespace Dune
   // SPHierarchicIterator
   // --------------------
 
-  template< class Grid >
+  template< class Grid, int codim >
   class SPHierarchicIterator
-    : public SPEntityPointer< 0, Grid >
+    : public SPEntityPointer< codim, Grid >
   {
-    typedef SPHierarchicIterator< Grid > This;
-    typedef SPEntityPointer< 0, Grid > Base;
-
-    friend class SPEntity< 0, Base::dimension, Grid >;
+    typedef SPHierarchicIterator< Grid, codim > This;
+    typedef SPEntityPointer< codim, Grid > Base;
 
   public:
     typedef typename Base::Entity Entity;
@@ -27,13 +25,13 @@ namespace Dune
   protected:
     typedef typename Base::EntityImpl EntityImpl;
 
+  public:
     SPHierarchicIterator () = default;
 
-  private:
-    SPHierarchicIterator ( const EntityImpl &entityImpl, int maxLevel )
-    : Base( entityImpl ),
-      minLevel_( entityImpl.level() ),
-      maxLevel_( std::min( maxLevel, entityImpl.grid().maxLevel() ) )
+    SPHierarchicIterator ( const EntityInfo &entityInfo, int maxLevel )
+    : Base( entityInfo ),
+      minLevel_( entityInfo.gridLevel().level() ),
+      maxLevel_( std::min( maxLevel, entityInfo.gridLevel().grid().maxLevel() ) )
     {
       increment();
     }

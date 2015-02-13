@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_ENTITY_HH
 #define DUNE_SPGRID_ENTITY_HH
 
+#include <utility>
+
 #include <dune/grid/common/gridenums.hh>
 
 #include <dune/grid/spgrid/entityseed.hh>
@@ -20,7 +22,7 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< class >
+  template< class, int >
   class SPHierarchicIterator;
 
   template< class >
@@ -45,13 +47,18 @@ namespace Dune
     static const int codimension = EntityInfo::codimension;
     static const int mydimension = EntityInfo::mydimension;
 
-    typedef typename Traits::template Codim< codim >::EntitySeed EntitySeed;
-    typedef typename Traits::template Codim< codim >::Geometry Geometry;
-    typedef typename Traits::template Codim< codim >::LocalGeometry LocalGeometry;
+    typedef typename Traits::template Codim< codimension >::Entity Entity;
+    typedef typename Traits::template Codim< codimension >::EntitySeed EntitySeed;
+    typedef typename Traits::template Codim< codimension >::Geometry Geometry;
+    typedef typename Traits::template Codim< codimension >::LocalGeometry LocalGeometry;
+
+    typedef typename Traits::HierarchicIterator HierarchicIterator;
 
   protected:
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
     typedef SPEntitySeed< codimension, Grid > EntitySeedImpl;
+
+    typedef SPHierarchicIterator< Grid, codimension > HierarchicIteratorImpl;
 
   public:
     explicit SPBasicEntity ( const EntityInfo &entityInfo )
@@ -93,7 +100,28 @@ namespace Dune
     {
       return EntitySeed( EntitySeedImpl( level(), entityInfo().id(), entityInfo().partitionNumber() ) );
     }
-  
+
+    bool hasFather () const { return ((level() > 0) && entityInfo().hasFather()); }
+
+    Entity father () const
+    {
+      SPEntity< codimension, dimension, Grid > father( entityInfo() );
+      father.entityInfo().up();
+      return Entity( std::move( father ) );
+    }
+
+    HierarchicIterator hbegin ( int maxlevel ) const
+    {
+      assert( maxlevel >= level() );
+      return HierarchicIteratorImpl( entityInfo(), maxlevel );
+    }
+
+    HierarchicIterator hend ( int maxlevel ) const
+    {
+      assert( maxlevel >= level() );
+      return HierarchicIteratorImpl( entityInfo(), level() );
+    }
+
     const EntityInfo &entityInfo () const { return entityInfo_; }
     EntityInfo &entityInfo () { return entityInfo_; }
 
@@ -157,15 +185,11 @@ namespace Dune
     typedef typename Traits::LevelIntersectionIterator LevelIntersectionIterator;
     typedef typename Traits::LeafIntersectionIterator LeafIntersectionIterator;
 
-    typedef typename Traits::HierarchicIterator HierarchicIterator;
-
     template< int codim >
     struct Codim
     {
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
-
-    typedef typename Codim< 0 >::Entity Entity;
 
     typedef typename GridLevel::MultiIndex MultiIndex;
 
@@ -174,7 +198,6 @@ namespace Dune
 
     static const int numFaces = GridLevel::ReferenceCube::numFaces;
 
-    typedef SPHierarchicIterator< Grid > HierarchicIteratorImpl;
     typedef SPIntersectionIterator< Grid > IntersectionIteratorImpl;
 
   public:
@@ -227,28 +250,9 @@ namespace Dune
 
     bool hasBoundaryIntersections () const;
 
-    bool hasFather () const
-    {
-      return (level() > 0);
-    }
-
-    Entity father () const;
-
     LocalGeometry geometryInFather () const
     {
       return gridLevel().geometryInFather( entityInfo().id() );
-    }
-
-    HierarchicIterator hbegin ( int maxlevel ) const
-    {
-      assert( maxlevel >= level() );
-      return HierarchicIteratorImpl( *this, maxlevel );
-    }
-
-    HierarchicIterator hend ( int maxlevel ) const
-    {
-      assert( maxlevel >= level() );
-      return HierarchicIteratorImpl( *this, level() );
     }
 
     bool isRegular () const
@@ -303,16 +307,6 @@ namespace Dune
       hasBoundaryIntersections |= (id[ i ] == 2*globalMesh.end()[ i ] - 1);
     }
     return hasBoundaryIntersections;
-  }
-
-
-  template< int dim, class Grid >
-  inline typename SPEntity< 0, dim, Grid >::Entity SPEntity< 0, dim, Grid >::father () const
-  {
-    EntityInfo fatherInfo( entityInfo() );
-    fatherInfo.up();
-    fatherInfo.update();
-    return Entity( This( fatherInfo ) );
   }
 
 } // namespace Dune
