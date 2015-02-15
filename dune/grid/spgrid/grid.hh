@@ -437,6 +437,22 @@ namespace Dune
       return EntityPointerImpl( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
     }
 
+    template< int codim >
+    bool hasFather ( const Dune::Entity< codim, dimension, const This, SPEntity > &entity ) const
+    {
+      return ((entity.level() > 0) && getRealImplementation( entity ).entityInfo().hasFather());
+    }
+
+    template< int codim >
+    Dune::Entity< codim, dimension, const This, SPEntity >
+    father ( const Dune::Entity< codim, dimension, const This, SPEntity > &entity ) const
+    {
+      assert( hasFather( entity ) );
+      Dune::Entity< codim, dimension, const This, SPEntity > father( entity );
+      getRealImplementation( father ).entityInfo().up();
+      return std::move( father );
+    }
+
     const GridLevel &gridLevel ( const int level ) const;
     const GridLevel &leafLevel () const;
 
