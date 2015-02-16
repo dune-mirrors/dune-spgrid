@@ -29,6 +29,14 @@ namespace Dune
   template< class Grid >
   struct BackupRestoreFacility;
 
+  namespace __SPGrid
+  {
+
+    template< class, class >
+    class TreeIterator;
+
+  }
+
 
 
   // Internal Forward Declarations
@@ -136,6 +144,8 @@ namespace Dune
     friend struct BackupRestoreFacility< This >;
     friend class SPIntersection< const This >;
     friend class SPGridLevel< This >;
+
+    template< class, class > friend class __SPGrid::TreeIterator;
 
   public:
     typedef SPGridFamily< ct, dim, Ref, Comm > GridFamily;

@@ -42,6 +42,7 @@ set( HEADERS
   refinement.hh
   superentityiterator.hh
   topology.hh
+  tree.hh
 )
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/grid/spgrid)

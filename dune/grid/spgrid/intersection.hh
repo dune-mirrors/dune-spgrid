@@ -150,9 +150,13 @@ namespace Dune
       return (indexInInside() == other.indexInInside()) && insideInfo_.equals( other.insideInfo_ );
     }
 
-    const GridLevel &gridLevel () const
+    const GridLevel &gridLevel () const { return insideInfo_.gridLevel(); }
+
+    void setInside ( const ElementInfo &insideInfo ) { insideInfo_ = insideInfo; }
+
+    void setEntityInfo ( const EntityInfo &entityInfo )
     {
-      return insideInfo_.gridLevel();
+      insideInfo_ = ElementInfo( entityInfo.gridLevel(), entityInfo.id() - normalId_, entityInfo.partitionNumber() );
     }
 
     void setFace ( const int face )
