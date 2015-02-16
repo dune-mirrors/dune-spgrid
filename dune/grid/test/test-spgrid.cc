@@ -62,8 +62,8 @@ void checkHierarchicSearch ( const GridView &gridView )
 {
   typedef Dune::HierarchicSearch< typename GridView::Grid, typename GridView::IndexSet > HierarchicSearch;
 
-  typedef typename GridView::template Codim< 0 >::EntityPointer EntityPointer;
-  typedef typename EntityPointer::Entity::Geometry Geometry;
+  typedef typename GridView::template Codim< 0 >::Entity Entity;
+  typedef typename Entity::Geometry Geometry;
   typedef typename Geometry::ctype ctype;
   typedef typename Geometry::LocalCoordinate LocalVector;
   typedef typename Geometry::GlobalCoordinate GlobalVector;
@@ -73,8 +73,8 @@ void checkHierarchicSearch ( const GridView &gridView )
   GlobalVector x = gridView.grid().domain().cube().origin();
   x.axpy( 0.49, gridView.grid().domain().cube().width() );
 
-  EntityPointer ep = hsearch.findEntity( x );
-  const Geometry &geometry = ep->geometry();
+  const Entity e = hsearch.findEntity( x );
+  const Geometry &geometry = e.geometry();
   const LocalVector xl = geometry.local( x );
   if( !Dune::ReferenceElements< ctype, dimGrid >::cube().checkInside( xl ) )
   {

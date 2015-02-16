@@ -102,7 +102,7 @@ namespace Dune
 
         int k = 0;
         const int numSubs = element.subEntities( codim );
-        while( (k < numSubs) && (element.template subEntity< codim >( k ) != codimIt) )
+        while( (k < numSubs) && (element.template subEntity< codim >( k ) != *codimIt) )
           ++k;
         if( k == numSubs )
         {
