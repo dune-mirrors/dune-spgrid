@@ -8,6 +8,7 @@
 #include <dune/grid/common/gridenums.hh>
 
 #include <dune/grid/spgrid/declaration.hh>
+#include <dune/grid/spgrid/entity.hh>
 #include <dune/grid/spgrid/refinement.hh>
 
 namespace Dune
