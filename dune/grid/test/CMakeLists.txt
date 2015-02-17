@@ -1,3 +1,11 @@
+set( HEADERS
+  checkbndsegiterator.hh
+  checkidcommunication.hh
+  checkseiterator.hh
+)
+
+install( FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/grid/test )
+
 set( GRIDFILES
   1dcube.dgf
   2dcube.dgf

@@ -1,3 +1,9 @@
+testincludedir = $(includedir)/dune/grid/test
+testinclude_HEADERS = \
+	checkbndsegiterator.hh \
+	checkidcommunication.hh \
+	checkseiterator.hh
+
 GRIDDIM = 3
 
 AM_CXXFLAGS = -g -Wall -Wfatal-errors
