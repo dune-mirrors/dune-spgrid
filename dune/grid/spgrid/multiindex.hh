@@ -2,8 +2,7 @@
 #define DUNE_SPGRID_MULTIINDEX_HH
 
 #include <algorithm>
-
-#include <dune/common/array.hh>
+#include <array>
 
 #include <dune/common/iostream.hh>
 
@@ -30,69 +29,56 @@ namespace Dune
     /** \brief dimension of the multiindex */
     static const int dimension = dim;
 
-    typedef const int *ConstIterator;
-    typedef int *Iterator;
+    typedef typename std::array< int, dimension >::const_iterator ConstIterator;
+    typedef typename std::array< int, dimension >::iterator Iterator;
 
-    /** \brief default constructor
-     *
-     *  \note The default constructor does not initialze the multiindex.
-     */
-    SPMultiIndex ()
-    {}
+    /** \brief default constructor */
+    SPMultiIndex () : index_( {} ) {}
 
-    /** \brief constructor from int array
+    /**
+     * \brief constructor from int array
      *
-     *  \note This constructor defines an implicit conversion.
+     * \note This constructor defines an implicit conversion.
      *
-     *  \param[in]  index  int array to copy
+     * \param[in]  index  int array to copy
      */
     SPMultiIndex ( const int (&index)[ dimension ] )
     {
-      *this = index;
+      std::copy( index, index + dimension, index_.begin() );
     }
 
-    /** \brief constructor from int array
+    /**
+     * \brief constructor from int array
      *
-     *  \note This constructor defines an implicit conversion.
+     * \note This constructor defines an implicit conversion.
      *
-     *  \param[in]  index  int array to copy
+     * \param[in]  index  int array to copy
      */
-    SPMultiIndex ( const Dune::array< int, dimension > &index )
-    {
-      *this = index;
-    }
+    SPMultiIndex ( const std::array< int, dimension > &index )
+      : index_( index )
+    {}
 
     /** \brief copy constructor */
-    SPMultiIndex ( const This &other )
-    {
-      *this = other;
-    }
+    SPMultiIndex ( const This & ) = default;
 
     /** \brief assignment operator */
-    const This &operator= ( const This &other )
-    {
-      for( int i = 0; i < dimension; ++i )
-        index_[ i ] = other.index_[ i ];
-      return *this;
-    }
+    This &operator= ( const This & ) = default;
 
     /** \brief assignment operator from int array */
-    const This &operator= ( const int (&index)[ dimension ] )
+    This &operator= ( const int (&index)[ dimension ] )
     {
-      for( int i = 0; i < dimension; ++i )
-        index_[ i ] = index[ i ];
+      std::copy( index, index + dimension, index_.begin() );
       return *this;
     }
 
-    const This &operator= ( const Dune::array< int, dimension > &index )
+    This &operator= ( const std::array< int, dimension > &index )
     {
-      for( int i = 0; i < dimension; ++i )
-        index_[ i ] = index[ i ];
+      index_ = index;
       return *this;
     }
 
     /** \brief add another multiindex to this one (vector operation) */
-    const This &operator+= ( const This &other )
+    This &operator+= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] += other.index_[ i ];
@@ -100,7 +86,7 @@ namespace Dune
     }
 
     /** \brief subtract another multiindex from this one (vector operation) */
-    const This &operator-= ( const This &other )
+    This &operator-= ( const This &other )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] -= other.index_[ i ];
@@ -124,16 +110,10 @@ namespace Dune
     }
 
     /** \brief access i-th component */
-    const int &operator[] ( const int i ) const
-    {
-      return index_[ i ];
-    }
+    const int &operator[] ( const int i ) const { return index_[ i ]; }
 
     /** \brief access i-th component */
-    int &operator[] ( const int i )
-    {
-      return index_[ i ];
-    }
+    int &operator[] ( const int i ) { return index_[ i ]; }
 
     /** \brief compare two multiindices for equality */
     bool operator== ( const This &other ) const
@@ -160,15 +140,15 @@ namespace Dune
         index_[ i ] += a*other.index_[ i ];
     }
 
-    ConstIterator begin () const { return index_; }
-    Iterator begin () { return index_; }
+    ConstIterator begin () const { return index_.begin(); }
+    Iterator begin () { return index_.begin(); }
 
-    ConstIterator cbegin () const { return index_; }
+    ConstIterator cbegin () const { return index_.begin(); }
 
-    ConstIterator end () const { return index_ + dimension; }
-    Iterator end () { return index_ + dimension; }
+    ConstIterator end () const { return index_.end(); }
+    Iterator end () { return index_.end(); }
 
-    ConstIterator cend () const { return index_ + dimension; }
+    ConstIterator cend () const { return index_.end(); }
 
     /** \brief initialize to zero */
     void clear () { std::fill( begin(), end(), 0 ); }
@@ -203,7 +183,7 @@ namespace Dune
     }
 
   private:
-    int index_[ dimension ];
+    std::array< int, dimension > index_;
   };
 
 
