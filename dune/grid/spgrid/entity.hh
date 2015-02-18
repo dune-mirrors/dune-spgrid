@@ -25,9 +25,6 @@ namespace Dune
   template< class, int >
   class SPHierarchicIterator;
 
-  template< class >
-  class SPIntersectionIterator;
-
 
 
   // SPBasicEntity
@@ -182,9 +179,6 @@ namespace Dune
     typedef typename Base::Geometry Geometry;
     typedef typename Base::LocalGeometry LocalGeometry;
 
-    typedef typename Traits::LevelIntersectionIterator LevelIntersectionIterator;
-    typedef typename Traits::LeafIntersectionIterator LeafIntersectionIterator;
-
     template< int codim >
     struct Codim
     {
@@ -197,8 +191,6 @@ namespace Dune
     typedef typename GridLevel::Mesh Mesh;
 
     static const int numFaces = GridLevel::ReferenceCube::numFaces;
-
-    typedef SPIntersectionIterator< Grid > IntersectionIteratorImpl;
 
   public:
     explicit SPEntity ( const EntityInfo &entityInfo )
@@ -227,26 +219,6 @@ namespace Dune
 
     template< int codim >
     typename Codim< codim >::Entity subEntity ( int i ) const;
-
-    LeafIntersectionIterator ileafbegin () const
-    {
-      return (isLeaf() ? ilevelbegin() : ilevelend());
-    }
-
-    LeafIntersectionIterator ileafend () const
-    {
-      return ilevelend();
-    }
-
-    LevelIntersectionIterator ilevelbegin () const
-    {
-      return IntersectionIteratorImpl( entityInfo(), 0 );
-    }
-
-    LevelIntersectionIterator ilevelend () const
-    {
-      return IntersectionIteratorImpl( entityInfo(), numFaces );
-    }
 
     bool hasBoundaryIntersections () const;
 
