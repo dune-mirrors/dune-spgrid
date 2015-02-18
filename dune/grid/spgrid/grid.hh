@@ -443,6 +443,11 @@ namespace Dune
       return ((entity.level() > 0) && getRealImplementation( entity ).entityInfo().hasFather());
     }
 
+    bool hasFather ( const Dune::Intersection< const This, SPIntersection< const This > > &intersection ) const
+    {
+      return ((getRealImplementation( intersection ).gridLevel().level() > 0) && getRealImplementation( intersection ).entityInfo().hasFather());
+    }
+
     template< int codim >
     Dune::Entity< codim, dimension, const This, SPEntity >
     father ( const Dune::Entity< codim, dimension, const This, SPEntity > &entity ) const
@@ -451,6 +456,18 @@ namespace Dune
       Dune::Entity< codim, dimension, const This, SPEntity > father( entity );
       getRealImplementation( father ).entityInfo().up();
       return std::move( father );
+    }
+
+    Dune::Intersection< const This, SPIntersection< const This > >
+    father ( const Dune::Intersection< const This, SPIntersection< const This > > &intersection ) const
+    {
+      typedef SPIntersection< const This > IntersectionImpl;
+      typedef Dune::Intersection< const This, IntersectionImpl > Intersection;
+
+      assert( hasFather( intersection ) );
+      typename IntersectionImpl::EntityInfo fatherInfo( getRealImplementation( intersection ).entityInfo() );
+      fatherInfo.up();
+      return Intersection( IntersectionImpl( std::move( fatherInfo ), intersection.indexInInside() ) );
     }
 
     const GridLevel &gridLevel ( const int level ) const;

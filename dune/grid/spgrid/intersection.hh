@@ -54,7 +54,9 @@ namespace Dune
     typedef SPGeometry< mydimension, dimension, Grid > GeometryImpl;
 
   public:
-    typedef typename EntityImpl::EntityInfo EntityInfo;
+    typedef typename EntityImpl::EntityInfo ElementInfo;
+    typedef __SPGrid::EntityInfo< Grid, 1 > EntityInfo;
+
     typedef typename EntityImpl::GridLevel GridLevel;
 
     typedef typename GeometryImpl::LocalVector LocalVector;
@@ -68,13 +70,19 @@ namespace Dune
     typedef typename PartitionList::Partition Partition;
 
   public:
+    SPIntersection ( const ElementInfo &insideInfo, int face )
+      : normalId_( face ),
+        insideInfo_( insideInfo )
+    {}
+
     SPIntersection ( const EntityInfo &entityInfo, int face )
-      : entityInfo_( entityInfo ), normalId_( face )
+      : normalId_( face ),
+        insideInfo_( entityInfo.gridLevel(), entityInfo.id() - normalId_, entityInfo.partitionNumber() )
     {}
 
     bool boundary () const
     {
-      return ((entityInfo().id() + normalId_) * normalId_ == 2*gridLevel().globalMesh().bound( normalId_ ));
+      return ((insideInfo_.id() + normalId_) * normalId_ == 2*gridLevel().globalMesh().bound( normalId_ ));
     }
 
     int boundaryId () const
@@ -85,12 +93,12 @@ namespace Dune
     std::size_t boundarySegmentIndex () const
     {
       assert( boundary() );
-      return gridLevel().boundaryIndex( entityInfo().id(), entityInfo().partitionNumber(), normalId_.face() );
+      return gridLevel().boundaryIndex( insideInfo_.id(), insideInfo_.partitionNumber(), normalId_.face() );
     }
 
     bool neighbor () const;
 
-    Entity inside () const { return Entity( EntityImpl( entityInfo() ) ); }
+    Entity inside () const { return Entity( EntityImpl( insideInfo_ ) ); }
 
     Entity outside () const;
 
@@ -111,8 +119,7 @@ namespace Dune
 
     Geometry geometry () const
     {
-      typedef __SPGrid::EntityInfo< Grid, 1 > EntityInfo;
-      return Geometry( GeometryImpl( EntityInfo( gridLevel(), entityInfo().id() + normalId_, entityInfo().partitionNumber() ) ) );
+      return Geometry( GeometryImpl( entityInfo() ) );
     }
 
     GeometryType type () const
@@ -140,12 +147,12 @@ namespace Dune
 
     bool equals ( const This &other ) const
     {
-      return (indexInInside() == other.indexInInside()) && entityInfo().equals( other.entityInfo() );
+      return (indexInInside() == other.indexInInside()) && insideInfo_.equals( other.insideInfo_ );
     }
 
     const GridLevel &gridLevel () const
     {
-      return entityInfo().gridLevel();
+      return insideInfo_.gridLevel();
     }
 
     void setFace ( const int face )
@@ -154,14 +161,14 @@ namespace Dune
       normalId_ = SPNormalId< dimension >( face );
     }
 
-  private:
-    const EntityInfo &entityInfo () const
+    EntityInfo entityInfo () const
     {
-      return entityInfo_;
+      return EntityInfo( gridLevel(), insideInfo_.id() + normalId_, insideInfo_.partitionNumber() );
     }
 
-    EntityInfo entityInfo_;
+  private:
     SPNormalId< dimension > normalId_;
+    ElementInfo insideInfo_;
   };
 
 
@@ -173,9 +180,9 @@ namespace Dune
   inline bool SPIntersection< Grid >::neighbor () const
   {
     const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
-    const Partition &partition = allPartition.partition( entityInfo().partitionNumber() );
+    const Partition &partition = allPartition.partition( insideInfo_.partitionNumber() );
 
-    return (partition.hasNeighbor( normalId_.face() ) || ((entityInfo().id() + normalId_ + normalId_)*normalId_ <= partition.bound( normalId_ )));
+    return (partition.hasNeighbor( normalId_.face() ) || ((insideInfo_.id() + normalId_ + normalId_)*normalId_ <= partition.bound( normalId_ )));
   }
 
 
@@ -184,12 +191,12 @@ namespace Dune
   SPIntersection< Grid >::outside () const
   {
     const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
-    const Partition &partition = allPartition.partition( entityInfo().partitionNumber() );
+    const Partition &partition = allPartition.partition( insideInfo_.partitionNumber() );
 
-    MultiIndex id = entityInfo().id() + normalId_ + normalId_;
+    MultiIndex id = insideInfo_.id() + normalId_ + normalId_;
 
     if( id * normalId_ <= partition.bound( normalId_ ) )
-      return Entity( EntityImpl( EntityInfo( gridLevel(), id, partition.number() ) ) );
+      return Entity( EntityImpl( ElementInfo( gridLevel(), id, partition.number() ) ) );
 
     assert( partition.hasNeighbor( normalId_.face() ) );
     const Partition &nbPartition = allPartition.partition( partition.neighbor( normalId_.face() ) );
@@ -197,7 +204,7 @@ namespace Dune
     const int face = normalId_.face();
     const int bound = nbPartition.bound( 1 - (face & 1) )[ face >> 1 ];
     id[ face >> 1 ] = bound + (2*(face & 1) - 1)*(1 - (bound & 1));
-    return Entity( EntityImpl( EntityInfo( gridLevel(), id, nbPartition.number() ) ) );
+    return Entity( EntityImpl( ElementInfo( gridLevel(), id, nbPartition.number() ) ) );
   }
 
 } // namespace Dune
