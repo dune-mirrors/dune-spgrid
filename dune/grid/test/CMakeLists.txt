@@ -2,6 +2,7 @@ set( HEADERS
   checkbndsegiterator.hh
   checkidcommunication.hh
   checkseiterator.hh
+  checktree.hh
 )
 
 install( FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/grid/test )

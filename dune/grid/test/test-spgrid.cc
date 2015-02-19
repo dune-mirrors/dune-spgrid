@@ -17,8 +17,9 @@
 #include <dune/grid/test/checkpartition.hh>
 #include <dune/grid/test/checkcommunicate.hh>
 
-#include "checkidcommunication.hh"
-#include "checkseiterator.hh"
+#include <dune/grid/test/checkidcommunication.hh>
+#include <dune/grid/test/checkseiterator.hh>
+#include <dune/grid/test/checktree.hh>
 
 static const int dimGrid = DIMGRID;
 
@@ -124,6 +125,9 @@ void performCheck ( Grid &grid, int maxLevel, const typename Grid::RefinementPol
     }
     else
       std::cerr << "WARNING: SuperEntityIterators currently don't work in parallel; test disabled." << std::endl;
+
+    for( int level = 0; level <= grid.maxLevel(); ++level )
+      Dune::checkEntityTree< 0 >( grid.levelGridView( level ) );
   }
 
   std::ostringstream sFilename;

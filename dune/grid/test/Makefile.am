@@ -2,7 +2,8 @@ testincludedir = $(includedir)/dune/grid/test
 testinclude_HEADERS = \
 	checkbndsegiterator.hh \
 	checkidcommunication.hh \
-	checkseiterator.hh
+	checkseiterator.hh \
+	checktree.hh
 
 GRIDDIM = 3
 

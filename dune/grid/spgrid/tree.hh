@@ -70,6 +70,7 @@ namespace Dune
       };
 
     public:
+      using Base::dereference;
       using Base::entityInfo;
       using Base::gridLevel;
 
