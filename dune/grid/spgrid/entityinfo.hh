@@ -76,7 +76,7 @@ namespace Dune
 
       bool equals ( const This &other ) const
       {
-        return (&gridLevel() == &other.gridLevel()) && (id() == other.id());
+        return (gridLevel_ == other.gridLevel_) && (id() == other.id());
       }
 
       PartitionType partitionType () const
