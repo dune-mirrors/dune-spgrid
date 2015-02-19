@@ -5,6 +5,7 @@
 #include <dune/grid/spgrid/grid.hh>
 #include <dune/grid/spgrid/hierarchicsearch.hh>
 #include <dune/grid/spgrid/persistentcontainer.hh>
+#include <dune/grid/spgrid/tree.hh>
 
 namespace Dune
 {

@@ -60,9 +60,9 @@ namespace Dune
         IsDone () : rootLevel_( nullptr ) {}
         IsDone ( const GridLevel &rootLevel ) : rootLevel_( &rootLevel ) {}
 
-        bool operator () ( const EntityInfo &entityInfo ) const
+        bool operator () ( const Entity &entity ) const
         {
-          return (&entityInfo.gridLevel() == rootLevel_);
+          return (&Grid::getRealImplementation( entity ).gridLevel() == rootLevel_);
         }
 
       private:
@@ -77,9 +77,9 @@ namespace Dune
 
       explicit TreeIterator ( const IsLeaf &isLeaf ) : isLeaf_( isLeaf ) {}
 
-      explicit TreeIterator ( const EntityInfo &entityInfo, const IsLeaf &isLeaf )
-        : Base( entityInfo ),
-          isDone_( entityInfo.gridLevel() ),
+      explicit TreeIterator ( const Entity &entity, const IsLeaf &isLeaf )
+        : Base( Grid::getRealImplementation( entity ) ),
+          isDone_( gridLevel() ),
           isLeaf_( isLeaf )
       {}
 
@@ -91,9 +91,9 @@ namespace Dune
 
       void increment ()
       {
-        if( isLeaf_( entityInfo() ) || (&gridLevel() == &gridLevel().grid().leafLevel()) )
+        if( isLeaf_( dereference() ) || (&gridLevel() == &leafLevel()) )
         {
-          while( !isDone_( entityInfo() ) )
+          while( !isDone_( dereference() ) )
           {
             if( entityInfo().nextChild() )
               return;
@@ -106,6 +106,8 @@ namespace Dune
       }
 
     private:
+      const GridLevel &leafLevel () const { return gridLevel().grid().leafLevel(); }
+
       IsDone isDone_;
       IsLeaf isLeaf_;
     };
