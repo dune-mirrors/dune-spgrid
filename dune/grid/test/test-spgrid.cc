@@ -126,6 +126,7 @@ void performCheck ( Grid &grid, int maxLevel, const typename Grid::RefinementPol
     else
       std::cerr << "WARNING: SuperEntityIterators currently don't work in parallel; test disabled." << std::endl;
 
+    std::cerr << ">>> Checking entity tree for codimension 0..." << std::endl;
     for( int level = 0; level <= grid.maxLevel(); ++level )
       Dune::checkEntityTree< 0 >( grid.levelGridView( level ) );
   }

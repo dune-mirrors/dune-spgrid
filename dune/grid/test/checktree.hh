@@ -1,6 +1,8 @@
 #ifndef DUNE_GRID_TEST_CHECKTREE_HH
 #define DUNE_GRID_TEST_CHECKTREE_HH
 
+#include <iterator>
+
 #include <dune/geometry/dimension.hh>
 
 #include <dune/grid/common/rangegenerators.hh>
@@ -32,6 +34,9 @@ namespace Dune
     auto noOp = [] ( const Entity &e ) {};
     if( testForwardIterator( tree.begin(), tree.end(), noOp ) != 0 )
       DUNE_THROW( Dune::Exception, "Tree iterator does not fulfill the forward iterator concept." );
+
+    if( std::distance( tree.begin(), tree.end() ) != 1 )
+      DUNE_THROW( Dune::Exception, "Tree iterator with all leaf predicate should iterate over exactly 1 element." );
   }
 
   template< int codim, class GridView >
