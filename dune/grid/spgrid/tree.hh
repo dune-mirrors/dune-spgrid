@@ -245,7 +245,7 @@ namespace Dune
     typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > Intersection;
     typedef Dune::IntersectionIterator< const Grid, __SPGrid::TreeIterator< Intersection, IsLeaf >, SPIntersection< const Grid > > Iterator;
 
-    IntersectionTree ( const Intersection &intersection, const IsLeaf &isLeaf )
+    IntersectionTree ( const Grid &grid, const Intersection &intersection, const IsLeaf &isLeaf )
       : intersection_( intersection ), isLeaf_( isLeaf )
     {}
 
