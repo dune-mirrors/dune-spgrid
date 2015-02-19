@@ -4,14 +4,29 @@
 #include <type_traits>
 
 #include <dune/grid/common/entity.hh>
+#include <dune/grid/common/entityiterator.hh>
 #include <dune/grid/common/intersection.hh>
+#include <dune/grid/common/intersectioniterator.hh>
 
 #include <dune/grid/spgrid/declaration.hh>
 #include <dune/grid/spgrid/entityinfo.hh>
+#include <dune/grid/spgrid/entity.hh>
 #include <dune/grid/spgrid/entitypointer.hh>
+#include <dune/grid/spgrid/intersection.hh>
 
 namespace Dune
 {
+
+  // Forward Declarations
+  // --------------------
+
+  template< int codim, class Grid, class IsLeaf >
+  class EntityTree;
+
+  template< class Grid, class IsLeaf >
+  class IntersectionTree;
+
+
 
   namespace __SPGrid
   {
@@ -21,9 +36,6 @@ namespace Dune
 
     template< class, class >
     class TreeIterator;
-
-    template< class, class >
-    struct Tree;
 
 
 
@@ -79,9 +91,9 @@ namespace Dune
 
       void increment ()
       {
-        if( isLeaf( entityInfo() ) || (&gridLevel() == &gridLevel().grid().leafLevel()) )
+        if( isLeaf_( entityInfo() ) || (&gridLevel() == &gridLevel().grid().leafLevel()) )
         {
-          while( !isDone( entityInfo() ) )
+          while( !isDone_( entityInfo() ) )
           {
             if( entityInfo().nextChild() )
               return;
@@ -163,9 +175,9 @@ namespace Dune
       void increment ()
       {
         EntityInfo entityInfo = Grid::getRealImplementation( intersection_ ).entityInfo();
-        if( isLeaf( entityInfo ) || (&entityInfo.gridLevel() == &entityInfo.gridLevel().grid().leafLevel()) )
+        if( isLeaf_( entityInfo ) || (&entityInfo.gridLevel() == &entityInfo.gridLevel().grid().leafLevel()) )
         {
-          while( !isDone( entityInfo ) )
+          while( !isDone_( entityInfo ) )
           {
             if( entityInfo.nextChild() )
             {
@@ -189,69 +201,63 @@ namespace Dune
       IsLeaf isLeaf_;
     };
 
-
-
-    // Tree for Entity
-    // ---------------
-
-    template< int codim, int dim, class Grid, template< int, int, class > class EntityImpl, class IsLeaf >
-    struct Tree< Dune::Entity< codim, dim, Grid, EntityImpl >, IsLeaf >
-    {
-      typedef Dune::Entity< codim, dim, Grid, EntityImpl > Entity;
-      typedef Dune::EntityIterator< codim, Grid, TreeIterator< Entity, IsLeaf > > Iterator;
-
-      Tree ( const Entity &entity, const IsLeaf &isLeaf )
-        : entity_( entity ), isLeaf_( isLeaf )
-      {}
-
-      Iterator begin () const { return TreeIterator< Entity, IsLeaf >( entity_, isLeaf_ ); }
-      Iterator end () const { return TreeIterator< Entity, IsLeaf >( isLeaf_ ); }
-
-      bool empty () const { return false; }
-
-    private:
-      Entity entity_;
-      IsLeaf isLeaf_;
-    };
-
-
-
-    // Tree for Intersection
-    // ---------------------
-
-    template< class Grid, class IntersectionImpl, class IsLeaf >
-    struct Tree< Dune::Intersection< Grid, IntersectionImpl >, IsLeaf >
-    {
-      typedef Dune::Intersection< Grid, IntersectionImpl > Intersection;
-      typedef Dune::IntersectionIterator< Grid, TreeIterator< Intersection, IsLeaf >, IntersectionImpl > Iterator;
-
-      Tree ( const Intersection &intersection, const IsLeaf &isLeaf )
-        : intersection_( intersection ), isLeaf_( isLeaf )
-      {}
-
-      Iterator begin () const { return TreeIterator< Intersection, IsLeaf >( intersection_, isLeaf_ ); }
-      Iterator end () const { return TreeIterator< Intersection, IsLeaf >( intersection_.indexInInside(), isLeaf_ ); }
-
-      bool empty () const { return false; }
-
-    private:
-      Intersection intersection_;
-      IsLeaf isLeaf_;
-    };
-
   } // namespace __SPGrid
 
 
 
-  // tree
-  // ----
+  // EntityTree for SPGrid
+  // ---------------------
 
-  template< class ct, int dim, template< int > class Ref, class Comm, class Entity, class IsLeaf >
-  inline __SPGrid::Tree< Entity, IsLeaf >
-  tree ( const SPGrid< ct, dim, Ref, Comm > &grid, const Entity &entity, const IsLeaf &isLeaf )
+  template< int codim, class ct, int dim, template< int > class Ref, class Comm, class IsLeaf >
+  class EntityTree< codim, SPGrid< ct, dim, Ref, Comm >, IsLeaf >
   {
-    __SPGrid::Tree< Entity, IsLeaf >( entity, isLeaf );
-  }
+  public:
+    typedef SPGrid< ct, dim, Ref, Comm > Grid;
+
+    typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
+    typedef Dune::EntityIterator< codim, Grid, __SPGrid::TreeIterator< Entity, IsLeaf > > Iterator;
+
+    EntityTree ( const Grid &grid, const Entity &entity, const IsLeaf &isLeaf )
+      : entity_( entity ), isLeaf_( isLeaf )
+    {}
+
+    Iterator begin () const { return __SPGrid::TreeIterator< Entity, IsLeaf >( entity_, isLeaf_ ); }
+    Iterator end () const { return __SPGrid::TreeIterator< Entity, IsLeaf >( isLeaf_ ); }
+
+    bool empty () const { return false; }
+
+  private:
+    Entity entity_;
+    IsLeaf isLeaf_;
+  };
+
+
+
+  // IntersectionTree for SPGrid
+  // ---------------------------
+
+  template< class ct, int dim, template< int > class Ref, class Comm, class IsLeaf >
+  class IntersectionTree< SPGrid< ct, dim, Ref, Comm >, IsLeaf >
+  {
+  public:
+    typedef SPGrid< ct, dim, Ref, Comm > Grid;
+
+    typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > Intersection;
+    typedef Dune::IntersectionIterator< const Grid, __SPGrid::TreeIterator< Intersection, IsLeaf >, SPIntersection< const Grid > > Iterator;
+
+    IntersectionTree ( const Intersection &intersection, const IsLeaf &isLeaf )
+      : intersection_( intersection ), isLeaf_( isLeaf )
+    {}
+
+    Iterator begin () const { return __SPGrid::TreeIterator< Intersection, IsLeaf >( intersection_, isLeaf_ ); }
+    Iterator end () const { return __SPGrid::TreeIterator< Intersection, IsLeaf >( intersection_.indexInInside(), isLeaf_ ); }
+
+    bool empty () const { return false; }
+
+  private:
+    Intersection intersection_;
+    IsLeaf isLeaf_;
+  };
 
 } // namespace Dune
 
