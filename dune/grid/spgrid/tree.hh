@@ -54,22 +54,6 @@ namespace Dune
       typedef typename Base::EntityInfo EntityInfo;
       typedef typename Base::GridLevel GridLevel;
 
-    private:
-      struct IsDone
-      {
-        IsDone () : rootLevel_( nullptr ) {}
-        IsDone ( const GridLevel &rootLevel ) : rootLevel_( &rootLevel ) {}
-
-        bool operator () ( const Entity &entity ) const
-        {
-          return (&Grid::getRealImplementation( entity ).gridLevel() == rootLevel_);
-        }
-
-      private:
-        const GridLevel *rootLevel_;
-      };
-
-    public:
       using Base::dereference;
       using Base::entityInfo;
       using Base::gridLevel;
@@ -80,21 +64,15 @@ namespace Dune
 
       explicit TreeIterator ( const Entity &entity, const IsLeaf &isLeaf )
         : Base( Grid::getRealImplementation( entity ) ),
-          isDone_( gridLevel() ),
+          rootLevel_( &gridLevel() ),
           isLeaf_( isLeaf )
       {}
-
-      TreeIterator ( const This & ) = default;
-      TreeIterator ( This && ) = default;
-
-      This &operator= ( const This & ) = default;
-      This &operator= ( This && ) = default;
 
       void increment ()
       {
         if( isLeaf_( dereference() ) || (&gridLevel() == &leafLevel()) )
         {
-          while( !isDone_( dereference() ) )
+          while( !isDone() )
           {
             if( entityInfo().nextChild() )
               return;
@@ -109,7 +87,9 @@ namespace Dune
     private:
       const GridLevel &leafLevel () const { return gridLevel().grid().leafLevel(); }
 
-      IsDone isDone_;
+      bool isDone () const { return (&gridLevel() == rootLevel_); }
+
+      const GridLevel *rootLevel_;
       IsLeaf isLeaf_;
     };
 
@@ -134,22 +114,6 @@ namespace Dune
       typedef typename IntersectionImpl::ElementInfo ElementInfo;
       typedef typename IntersectionImpl::GridLevel GridLevel;
 
-    private:
-      struct IsDone
-      {
-        IsDone () : rootLevel_( nullptr ) {}
-        IsDone ( const GridLevel &rootLevel ) : rootLevel_( &rootLevel ) {}
-
-        bool operator () ( const EntityInfo &entityInfo ) const
-        {
-          return (&entityInfo.gridLevel() == rootLevel_);
-        }
-
-      private:
-        const GridLevel *rootLevel_;
-      };
-
-    public:
       TreeIterator () = default;
 
       explicit TreeIterator ( int face, const IsLeaf &isLeaf )
@@ -158,7 +122,7 @@ namespace Dune
 
       explicit TreeIterator ( const Intersection &intersection, const IsLeaf &isLeaf )
         : intersection_( intersection ),
-          isDone_( Grid::getRealImplementation( intersection ).gridLevel() ),
+          rootLevel_( &Grid::getRealImplementation( intersection ).gridLevel() ),
           isLeaf_( isLeaf )
       {}
 
@@ -177,30 +141,38 @@ namespace Dune
 
       void increment ()
       {
-        EntityInfo entityInfo = Grid::getRealImplementation( intersection_ ).entityInfo();
-        if( isLeaf_( entityInfo ) || (&entityInfo.gridLevel() == &entityInfo.gridLevel().grid().leafLevel()) )
+        if( isLeaf_( intersection_ ) || (&gridLevel() == &leafLevel()) )
         {
-          while( !isDone_( entityInfo ) )
+          EntityInfo info = entityInfo();
+          while( !isDone( info ) )
           {
-            if( entityInfo.nextChild() )
+            if( info.nextChild() )
             {
-              Grid::getRealImplementation( intersection_ ).setEntityInfo( entityInfo );
+              Grid::getRealImplementation( intersection_ ).setEntityInfo( info );
               return;
             }
-            entityInfo.up();
+            info.up();
           }
           Grid::getRealImplementation( intersection_ ).setInside( ElementInfo() );
         }
         else
         {
-          entityInfo.down();
-          Grid::getRealImplementation( intersection_ ).setEntityInfo( entityInfo );
+          EntityInfo info = entityInfo();
+          info.down();
+          Grid::getRealImplementation( intersection_ ).setEntityInfo( info );
         }
       }
 
     private:
+      const EntityInfo &entityInfo () const { return Grid::getRealImplementation( intersection_ ).entityInfo(); }
+
+      const GridLevel &gridLevel () const  { return entityInfo().gridLevel(); }
+      const GridLevel &leafLevel () const { return gridLevel().grid().leafLevel(); }
+
+      bool isDone ( const EntityInfo &entityInfo ) const { return (&entityInfo.gridLevel() == rootLevel_); }
+
       Intersection intersection_;
-      IsDone isDone_;
+      const GridLevel *rootLevel_;
       IsLeaf isLeaf_;
     };
 
