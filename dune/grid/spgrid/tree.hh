@@ -164,7 +164,7 @@ namespace Dune
       }
 
     private:
-      const EntityInfo &entityInfo () const { return Grid::getRealImplementation( intersection_ ).entityInfo(); }
+      EntityInfo entityInfo () const { return Grid::getRealImplementation( intersection_ ).entityInfo(); }
 
       const GridLevel &gridLevel () const  { return entityInfo().gridLevel(); }
       const GridLevel &leafLevel () const { return gridLevel().grid().leafLevel(); }
