@@ -82,7 +82,7 @@ namespace Dune
 
     bool boundary () const
     {
-      return ((insideInfo_.id() + normalId_) * normalId_ == 2*gridLevel().globalMesh().bound( normalId_ ));
+      return (insideInfo_.id()[ normalId_.axis() ] + normalId_.sign() == 2*gridLevel().globalMesh().bound( normalId_ ));
     }
 
     int boundaryId () const
@@ -96,7 +96,10 @@ namespace Dune
       return gridLevel().boundaryIndex( insideInfo_.id(), insideInfo_.partitionNumber(), normalId_.face() );
     }
 
-    bool neighbor () const;
+    bool neighbor () const
+    {
+      return (!boundary() || gridLevel().template partition< All_Partition >().partition( insideInfo_.partitionNumber() ).hasNeighbor( indexInInside() ));
+    }
 
     Entity inside () const { return Entity( EntityImpl( insideInfo_ ) ); }
 
@@ -181,33 +184,22 @@ namespace Dune
   // --------------------------------
 
   template< class Grid >
-  inline bool SPIntersection< Grid >::neighbor () const
-  {
-    const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
-    const Partition &partition = allPartition.partition( insideInfo_.partitionNumber() );
-
-    return (partition.hasNeighbor( normalId_.face() ) || ((insideInfo_.id() + normalId_ + normalId_)*normalId_ <= partition.bound( normalId_ )));
-  }
-
-
-  template< class Grid >
   inline typename SPIntersection< Grid >::Entity
   SPIntersection< Grid >::outside () const
   {
+    MultiIndex id = insideInfo_.id() + normalId_ + normalId_;
+    if( !boundary() )
+      return Entity( EntityImpl( ElementInfo( gridLevel(), id, insideInfo_.partitionNumber() ) ) );
+
     const PartitionList &allPartition = gridLevel().template partition< All_Partition >();
     const Partition &partition = allPartition.partition( insideInfo_.partitionNumber() );
 
-    MultiIndex id = insideInfo_.id() + normalId_ + normalId_;
+    assert( partition.hasNeighbor( indexInInside() ) );
+    const Partition &nbPartition = allPartition.partition( partition.neighbor( indexInInside() ) );
 
-    if( id * normalId_ <= partition.bound( normalId_ ) )
-      return Entity( EntityImpl( ElementInfo( gridLevel(), id, partition.number() ) ) );
-
-    assert( partition.hasNeighbor( normalId_.face() ) );
-    const Partition &nbPartition = allPartition.partition( partition.neighbor( normalId_.face() ) );
     // manipulate id in case of periodic (i.e., transformed) neighbors
-    const int face = normalId_.face();
-    const int bound = nbPartition.bound( 1 - (face & 1) )[ face >> 1 ];
-    id[ face >> 1 ] = bound + (2*(face & 1) - 1)*(1 - (bound & 1));
+    const int bound = nbPartition.bound( -normalId_ );
+    id[ normalId_.axis() ] = bound + normalId_.sign()*(1 - (bound & 1));
     return Entity( EntityImpl( ElementInfo( gridLevel(), id, nbPartition.number() ) ) );
   }
 

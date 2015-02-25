@@ -38,7 +38,7 @@ namespace Dune
 
     const MultiIndex &bound ( int b ) const { assert( (b == 0) || (b == 1) ); return bound_[ b ]; }
 
-    int bound ( const SPNormalId< dimension > &id ) const { return bound( id.face() & 1 ) * id; }
+    int bound ( const SPNormalId< dimension > &id ) const { return bound( id.face() & 1 )[ id.axis() ]; }
 
     bool empty () const;
 

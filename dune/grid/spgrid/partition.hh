@@ -42,7 +42,7 @@ namespace Dune
       return bound( b )[ i ] - (2*b-1) * ((bound( b )[ i ] ^ d) & 1);
     }
 
-    int bound ( const SPNormalId< dimension > &id ) const { return bound( id.face() & 1 ) * id; }
+    int bound ( const SPNormalId< dimension > &id ) const { return bound( id.face() & 1 )[ id.axis() ]; }
 
     This intersect ( const This &other ) const
     {

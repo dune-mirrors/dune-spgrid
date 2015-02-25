@@ -72,12 +72,16 @@ namespace Dune
     template< class ct >
     operator SPNormalVector< ct, dimension > () const
     {
-      return SPNormalVector< ct, dimension >( face() >> 1, 2*(face() & 1)-1 );
+      return SPNormalVector< ct, dimension >( axis(), sign() );
     }
 
     This operator- () const { return This( face_ ^ 1 ); }
 
     int face () const { return face_; }
+
+    int axis () const { return (face() >> 1); }
+
+    int sign () const { return 2*(face() & 1) - 1; }
 
   private:
     int face_;
@@ -231,7 +235,7 @@ namespace Dune
   inline SPMultiIndex< dim > operator+ ( const SPMultiIndex< dim > &idA, const SPNormalId< dim > &idB )
   {
     SPMultiIndex< dim > idC( idA );
-    idC[ idB.face() >> 1 ] += 2*(idB.face() & 1) - 1;
+    idC[ idB.axis()] += idB.sign();
     return idC;
   }
 
@@ -240,7 +244,7 @@ namespace Dune
   inline SPMultiIndex< dim > operator+ ( const SPNormalId< dim > &idA, const SPMultiIndex< dim > &idB )
   {
     SPMultiIndex< dim > idC( idB );
-    idC[ idA.face() >> 1 ] += 2*(idA.face() & 1) - 1;
+    idC[ idA.axis() ] += idA.sign();
     return idC;
   }
 
@@ -249,7 +253,7 @@ namespace Dune
   inline SPMultiIndex< dim > operator- ( const SPMultiIndex< dim > &idA, const SPNormalId< dim > &idB )
   {
     SPMultiIndex< dim > idC( idA );
-    idC[ idB.face() >> 1 ] -= 2*(idB.face() & 1) - 1;
+    idC[ idB.axis() ] -= idB.sign();
     return idC;
   }
 
@@ -258,7 +262,7 @@ namespace Dune
   inline SPMultiIndex< dim > operator- ( const SPNormalId< dim > &idA, const SPMultiIndex< dim > &idB )
   {
     SPMultiIndex< dim > idC( -idB );
-    idC[ idA.face() >> 1 ] += 2*(idA.face() & 1) - 1;
+    idC[ idA.axis() ] += idA.sign();
     return idC;
   }
 
@@ -266,13 +270,13 @@ namespace Dune
   template< int dim >
   inline int operator* ( const SPMultiIndex< dim > &idA, const SPNormalId< dim > &idB )
   {
-    return (2*(idB.face() & 1) - 1) * idA[ idB.face() >> 1 ];
+    return idB.sign() * idA[ idB.axis() ];
   }
 
   template< int dim >
   inline int operator* ( const SPNormalId< dim > &idA, const SPMultiIndex< dim > &idB )
   {
-    return (2*(idA.face() & 1) - 1) * idB[ idA.face() >> 1 ];
+    return idA.sign() * idB[ idA.axis() ];
   }
 
 } // namespace Dune
