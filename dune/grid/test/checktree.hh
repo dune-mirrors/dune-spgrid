@@ -1,6 +1,7 @@
 #ifndef DUNE_GRID_TEST_CHECKTREE_HH
 #define DUNE_GRID_TEST_CHECKTREE_HH
 
+#include <functional>
 #include <iterator>
 
 #include <dune/geometry/dimension.hh>
@@ -9,6 +10,17 @@
 
 namespace Dune
 {
+
+  // External Forward Declarations
+  // -----------------------------
+
+  template< int, class, class >
+  class EntityTree;
+
+  template< class, class >
+  class IntersectionTree;
+
+
 
   // makeEntityTree
   // --------------
