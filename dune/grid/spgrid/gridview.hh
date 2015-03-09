@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_GRIDVIEW_HH
 #define DUNE_SPGRID_GRIDVIEW_HH
 
+#include <memory>
 #include <type_traits>
 
 #include <dune/grid/common/gridview.hh>
@@ -103,20 +104,11 @@ namespace Dune
 
     typedef SPIntersectionIterator< const Grid > IntersectionIteratorImpl;
 
-    SPGridView ();
+    SPGridView () : indexSet_( new IndexSet ) {}
 
-    explicit SPGridView ( const GridLevel &gridLevel );
+    explicit SPGridView ( const GridLevel &gridLevel ) : indexSet_( new IndexSet( gridLevel ) ) {}
 
   public:
-    template< class VT >
-    SPGridView ( const SPGridView< VT > &other );
-
-    SPGridView ( const This &other );
-
-    ~SPGridView ();
-
-    const This &operator= ( const This &other );
-
     const Grid &grid () const;
 
     const IndexSet &indexSet () const;
@@ -168,70 +160,16 @@ namespace Dune
 
     const GridLevel &gridLevel () const { return indexSet().gridLevel(); }
 
-    void update ( const GridLevel &gridLevel ) { indexSet_->first.update( gridLevel ); }
+    void update ( const GridLevel &gridLevel ) { assert( indexSet_ ); indexSet_->update( gridLevel ); }
 
   private:
-    IndexSetPair *indexSet_;
+    std::shared_ptr< IndexSet > indexSet_;
   };
 
 
 
   // Implementation of SPGridView
   // ----------------------------
-
-  template< class ViewTraits >
-  inline SPGridView< ViewTraits >::SPGridView ()
-  : indexSet_( new IndexSetPair )
-  {
-    indexSet_->second = 1;
-  }
-
-
-  template< class ViewTraits >
-  inline SPGridView< ViewTraits >::SPGridView ( const GridLevel &gridLevel )
-  : indexSet_( new IndexSetPair )
-  {
-    indexSet_->first.update( gridLevel );
-    indexSet_->second = 1;
-  }
-
-
-  template< class ViewTraits >
-  template< class VT >
-  inline SPGridView< ViewTraits >::SPGridView ( const SPGridView< VT > &other )
-  : indexSet_( other.indexSet_ )
-  {
-    ++indexSet_->second;
-  }
-
-
-  template< class ViewTraits >
-  inline SPGridView< ViewTraits >::SPGridView ( const This &other )
-  : indexSet_( other.indexSet_ )
-  {
-    ++indexSet_->second;
-  }
-
-
-  template< class ViewTraits >
-  inline SPGridView< ViewTraits >::~SPGridView ()
-  {
-    if( --indexSet_->second == 0 )
-      delete indexSet_;
-  }
-
-
-  template< class ViewTraits >
-  inline const typename SPGridView< ViewTraits >::This &
-  SPGridView< ViewTraits >::operator= ( const This &other )
-  {
-    ++other.indexSet_->second;
-    if( --indexSet_->second == 0 )
-      delete indexSet_;
-    indexSet_ = other.indexSet_;
-    return *this;
-  }
-
 
   template< class ViewTraits >
   inline const typename SPGridView< ViewTraits >::Grid &
@@ -245,7 +183,7 @@ namespace Dune
   inline const typename SPGridView< ViewTraits >::IndexSet &
   SPGridView< ViewTraits >::indexSet () const
   {
-    return indexSet_->first;
+    return *indexSet_;
   }
 
 
