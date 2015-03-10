@@ -124,6 +124,8 @@ namespace Dune
 
     DirectionIterator dirIt( entityInfo().direction() );
     ++dirIt;
+    for( ; dirIt && partition_->empty( *dirIt ); ++dirIt )
+      continue;
     if( dirIt )
     {
       for( int i = 0; i < dimension; ++i )
@@ -162,7 +164,8 @@ namespace Dune
     if( partition_ )
     {
       DirectionIterator dirIt;
-      for( ; dirIt && partition_->empty( *dirIt ); ++dirIt );
+      for( ; dirIt && partition_->empty( *dirIt ); ++dirIt )
+        continue;
       if( dirIt )
       {
         for( int i = 0; i < dimension; ++i )
