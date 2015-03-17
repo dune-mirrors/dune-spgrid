@@ -5,6 +5,7 @@
 
 #include <array>
 #include <memory>
+#include <utility>
 
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 
@@ -207,6 +208,9 @@ namespace Dune
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const MultiIndex &overlap,
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
+
+    SPGrid ( const This & ) = delete;
+    SPGrid ( This &&other );
 
     using Base::getRealImplementation;
 
@@ -552,6 +556,20 @@ namespace Dune
     leafGridView_( LeafGridViewImpl() ),
     hierarchicIndexSet_( *this ),
     comm_( comm )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >::SPGrid ( This &&other )
+  : domain_( std::move( other.domain_ ) ),
+    globalMesh_( std::move( other.globalMesh_ ) ),
+    overlap_( std::move( other.overlap_ ) ),
+    leafGridView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( std::move( other.comm_ ) )
   {
     createLocalGeometries();
     setupMacroGrid();
