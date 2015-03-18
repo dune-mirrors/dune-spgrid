@@ -100,7 +100,8 @@ namespace Dune
 
     bool neighbor () const
     {
-      return (!boundary() || gridLevel().template partition< All_Partition >().partition( insideInfo_.partitionNumber() ).hasNeighbor( indexInInside() ));
+      const Partition &partition = gridLevel().template partition< All_Partition >().partition( insideInfo_.partitionNumber() );
+      return ((insideInfo_.id()[ normalId_.axis() ] + normalId_.sign() != partition.bound( normalId_ )) || partition.hasNeighbor( indexInInside() ));
     }
 
     Entity inside () const { return Entity( EntityImpl( insideInfo_ ) ); }
