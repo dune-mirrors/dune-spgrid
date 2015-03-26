@@ -67,6 +67,8 @@ namespace Dune
   public:
     static const int dimension = dim;
 
+    SPNormalId () : face_( 2*dimension ) {}
+
     explicit SPNormalId ( int face ) : face_( face ) {}
 
     template< class ct >

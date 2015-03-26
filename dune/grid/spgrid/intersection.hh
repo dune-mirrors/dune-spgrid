@@ -70,6 +70,8 @@ namespace Dune
     typedef typename PartitionList::Partition Partition;
 
   public:
+    SPIntersection () = default;
+
     SPIntersection ( const ElementInfo &insideInfo, int face )
       : normalId_( face ),
         insideInfo_( insideInfo )

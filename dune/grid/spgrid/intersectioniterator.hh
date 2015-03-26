@@ -25,6 +25,8 @@ namespace Dune
     typedef typename IntersectionImpl::ElementInfo ElementInfo;
     typedef typename IntersectionImpl::GridLevel GridLevel;
 
+    SPIntersectionIterator () = default;
+
     SPIntersectionIterator ( const ElementInfo &insideInfo, const int face )
       : intersection_( IntersectionImpl( insideInfo, face ) )
     {}
