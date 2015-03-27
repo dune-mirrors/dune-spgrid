@@ -8,6 +8,7 @@
 #include <dune/grid/albertagrid/geometryreference.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
+#include <dune/grid/common/entitypointer.hh>
 #include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
@@ -35,7 +36,7 @@ namespace Dune
     template< class, class >
     class TreeIterator;
 
-  }
+  } // namespace __SPGrid
 
 
 
@@ -96,8 +97,7 @@ namespace Dune
 
         typedef Dune::EntitySeed< const Grid, SPEntitySeed< codim, const Grid > > EntitySeed;
 
-        //typedef Dune::EntityPointer< const Grid, SPEntityPointer< codim, const Grid > > EntityPointer;
-        typedef Entity EntityPointer;
+        typedef Dune::EntityPointer< const Grid, DefaultEntityPointer< Entity > > EntityPointer;
 
         typedef SPLocalGeometry< dim - codim, dim, const Grid > LocalGeometryImpl;
 
@@ -443,8 +443,8 @@ namespace Dune
     typename Traits::template Codim< Seed::codimension >::EntityPointer
     entityPointer ( const Seed &seed ) const
     {
-      typedef typename Traits::template Codim< Seed::codimension >::EntityPointerImpl EntityPointerImpl;
-      return EntityPointerImpl( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
+      typedef typename Traits::template Codim< Seed::codimension >::Entity Entity;
+      return DefaultEntityPointer< Entity >( entity( seed ) );
     }
 
     template< int codim >
