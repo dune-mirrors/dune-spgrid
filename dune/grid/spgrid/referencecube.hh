@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <dune/common/fvector.hh>
-#include <dune/common/tuples/sequence.hh>
+#include <dune/common/std/utility.hh>
 
 #include <dune/grid/spgrid/multiindex.hh>
 #include <dune/grid/spgrid/normal.hh>
@@ -212,10 +212,10 @@ namespace Dune
     }
 
   private:
-    template< class... I >
-    static std::tuple< typename Codim< I::value >::ReferenceCube... > makeRefCubeTable ( std::tuple< I... > );
+    template< int... codim >
+    static std::tuple< typename Codim< codim >::ReferenceCube... > makeRefCubeTable ( std::integer_sequence< int, codim... > );
 
-    decltype( makeRefCubeTable( sequence< int, dimension+1 >() ) ) refCubes_;
+    decltype( makeRefCubeTable( Std::make_integer_sequence< int, dimension+1 >() ) ) refCubes_;
   };
 
 } // namespace Dune
