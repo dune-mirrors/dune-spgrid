@@ -24,7 +24,7 @@ dune_define_gridtype(GRID_CONFIG_H_BOTTOM
                      ASSERTION "GRIDDIM == WORLDDIM"
                      DUNETYPE "Dune::SPGrid< double, dimgrid, SPBisectionRefinement >"
                      HEADERS "dune/grid/spgrid.hh" "dune/grid/spgrid/dgfparser.hh")
-  
+
 dune_define_gridtype(GRID_CONFIG_H_BOTTOM
                      GRIDTYPE SPGRID_ISOTROPIC_SERIAL
                      ASSERTION "GRIDDIM == WORLDDIM"
@@ -39,4 +39,9 @@ dune_define_gridtype(GRID_CONFIG_H_BOTTOM
                      GRIDTYPE SPGRID_BISECTION_SERIAL
                      ASSERTION "GRIDDIM == WORLDDIM"
                      DUNETYPE "Dune::SPGrid< double, dimgrid, SPBisectionRefinement, No_Comm >"
+                     HEADERS "dune/grid/spgrid.hh" "dune/grid/spgrid/dgfparser.hh")
+dune_define_gridtype(GRID_CONFIG_H_BOTTOM
+                     GRIDTYPE SPGRID_COUNT_FLOPS
+                     ASSERTION "GRIDDIM == WORLDDIM"
+                     DUNETYPE "Dune::SPGrid< Dune::SPGridCountFlopsDoubleType, dimgrid >"
                      HEADERS "dune/grid/spgrid.hh" "dune/grid/spgrid/dgfparser.hh")

@@ -21,8 +21,21 @@
 #include <dune/grid/spgrid/hindexset.hh>
 #include <dune/grid/spgrid/fileio.hh>
 
+#if HAVE_DUNE_FEM && defined(COUNT_FLOPS)
+#include <dune/fem/misc/double.hh>
+#endif
+
 namespace Dune
 {
+
+// this typedef is needed for GRIDTYPE=SPGRID_COUNT_FLOPS
+#if HAVE_DUNE_FEM && defined(COUNT_FLOPS)
+#warning "SPGrid with COUNT_FLOPS endabled!"
+  typedef Dune::Fem::Double  SPGridCountFlopsDoubleType ;
+#elif defined(COUNT_FLOPS)
+#warning "COUNT_FLOPS defined but dune-fem not available, not counting flops for SPGrid!"
+  typedef double SPGridCountFlopsDoubleType ;
+#endif
 
   // External Forward Declarations
   // -----------------------------
@@ -184,7 +197,7 @@ namespace Dune
     struct Partition
     : Base::template Partition< pitype >
     {};
-    
+
     typedef typename Partition< All_Partition >::LevelGridView LevelGridView;
     typedef typename Partition< All_Partition >::LeafGridView LeafGridView;
 
@@ -504,7 +517,7 @@ namespace Dune
     void setupBoundaryIndices ();
 
     static CollectiveCommunication defaultCommunication ();
-  
+
     Domain domain_;
     Mesh globalMesh_;
     MultiIndex overlap_;

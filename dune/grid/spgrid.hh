@@ -10,12 +10,12 @@
 namespace Dune
 {
 
-  namespace Fem 
+  namespace Fem
   {
 
     // External Forward Declarations
     // -----------------------------
-    
+
     template< class Grid >
     struct TwistFreeTwistUtility;
 
@@ -27,12 +27,12 @@ namespace Dune
     // TwistUtility for SPGrid
     // -----------------------
 
-    template< class ct, int dim, template< int > class Ref, class Comm > 
-    struct TwistUtility< SPGrid< ct, dim, Ref, Comm > > 
+    template< class ct, int dim, template< int > class Ref, class Comm >
+    struct TwistUtility< SPGrid< ct, dim, Ref, Comm > >
       : public TwistFreeTwistUtility< SPGrid< ct, dim, Ref, Comm > >
     {};
 
-  } // end namespace Fem 
+  } // end namespace Fem
 
 } // namespace Dune
 
