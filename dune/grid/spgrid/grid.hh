@@ -29,10 +29,10 @@ namespace Dune
 {
 
 // this typedef is needed for GRIDTYPE=SPGRID_COUNT_FLOPS
-#if HAVE_DUNE_FEM && defined(COUNT_FLOPS)
+#if HAVE_DUNE_FEM && defined(COUNT_FLOPS) && defined(SPGRID_COUNT_FLOPS)
 #warning "SPGrid with COUNT_FLOPS endabled!"
   typedef Dune::Fem::Double  SPGridCountFlopsDoubleType ;
-#elif defined(COUNT_FLOPS)
+#elif defined(COUNT_FLOPS) && defined(SPGRID_COUNT_FLOPS)
 #warning "COUNT_FLOPS defined but dune-fem not available, not counting flops for SPGrid!"
   typedef double SPGridCountFlopsDoubleType ;
 #endif
