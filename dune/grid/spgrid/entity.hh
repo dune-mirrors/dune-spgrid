@@ -58,6 +58,8 @@ namespace Dune
     typedef SPHierarchicIterator< Grid, codimension > HierarchicIteratorImpl;
 
   public:
+    SPBasicEntity () {}
+
     explicit SPBasicEntity ( const EntityInfo &entityInfo )
     : entityInfo_( entityInfo )
     {}
@@ -148,6 +150,8 @@ namespace Dune
 
     typedef typename GridLevel::MultiIndex MultiIndex;
 
+    SPEntity () {}
+
     explicit SPEntity ( const EntityInfo &entityInfo )
      : Base( entityInfo )
     {}
@@ -193,6 +197,8 @@ namespace Dune
     static const int numFaces = GridLevel::ReferenceCube::numFaces;
 
   public:
+    SPEntity () {}
+
     explicit SPEntity ( const EntityInfo &entityInfo )
      : Base( entityInfo )
     {}
