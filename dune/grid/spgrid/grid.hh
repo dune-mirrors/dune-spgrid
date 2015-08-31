@@ -21,21 +21,8 @@
 #include <dune/grid/spgrid/hindexset.hh>
 #include <dune/grid/spgrid/fileio.hh>
 
-#if HAVE_DUNE_FEM && defined(COUNT_FLOPS)
-#include <dune/fem/misc/double.hh>
-#endif
-
 namespace Dune
 {
-
-// this typedef is needed for GRIDTYPE=SPGRID_COUNT_FLOPS
-#if HAVE_DUNE_FEM && defined(COUNT_FLOPS) && defined(SPGRID_COUNT_FLOPS)
-#warning "SPGrid with COUNT_FLOPS endabled!"
-  typedef Dune::Fem::Double  SPGridCountFlopsDoubleType ;
-#elif defined(COUNT_FLOPS) && defined(SPGRID_COUNT_FLOPS)
-#warning "COUNT_FLOPS defined but dune-fem not available, not counting flops for SPGrid!"
-  typedef double SPGridCountFlopsDoubleType ;
-#endif
 
   // External Forward Declarations
   // -----------------------------
