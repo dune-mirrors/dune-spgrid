@@ -30,14 +30,12 @@ namespace Dune
   // SPGridViewTraits
   // ----------------
 
-  template< class G, PartitionIteratorType pitype >
+  template< class G >
   struct SPGridViewTraits
   {
-    typedef SPGridView< SPGridViewTraits< G, pitype > > GridViewImp;
+    typedef SPGridView< SPGridViewTraits< G > > GridViewImp;
 
     typedef typename std::remove_const< G >::type Grid;
-
-    static const PartitionIteratorType partitionIteratorType = pitype;
 
     typedef SPIndexSet< const Grid > IndexSet;
     typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > Intersection;
@@ -66,8 +64,8 @@ namespace Dune
         typedef Dune::EntityIterator< codim, const Grid, IteratorImpl > Iterator;
       };
 
-      typedef typename Partition< pitype >::Iterator Iterator;
-      typedef typename Partition< pitype >::IteratorImpl IteratorImpl;
+      typedef typename Partition< All_Partition >::Iterator Iterator;
+      typedef typename Partition< All_Partition >::IteratorImpl IteratorImpl;
 
       static const bool hasSuperEntityIterator = true;
       typedef Dune::SuperEntityIterator< const Grid, SPSuperEntityIterator > SuperEntityIterator;
@@ -293,7 +291,7 @@ namespace Dune
   {
     typedef typename Codim< codim >::IteratorImpl IteratorImpl;
     typename IteratorImpl::Begin begin;
-    return IteratorImpl( gridLevel(), gridLevel().template partition< ViewTraits::partitionIteratorType >(), begin, sweepDir );
+    return IteratorImpl( gridLevel(), gridLevel().template partition< All_Partition >(), begin, sweepDir );
   }
 
 
@@ -304,7 +302,7 @@ namespace Dune
   {
     typedef typename Codim< codim >::IteratorImpl IteratorImpl;
     typename IteratorImpl::End end;
-    return IteratorImpl( gridLevel(), gridLevel().template partition< ViewTraits::partitionIteratorType >(), end, sweepDir );
+    return IteratorImpl( gridLevel(), gridLevel().template partition< All_Partition >(), end, sweepDir );
   }
 
 

@@ -115,12 +115,8 @@ namespace Dune
         typedef typename Partition< All_Partition >::LeafIterator LeafIterator;
       };
 
-      template< PartitionIteratorType pitype >
-      struct Partition
-      {
-        typedef Dune::GridView< SPGridViewTraits< const Grid, pitype > > LevelGridView;
-        typedef Dune::GridView< SPGridViewTraits< const Grid, pitype > > LeafGridView;
-      };
+      typedef Dune::GridView< SPGridViewTraits< const Grid > > LevelGridView;
+      typedef Dune::GridView< SPGridViewTraits< const Grid > > LeafGridView;
     };
   };
 
@@ -180,13 +176,8 @@ namespace Dune
       typedef typename Traits::template Codim< codim >::LocalGeometryImpl LocalGeometryImpl;
     };
 
-    template< PartitionIteratorType pitype >
-    struct Partition
-    : Base::template Partition< pitype >
-    {};
-
-    typedef typename Partition< All_Partition >::LevelGridView LevelGridView;
-    typedef typename Partition< All_Partition >::LeafGridView LeafGridView;
+    typedef typename Base::LevelGridView LevelGridView;
+    typedef typename Base::LeafGridView LeafGridView;
 
     typedef typename LevelGridView::IndexSet LevelIndexSet;
     typedef typename LeafGridView::IndexSet LeafIndexSet;
@@ -269,16 +260,13 @@ namespace Dune
       return leafGridView().size( type );
     }
 
-    template< PartitionIteratorType pitype >
-    typename Traits::template Partition< pitype >::LevelGridView
-    levelGridView ( const int level ) const;
+    LevelGridView levelGridView ( int level ) const
+    {
+      assert( (level >= 0) && (level <= maxLevel()) );
+      return levelGridViews_[ level ];
+    }
 
-    template< PartitionIteratorType pitype >
-    typename Traits::template Partition< pitype >::LeafGridView
-    leafGridView () const;
-
-    LevelGridView levelGridView ( const int level ) const;
-    LeafGridView leafGridView () const;
+    LeafGridView leafGridView () const { return leafGridView_; }
 
     template< int codim, PartitionIteratorType pitype >
     typename Traits::template Codim< codim >::template Partition< pitype >::LevelIterator
@@ -601,48 +589,6 @@ namespace Dune
   {
     createLocalGeometries();
     setupMacroGrid();
-  }
-
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
-  template< PartitionIteratorType pitype >
-  typename SPGrid< ct, dim, Ref, Comm >::Traits::template Partition< pitype >::LevelGridView
-  SPGrid< ct, dim, Ref, Comm >::levelGridView ( const int level ) const
-  {
-    typedef typename Traits::template Partition< pitype >::LevelGridView GridView;
-    typedef typename GridView::Traits::GridViewImp GridViewImpl;
-    assert( (level >= 0) && (level <= maxLevel()) );
-    const LevelGridViewImpl &viewImpl = getRealImplementation( levelGridViews_[ level ] );
-    return GridViewImpl( viewImpl );
-  }
-
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
-  template< PartitionIteratorType pitype >
-  typename SPGrid< ct, dim, Ref, Comm >::Traits::template Partition< pitype >::LeafGridView
-  SPGrid< ct, dim, Ref, Comm >::leafGridView () const
-  {
-    typedef typename Traits::template Partition< pitype >::LeafGridView GridView;
-    typedef typename GridView::Traits::GridViewImp GridViewImpl;
-    const LeafGridViewImpl &viewImpl = getRealImplementation( leafGridView_ );
-    return GridViewImpl( viewImpl );
-  }
-
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
-  typename SPGrid< ct, dim, Ref, Comm >::LevelGridView
-  SPGrid< ct, dim, Ref, Comm >::levelGridView ( const int level ) const
-  {
-    assert( (level >= 0) && (level <= maxLevel()) );
-    return levelGridViews_[ level ];
-  }
-
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
-  typename SPGrid< ct, dim, Ref, Comm >::LeafGridView
-  SPGrid< ct, dim, Ref, Comm >::leafGridView () const
-  {
-    return leafGridView_;
   }
 
 
