@@ -9,7 +9,6 @@
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
 #include <dune/grid/common/entitypointer.hh>
-#include <dune/grid/utility/grapedataioformattypes.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/direction.hh>
