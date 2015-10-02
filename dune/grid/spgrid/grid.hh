@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_GRID_HH
 #define DUNE_SPGRID_GRID_HH
 
+#include <cstddef>
+
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 
 #include <dune/geometry/genericgeometry/codimtable.hh>
@@ -470,11 +472,11 @@ namespace Dune
     const GridLevel &gridLevel ( const int level ) const;
     const GridLevel &leafLevel () const;
 
-    size_t numBoundarySegments () const;
+    std::size_t numBoundarySegments () const;
 
   private:
     // note: this method ignores the last bit of the macroId
-    size_t boundaryIndex ( const MultiIndex &macroId,
+    std::size_t boundaryIndex ( const MultiIndex &macroId,
                            const unsigned int partitionNumber,
                            const int face ) const;
 
@@ -503,8 +505,8 @@ namespace Dune
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
-    size_t boundarySize_;
-    std::vector< array< size_t, 2*dimension > > boundaryOffset_;
+    std::size_t boundarySize_;
+    std::vector< array< std::size_t, 2*dimension > > boundaryOffset_;
     const typename Codim< 1 >::LocalGeometryImpl *localFaceGeometry_[ ReferenceCube::numFaces ];
   };
 
@@ -703,7 +705,7 @@ namespace Dune
 
 
   template< class ct, int dim, template< int > class Ref, class Comm >
-  inline size_t SPGrid< ct, dim, Ref, Comm >::numBoundarySegments () const
+  inline std::size_t SPGrid< ct, dim, Ref, Comm >::numBoundarySegments () const
   {
     return boundarySize_;
   }
@@ -711,7 +713,7 @@ namespace Dune
 
   // note: this method ignores the last bit of the macroId
   template< class ct, int dim, template< int > class Ref, class Comm >
-  inline size_t SPGrid< ct, dim, Ref, Comm >
+  inline std::size_t SPGrid< ct, dim, Ref, Comm >
     ::boundaryIndex ( const MultiIndex &macroId,
                       const unsigned int partitionNumber,
                       const int face ) const
@@ -723,8 +725,8 @@ namespace Dune
     const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
     const typename PartitionList::Partition &partition = partitions.partition( partitionNumber );
 
-    size_t index = 0;
-    size_t factor = 1;
+    std::size_t index = 0;
+    std::size_t factor = 1;
     for( int i = 0; i < dimension; ++i )
     {
       if( i == face/2 )
@@ -734,8 +736,8 @@ namespace Dune
       const int k = (macroId[ i ] - partition.begin()[ i ]) >> 1;
       const int w = (partition.end()[ i ] - partition.begin()[ i ]) >> 1;
       assert( (k >= 0) && (k < w) );
-      index += size_t( k ) * factor;
-      factor *= size_t( w );
+      index += std::size_t( k ) * factor;
+      factor *= std::size_t( w );
     }
     return index + boundaryOffset_[ partitionNumber - partitions.minNumber() ][ face ];
   }
@@ -809,9 +811,9 @@ namespace Dune
       {
         // note: the OverlapFront_Partition is closed, i.e.,
         //       begin()[ i ] & 1 == end()[ i ] & 1 == 0.
-        size_t size = 1;
+        std::size_t size = 1;
         for( int j = 0; j < dimension; ++j )
-          size *= (i == j ? 1 : size_t( (it->end()[ j ] - it->begin()[ j ]) >> 1 ));
+          size *= (i == j ? 1 : std::size_t( (it->end()[ j ] - it->begin()[ j ]) >> 1 ));
 
         // offset for lower boundary
         boundaryOffset_[ partitionIndex ][ 2*i ] = boundarySize_;
