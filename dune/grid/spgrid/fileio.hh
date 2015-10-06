@@ -44,10 +44,7 @@ namespace Dune
     bool read ( const std::string &filename );
 
   private:
-    static std::pair< unsigned int, unsigned int > version ()
-    {
-      return std::pair< unsigned int, unsigned int >( DUNE_SPGRID_VERSION_MAJOR, DUNE_SPGRID_VERSION_MINOR );
-    }
+    static std::pair< unsigned int, unsigned int > version () { return std::make_pair( 2, 4 ); }
 
     static std::string readLine ( std::istream &stream, unsigned int *count = 0 );
   };
