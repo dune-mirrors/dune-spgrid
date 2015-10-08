@@ -43,8 +43,8 @@ namespace Dune
     typedef typename PartitionList::Partition Partition;
 
   public:
-    SPIndexSet ();
-    explicit SPIndexSet ( const GridLevel &gridLevel );
+    SPIndexSet () = default;
+    explicit SPIndexSet ( const GridLevel &gridLevel ) { update( gridLevel ); }
 
     void update ( const GridLevel &gridLevel );
 
@@ -55,8 +55,6 @@ namespace Dune
     IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, cd > ) const;
     IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const;
     IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const;
-
-    void makeGeomTypes ();
 
   public:
     template< class Entity >
@@ -78,8 +76,6 @@ namespace Dune
       return {{ GeometryType( type ) }};
     }
 
-    const std::vector< GeometryType > &geomTypes ( const int codim ) const;
-
     IndexType size ( const GeometryType &type ) const;
     IndexType size ( const int codim ) const;
 
@@ -89,41 +85,21 @@ namespace Dune
     template< int codim >
     bool contains ( const typename Codim< codim >::Entity &entity ) const;
 
-    const GridLevel &gridLevel () const;
+    const GridLevel &gridLevel () const { return *gridLevel_; }
 
-    const PartitionList &partitions () const;
+    const PartitionList &partitions () const { assert( partitions_ ); return *partitions_; }
 
   private:
-    const GridLevel *gridLevel_;
-    const PartitionList *partitions_;
+    const GridLevel *gridLevel_ = nullptr;
+    const PartitionList *partitions_ = nullptr;
     std::vector< std::array< IndexType, 1 << dimension > > offsets_;
     IndexType size_[ dimension+1 ];
-    std::vector< GeometryType > geomTypes_[ dimension+1 ];
   };
 
 
 
   // Implementation of SPIndexSet
   // ----------------------------
-
-  template< class Grid >
-  inline SPIndexSet< Grid >::SPIndexSet ()
-    : gridLevel_( 0 ),
-      partitions_( 0 )
-  {
-    makeGeomTypes();
-  }
-
-
-  template< class Grid >
-  inline SPIndexSet< Grid >::SPIndexSet ( const GridLevel &gridLevel )
-    : gridLevel_( 0 ),
-      partitions_( 0 )
-  {
-    makeGeomTypes();
-    update( gridLevel );
-  }
-
 
   template< class Grid >
   void SPIndexSet< Grid >::update ( const GridLevel &gridLevel )
@@ -220,18 +196,6 @@ namespace Dune
 
 
   template< class Grid >
-  inline void SPIndexSet< Grid >::makeGeomTypes ()
-  {
-    for( int codim = 0; codim <= dimension; ++codim )
-    {
-      GeometryType type;
-      type.makeCube( dimension - codim );
-      geomTypes_[ codim ].push_back( type );
-    }
-  }
-
-
-  template< class Grid >
   template< class Entity >
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >::index ( const Entity &entity ) const
@@ -276,15 +240,6 @@ namespace Dune
 
 
   template< class Grid >
-  inline const std::vector< GeometryType > &
-  SPIndexSet< Grid >::geomTypes ( const int codim ) const
-  {
-    assert( (codim >= 0) && (codim <= dimension) );
-    return geomTypes_[ codim ];
-  }
-
-
-  template< class Grid >
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >::size ( const GeometryType &type ) const
   {
@@ -318,23 +273,6 @@ namespace Dune
       = Grid::getRealImplementation( entity ).entityInfo();
     assert( partitions().contains( entityInfo.partitionNumber() ) );
     return (&entityInfo.gridLevel() == &gridLevel());
-  }
-
-
-  template< class Grid >
-  inline const typename SPIndexSet< Grid >::GridLevel &
-  SPIndexSet< Grid >::gridLevel () const
-  {
-    return *gridLevel_;
-  }
-
-
-  template< class Grid >
-  inline const typename SPIndexSet< Grid >::PartitionList &
-  SPIndexSet< Grid >::partitions () const
-  {
-    assert( partitions_ != 0 );
-    return *partitions_;
   }
 
 } // namespace Dune
