@@ -76,18 +76,6 @@ namespace Dune
     };
 
 #if HAVE_MPI
-    /** \brief Does a grid support parallel programs?
-     *
-     *  \tparam  Grid  grid for which the information is desired
-     */
-    template< class ct, int dim, template< int > class Ref >
-    struct isParallel< SPGrid< ct, dim, Ref, MPI_Comm > >
-    {
-      /** \brief \ref Dune::SPGrid "SPGrid" with MPI_Comm supports
-       *         parallelism */
-      static const bool v = true;
-    };
-
     /** \brief Can a parallel grid communicate on a given codimension?
      *
      *  \tparam  Grid   grid for which the information is desired
