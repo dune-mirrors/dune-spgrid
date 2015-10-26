@@ -20,7 +20,7 @@ foreach( gridfile ${GRIDFILES} )
   configure_file( ${gridfile} ${CMAKE_CURRENT_BINARY_DIR}/${gridfile} COPYONLY )
 endforeach()
 
-foreach( test bndsegcheck decomposition test-spgrid )
+foreach( test bndsegcheck decomposition )
   foreach( dimgrid RANGE 1 6 )
     set( testtarget ${test}-${dimgrid} )
     add_executable( ${testtarget} EXCLUDE_FROM_ALL ${test}.cc )
@@ -30,11 +30,12 @@ foreach( test bndsegcheck decomposition test-spgrid )
   endforeach()
 endforeach()
 
-add_directory_test_target( alltests )
 foreach( test test-spgrid )
   foreach( dimgrid RANGE 1 6 )
-    set( testtarget ${test}-${dimgrid} )
-    add_test( ${testtarget} ${testtarget} )
-    add_dependencies( ${alltests} ${testtarget} ) 
+    dune_add_test(
+      NAME ${test}-${dimgrid}
+      SOURCES ${test}.cc
+      COMPILE_DEFINITIONS "DIMGRID=${dimgrid}"
+    )
   endforeach()
 endforeach()
