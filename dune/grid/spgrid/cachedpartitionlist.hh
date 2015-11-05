@@ -3,8 +3,6 @@
 
 #include <limits>
 
-#include <dune/common/nullptr.hh>
-
 #include <dune/grid/common/exceptions.hh>
 
 #include <dune/grid/spgrid/partitionlist.hh>
