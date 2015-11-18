@@ -1,4 +1,5 @@
 Module: dune-spgrid
 Version: 2.4
 Maintainer: nolte@mathematik.uni-freiburg.de
+Whitespace-Hook: Yes
 Depends: dune-grid (>= 2.4)
