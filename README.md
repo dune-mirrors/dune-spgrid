@@ -1,24 +1,24 @@
-
-dune-spgrid
------------
+Dune-SPGrid
+===========
 
 The DUNE module dune-spgrid provides a structured, parallel grid. Though the
 dune-grid module already contains two structured grids, SGrid and YaspGrid,
 both lack several important features (see below for details).
 
 
-Features:
+Features
+--------
 
 The following table compares the features of SPGrid to those of SGrid and
 YaspGrid:
 
-                                      | SGrid    | YaspGrid | SPGrid
---------------------------------------+----------+----------+----------
-Provides entities for codimensions    |   all    |  0, dim  |    all
-Can communicate on codimensions       |   none   |  0, dim  |    all
-Coordinate type is template parameter |    no    |    no    |    yes
-Supports anisotropic refinement       |    no    |    no    |    yes
-Supports periodicity                  |    no    |    no    |    yes
+|                                       | SGrid  | YaspGrid | SPGrid |
+| :------------------------------------ | :----: | :------: | :----: |
+| Provides entities for codimensions    | all    | 0, dim   | all    |
+| Can communicate on codimensions       | none   | 0, dim   | all    |
+| Coordinate type is template parameter | no     | no       | yes    |
+| Supports anisotropic refinement       | no     | no       | yes    |
+| Supports periodicity                  | no     | no       | yes    |
 
 SPGrid supports difference (global) refinement techniques, selected by a
 template parameter. Some refinement techniques allow an optional parameter,
@@ -31,14 +31,15 @@ split direction can be given by the policy. If no policy is given, the split
 directions are cycled through. By default, isotropic refinement is used.
 
 
-Preprocessor Magic:
+Preprocessor Magic
+------------------
 
 SPGrid can be used through the preprocessor magic. The following table shows how
 to select different variants of SPGrid:
 
-GRIDTYPE           | Refinement
--------------------+-----------------------
-SPGRID             | Default (Anisotropic)
-SPGRID_ISOTROPIC   | Isotropic
-SPGRID_ANISOTROPIC | Anisotropic
-SPGRID_BISECTION   | Bisection
+| GRIDTYPE           | Refinement            |
+| :----------------- | :-------------------- |
+| SPGRID             | Default (Anisotropic) |
+| SPGRID_ISOTROPIC   | Isotropic             |
+| SPGRID_ANISOTROPIC | Anisotropic           |
+| SPGRID_BISECTION   | Bisection             |
