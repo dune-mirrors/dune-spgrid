@@ -17,7 +17,7 @@ namespace Dune
   namespace SPReferenceCubeHelper
   {
 
-    inline unsigned int
+    inline static unsigned int
     numSubEntities ( const unsigned int dimension, const unsigned int codim )
     {
       assert( codim <= dimension );
