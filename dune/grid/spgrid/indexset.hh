@@ -52,9 +52,9 @@ namespace Dune
     IndexType index ( const MultiIndex &id, unsigned int number ) const;
 
     template< int cd >
-    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, cd > ) const;
-    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const;
-    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const;
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, std::integral_constant< int, cd > ) const;
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, std::integral_constant< int, 0 > ) const;
+    IndexType subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, std::integral_constant< int, dimension > ) const;
 
   public:
     template< class Entity >
@@ -164,7 +164,7 @@ namespace Dune
   template< int cd >
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >
-    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, cd > ) const
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, std::integral_constant< int, cd > ) const
   {
     const int mydim = dimension - cd;
     const SPMultiIndex< mydim > refId = gridLevel().template referenceCube< cd >().subId( codim - cd, i );
@@ -180,7 +180,7 @@ namespace Dune
   template< class Grid >
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >
-    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, 0 > ) const
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, std::integral_constant< int, 0 > ) const
   {
     return index( id + gridLevel().referenceCube().subId( codim, i ), number );
   }
@@ -188,7 +188,7 @@ namespace Dune
   template< class Grid >
   inline typename SPIndexSet< Grid >::IndexType
   SPIndexSet< Grid >
-    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, integral_constant< int, dimension > ) const
+    ::subIndex ( const MultiIndex &id, int i, int codim, unsigned int number, std::integral_constant< int, dimension > ) const
   {
     assert( (codim == dimension) && (i == 0) );
     return index( id, number );
@@ -235,7 +235,7 @@ namespace Dune
     const typename Codim< cd >::EntityInfo &entityInfo
       = Grid::getRealImplementation( entity ).entityInfo();
     // for the ghost approach, the partition number has to be corrected
-    return subIndex( entityInfo.id(), i, codim, entityInfo.partitionNumber(), integral_constant< int, cd >() );
+    return subIndex( entityInfo.id(), i, codim, entityInfo.partitionNumber(), std::integral_constant< int, cd >() );
   }
 
 

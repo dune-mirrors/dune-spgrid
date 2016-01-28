@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_IDSET_HH
 #define DUNE_SPGRID_IDSET_HH
 
+#include <type_traits>
+
 #include <dune/grid/common/indexidset.hh>
 
 #include <dune/grid/spgrid/entityinfo.hh>
@@ -14,7 +16,7 @@ namespace Dune
 
   template< class Grid >
   class SPLocalIdSet
-  : public IdSet< Grid, SPLocalIdSet< Grid >, unsigned long >
+    : public IdSet< Grid, SPLocalIdSet< Grid >, unsigned long >
   {
     typedef SPLocalIdSet< Grid > This;
     typedef IdSet< Grid, This, unsigned long > Base;
@@ -45,11 +47,11 @@ namespace Dune
 
     template< int cd >
     IdType computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
-                          int i, int codim, integral_constant< int, cd > ) const;
+                          int i, int codim, std::integral_constant< int, cd > ) const;
     IdType computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
-                          int i, int codim, integral_constant< int, 0 > ) const;
+                          int i, int codim, std::integral_constant< int, 0 > ) const;
     IdType computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
-                          int i, int codim, integral_constant< int, dimension > ) const;
+                          int i, int codim, std::integral_constant< int, dimension > ) const;
 
   public:
     template< class Entity >
@@ -78,7 +80,7 @@ namespace Dune
       const typename Codim< cd >::EntityInfo &entityInfo
         = Grid::getRealImplementation( entity ).entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
-      return computeSubId( gridLevel, entityInfo.id(), i, codim, integral_constant< int, cd >() );
+      return computeSubId( gridLevel, entityInfo.id(), i, codim, std::integral_constant< int, cd >() );
     }
   };
 
@@ -115,7 +117,7 @@ namespace Dune
   typename SPLocalIdSet< Grid >::IdType
   inline SPLocalIdSet< Grid >
     ::computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
-                     int i, int codim, integral_constant< int, cd > ) const
+                     int i, int codim, std::integral_constant< int, cd > ) const
   {
     const int mydim = dimension - cd;
     const SPMultiIndex< mydim > refId = gridLevel.template referenceCube< cd >().subId( codim - cd, i );
@@ -132,7 +134,7 @@ namespace Dune
   typename SPLocalIdSet< Grid >::IdType
   inline SPLocalIdSet< Grid >
     ::computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
-                     int i, int codim, integral_constant< int, 0 > ) const
+                     int i, int codim, std::integral_constant< int, 0 > ) const
   {
     return computeId( gridLevel, id + gridLevel.referenceCube().subId( codim, i ) );
   }
@@ -141,7 +143,7 @@ namespace Dune
   typename SPLocalIdSet< Grid >::IdType
   inline SPLocalIdSet< Grid >
     ::computeSubId ( const GridLevel &gridLevel, const MultiIndex &id,
-                     int i, int codim, integral_constant< int, dimension > ) const
+                     int i, int codim, std::integral_constant< int, dimension > ) const
   {
     assert( (codim == dimension) && (i == 0) );
     return computeId( gridLevel, id );

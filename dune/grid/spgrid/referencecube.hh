@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_REFERENCECUBE_HH
 #define DUNE_SPGRID_REFERENCECUBE_HH
 
+#include <type_traits>
 #include <vector>
 
 #include <dune/common/fvector.hh>
@@ -210,7 +211,7 @@ namespace Dune
     template< int codim >
     const typename Codim< codim >::ReferenceCube &get () const
     {
-      integral_constant< int, codim > codimVariable;
+      std::integral_constant< int, codim > codimVariable;
       return refCubes_[ codimVariable ];
     }
 
