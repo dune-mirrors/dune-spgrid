@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_INTERSECTIONITERATOR_HH
 #define DUNE_SPGRID_INTERSECTIONITERATOR_HH
 
+#include <type_traits>
+
 #include <dune/grid/spgrid/intersection.hh>
 
 #include <dune/grid/common/intersectioniterator.hh>
@@ -16,7 +18,7 @@ namespace Dune
   {
     typedef SPIntersectionIterator< Grid > This;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
     typedef SPIntersection< Grid > IntersectionImpl;
 

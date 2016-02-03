@@ -3,6 +3,7 @@
 
 //- C++ includes
 #include <cassert>
+#include <type_traits>
 
 //- dune-common includes
 #include <dune/common/exceptions.hh>
@@ -29,7 +30,7 @@ namespace Dune
     // this type
     typedef SPBoundarySegmentIterator< Grid > This;
     // grid traits
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
     // intersection implementation
     typedef SPIntersection< Grid > IntersectionImpl;

@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_INTERSECTION_HH
 #define DUNE_SPGRID_INTERSECTION_HH
 
+#include <type_traits>
+
 #include <dune/common/typetraits.hh>
 
 #include <dune/grid/common/intersection.hh>
@@ -33,7 +35,7 @@ namespace Dune
   {
     typedef SPIntersection< Grid > This;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
     typedef typename Traits::ReferenceCube ReferenceCube;
 

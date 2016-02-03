@@ -31,7 +31,7 @@ namespace Dune
   struct SPEntitySeed
   {
     /** \brief type of grid this entity seed belongs to */
-    typedef typename remove_const< Grd >::type Grid;
+    typedef typename std::remove_const< Grd >::type Grid;
 
     /** \internal \brief type of reference cube */
     typedef typename Grid::Traits::ReferenceCube ReferenceCube;

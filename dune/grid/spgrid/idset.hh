@@ -21,7 +21,7 @@ namespace Dune
     typedef SPLocalIdSet< Grid > This;
     typedef IdSet< Grid, This, unsigned long > Base;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
   public:
     typedef typename Base::IdType IdType;
@@ -35,7 +35,7 @@ namespace Dune
       typedef typename Traits::template Codim< codim >::Entity Entity;
     };
 
-    typedef SPGridLevel< typename remove_const< Grid >::type > GridLevel;
+    typedef SPGridLevel< typename std::remove_const< Grid >::type > GridLevel;
 
   private:
     typedef typename GridLevel::MultiIndex MultiIndex;

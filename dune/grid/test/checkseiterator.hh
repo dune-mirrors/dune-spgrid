@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_CHECKSEITERATOR_HH
 #define DUNE_SPGRID_CHECKSEITERATOR_HH
 
+#include <type_traits>
+
 #include <dune/common/forloop.hh>
 #include <dune/common/typetraits.hh>
 
@@ -49,7 +51,7 @@ namespace Dune
       static void apply ( const GridView &gridView )
       {
         const bool check = Extensions::SuperEntityIterator< Grid, codim >::v;
-        Dune::conditional< check, Check< true >, NoCheck< false > >::type::apply( gridView );
+        std::conditional< check, Check< true >, NoCheck< false > >::type::apply( gridView );
       }
     };
 

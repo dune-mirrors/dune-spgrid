@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <vector>
+#include <type_traits>
 
 #include <dune/grid/spgrid/direction.hh>
 #include <dune/grid/spgrid/geometricgridlevel.hh>
@@ -30,10 +31,10 @@ namespace Dune
 
   template< class Grid >
   class SPGridLevel
-  : public SPGeometricGridLevel< typename remove_const< Grid >::type::ctype, remove_const< Grid >::type::dimension >
+  : public SPGeometricGridLevel< typename std::remove_const< Grid >::type::ctype, std::remove_const< Grid >::type::dimension >
   {
     typedef SPGridLevel< Grid > This;
-    typedef SPGeometricGridLevel< typename remove_const< Grid >::type::ctype, remove_const< Grid >::type::dimension > Base;
+    typedef SPGeometricGridLevel< typename std::remove_const< Grid >::type::ctype, std::remove_const< Grid >::type::dimension > Base;
 
   public:
     typedef SPGridLevel< Grid > GridLevel;
@@ -45,7 +46,7 @@ namespace Dune
     static const unsigned int numDirections = Base::numDirections;
     static const int numFaces = ReferenceCube::numFaces;
 
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
     typedef typename Traits::Domain Domain;
     typedef typename Traits::Refinement Refinement;

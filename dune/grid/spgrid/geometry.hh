@@ -1,6 +1,8 @@
 #ifndef DUNE_SPGRID_GEOMETRY_HH
 #define DUNE_SPGRID_GEOMETRY_HH
 
+#include <type_traits>
+
 #include <dune/common/typetraits.hh>
 
 #include <dune/geometry/type.hh>
@@ -21,7 +23,7 @@ namespace Dune
     typedef SPBasicGeometry< mydim, cdim, Grid, Impl > This;
 
   protected:
-    typedef typename remove_const< Grid >::type::Traits Traits;
+    typedef typename std::remove_const< Grid >::type::Traits Traits;
 
   public:
     typedef typename Traits::ReferenceCube::ctype ctype;
