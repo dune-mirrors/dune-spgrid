@@ -3,8 +3,6 @@
 
 #include <type_traits>
 
-#include <dune/grid/common/entitypointer.hh>
-
 #include <dune/grid/extensions/superentityiterator.hh>
 
 #include <dune/grid/spgrid/direction.hh>
@@ -106,11 +104,6 @@ namespace Dune
     EntityInfo &entityInfo () { return entityInfo_; }
 
     const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
-
-    // compatibility
-
-    operator DefaultEntityPointer< Entity > () const { return DefaultEntityPointer< Entity >( dereference() ); }
-    bool equals ( const DefaultEntityPointer< Entity > &other ) const { return other.equals( *this ); }
 
   private:
     bool next ( MultiIndex &id )

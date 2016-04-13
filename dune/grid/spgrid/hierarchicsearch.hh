@@ -17,9 +17,6 @@ namespace Dune
   // External Forward Declarations
   // -----------------------------
 
-  template< int codim, class Grid >
-  class SPEntityPointer;
-
   template< class Grid >
   class SPIndexSet;
 

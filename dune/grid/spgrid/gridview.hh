@@ -52,7 +52,6 @@ namespace Dune
     struct Codim
     {
       typedef typename Grid::Traits::template Codim< codim >::Entity Entity;
-      typedef typename Grid::Traits::template Codim< codim >::EntityPointer EntityPointer;
 
       typedef typename Grid::Traits::template Codim< codim >::Geometry Geometry;
       typedef typename Grid::Traits::template Codim< codim >::LocalGeometry LocalGeometry;

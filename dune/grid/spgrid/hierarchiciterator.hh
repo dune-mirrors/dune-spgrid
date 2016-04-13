@@ -65,11 +65,6 @@ namespace Dune
 
     const GridLevel &gridLevel () const { return entityInfo().gridLevel(); }
 
-    // compatibility
-
-    operator DefaultEntityPointer< Entity > () const { return DefaultEntityPointer< Entity >( dereference() ); }
-    bool equals ( const DefaultEntityPointer< Entity > &other ) const { return other.equals( *this ); }
-
   private:
     EntityInfo entityInfo_;
     int minLevel_, maxLevel_;

@@ -10,7 +10,6 @@
 #include <dune/grid/albertagrid/geometryreference.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/adaptcallback.hh>
-#include <dune/grid/common/entitypointer.hh>
 
 #include <dune/grid/spgrid/capabilities.hh>
 #include <dune/grid/spgrid/direction.hh>
@@ -97,8 +96,6 @@ namespace Dune
         typedef Dune::Entity< codim, dim, const Grid, SPEntity > Entity;
 
         typedef Dune::EntitySeed< const Grid, SPEntitySeed< codim, const Grid > > EntitySeed;
-
-        typedef Dune::EntityPointer< const Grid, DefaultEntityPointer< Entity > > EntityPointer;
 
         typedef SPLocalGeometry< dim - codim, dim, const Grid > LocalGeometryImpl;
 
@@ -426,14 +423,6 @@ namespace Dune
       typedef SPEntity< Seed::codimension, dimension, const This > EntityImpl;
       typename EntityImpl::EntityInfo entityInfo( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
       return Entity( EntityImpl( std::move( entityInfo ) ) );
-    }
-
-    template< class Seed >
-    typename Traits::template Codim< Seed::codimension >::EntityPointer
-    entityPointer ( const Seed &seed ) const
-    {
-      typedef typename Traits::template Codim< Seed::codimension >::Entity Entity;
-      return DefaultEntityPointer< Entity >( entity( seed ) );
     }
 
     template< int codim >
