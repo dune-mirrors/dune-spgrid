@@ -2,6 +2,7 @@
 #define DUNE_SPGRID_CHECKSEITERATOR_HH
 
 #include <type_traits>
+#include <vector>
 
 #include <dune/common/forloop.hh>
 #include <dune/common/typetraits.hh>
