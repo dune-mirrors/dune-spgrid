@@ -19,6 +19,7 @@ YaspGrid:
 | Coordinate type is template parameter | no        | yes      | yes    |
 | Supports anisotropic refinement       | no        | no       | yes    |
 | Supports periodicity                  | no        | no       | yes    |
+| Supports Non-Blocking Communication   | no        | no       | yes    |
 
 [^1]: SGrid is deprecated in DUNE 2.4 and will be removed in DUNE 3.0.
 
