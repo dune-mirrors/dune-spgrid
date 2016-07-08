@@ -22,6 +22,7 @@ YaspGrid:
 | Supports non-blocking communication   | no        | no       | yes    |
 
 [^1]: SGrid is deprecated in DUNE 2.4 and will be removed in DUNE 3.0.
+[^2]: YaspGrid supports a different concept of periodicity.
 
 SPGrid supports different (global) refinement techniques, selected by a
 template parameter. Some refinement techniques allow an optional parameter,
