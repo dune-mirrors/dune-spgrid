@@ -14,7 +14,6 @@ YaspGrid:
 
 |                                       | SGrid[^1] | YaspGrid | SPGrid |
 | :------------------------------------ | :-------: | :------: | :----: |
-| Provides entities for codimensions    | all       | all      | all    |
 | Can communicate on codimensions       | none      | all      | all    |
 | Coordinate type is template parameter | no        | yes      | yes    |
 | Supports anisotropic refinement       | no        | no       | yes    |
