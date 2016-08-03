@@ -40,9 +40,13 @@ Preprocessor Magic
 SPGrid can be used through the preprocessor magic. The following table shows how
 to select different variants of SPGrid:
 
-| GRIDTYPE           | Refinement          |
-| :----------------- | :------------------ |
-| SPGRID             | Default (Isotropic) |
-| SPGRID_ISOTROPIC   | Isotropic           |
-| SPGRID_ANISOTROPIC | Anisotropic         |
-| SPGRID_BISECTION   | Bisection           |
+| GRIDTYPE                  | Refinement                     |
+| :------------------------ | :----------------------------- |
+| SPGRID                    | Default (Isotropic)            |
+| SPGRID_ISOTROPIC          | Isotropic                      |
+| SPGRID_ISOTROPIC_SERIAL   | Isotropic (no MPI)             |
+| SPGRID_ANISOTROPIC        | Anisotropic                    |
+| SPGRID_ANISOTROPIC_SERIAL | Anisotropic (no MPI)           |
+| SPGRID_BISECTION          | Bisection                      |
+| SPGRID_BISECTION_SERIAL   | Bisection (no MPI)             |
+| SPGRID_COUNT_FLOPS        | use Dune::Fem::Double as ctype |
