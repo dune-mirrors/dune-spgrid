@@ -43,6 +43,7 @@ to select different variants of SPGrid:
 | GRIDTYPE                  | Refinement                     |
 | :------------------------ | :----------------------------- |
 | SPGRID                    | Default (Isotropic)            |
+| SPGRID_SERIAL             | Default (Isotropic, no MPI)    |
 | SPGRID_ISOTROPIC          | Isotropic                      |
 | SPGRID_ISOTROPIC_SERIAL   | Isotropic (no MPI)             |
 | SPGRID_ANISOTROPIC        | Anisotropic                    |
