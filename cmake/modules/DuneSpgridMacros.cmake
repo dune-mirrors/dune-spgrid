@@ -42,6 +42,6 @@ dune_define_gridtype(GRID_CONFIG_H_BOTTOM
                      HEADERS "dune/grid/spgrid.hh" "dune/grid/spgrid/dgfparser.hh")
 dune_define_gridtype(GRID_CONFIG_H_BOTTOM
                      GRIDTYPE SPGRID_COUNT_FLOPS
-                     ASSERTION "GRIDDIM == WORLDDIM"
-                     DUNETYPE "Dune::SPGrid< Dune::SPGridCountFlopsDoubleType, dimgrid >"
-                     HEADERS "dune/grid/spgrid.hh" "dune/grid/spgrid/dgfparser.hh")
+                     ASSERTION "HAVE_DUNE_FEM && GRIDDIM == WORLDDIM"
+                     DUNETYPE "Dune::SPGrid< Dune::Fem::Double, dimgrid >"
+                     HEADERS "dune/grid/spgrid/backuprestore.hh" "dune/fem/misc/double.hh" "dune/grid/spgrid.hh" "dune/grid/spgrid/dgfparser.hh")
