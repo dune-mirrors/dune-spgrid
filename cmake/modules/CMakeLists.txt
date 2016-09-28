@@ -1,2 +1,1 @@
-install(FILES DuneSpgridMacros.cmake
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)
+install(FILES DuneSpgridMacros.cmake DESTINATION ${DUNE_INSTALL_MODULEDIR})
