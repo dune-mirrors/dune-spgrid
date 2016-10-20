@@ -214,8 +214,6 @@ namespace Dune
 
     using Base::entityInfo;
     using Base::gridLevel;
-    using Base::isLeaf;
-    using Base::level;
 
     template< int codim >
     typename Codim< codim >::Entity subEntity ( int i ) const;
