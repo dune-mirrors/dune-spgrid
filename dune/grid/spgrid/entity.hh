@@ -212,12 +212,6 @@ namespace Dune
     using Base::isLeaf;
     using Base::level;
 
-    template< int codim >
-    int count () const
-    {
-      return gridLevel().referenceCube().count( codim );
-    }
-
     unsigned int subEntities ( unsigned int codim ) const
     {
       return gridLevel().referenceCube().count( codim );
