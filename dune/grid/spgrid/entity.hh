@@ -100,6 +100,11 @@ namespace Dune
       return EntitySeed( EntitySeedImpl( level(), entityInfo().id(), entityInfo().partitionNumber() ) );
     }
 
+    unsigned int subEntities ( unsigned int cd ) const
+    {
+      return gridLevel().template referenceCube< codim >().count( cd-codim );
+    }
+
     bool hasFather () const { return ((level() > 0) && entityInfo().hasFather()); }
 
     Entity father () const
@@ -211,11 +216,6 @@ namespace Dune
     using Base::gridLevel;
     using Base::isLeaf;
     using Base::level;
-
-    unsigned int subEntities ( unsigned int codim ) const
-    {
-      return gridLevel().referenceCube().count( codim );
-    }
 
     template< int codim >
     typename Codim< codim >::Entity subEntity ( int i ) const;
