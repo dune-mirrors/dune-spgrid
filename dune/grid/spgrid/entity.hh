@@ -81,7 +81,7 @@ namespace Dune
 
     GeometryType type () const
     {
-      typedef typename GenericGeometry::CubeTopology< mydimension >::type Topology;
+      typedef typename Impl::CubeTopology< mydimension >::type Topology;
       return GeometryType( Topology() );
     }
 

@@ -5,7 +5,7 @@
 #include <mpi.h>
 #endif
 
-#include <dune/geometry/genericgeometry/topologytypes.hh>
+#include <dune/geometry/type.hh>
 
 #include <dune/grid/common/capabilities.hh>
 
@@ -39,7 +39,7 @@ namespace Dune
        *         geometry type */
       static const bool v = true;
       /** \brief \ref Dune::SPGrid "SPGrid" has only cube elements */
-      static const unsigned int topologyId = GenericGeometry::CubeTopology< dim >::type::id;
+      static const unsigned int topologyId = Impl::CubeTopology< dim >::type::id;
     };
 
     /** \brief Is the grid Cartesian?
