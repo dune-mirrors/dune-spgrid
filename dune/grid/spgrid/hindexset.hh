@@ -91,7 +91,15 @@ namespace Dune
       DUNE_THROW( NotImplemented, "SPHierarchyIndexSet does not implement the old subIndex method." );
     }
 
-    IndexType subIndex ( const typename Codim< 0 >::Entity &entity,
+    template< class Entity >
+    IndexType subIndex ( const Entity &entity,
+                         const int i, const unsigned int codim ) const
+    {
+      return subIndex< Entity::codimension >( entity, i, codim );
+    }
+
+    template< int cd >
+    IndexType subIndex ( const typename Codim< cd >::Entity &entity,
                          const int i, const unsigned int codim ) const
     {
       const int level = entity.level();
