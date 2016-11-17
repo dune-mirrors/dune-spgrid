@@ -4,7 +4,7 @@
 #include <array>
 #include <cassert>
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
 
 #include <dune/geometry/dimension.hh>
 
@@ -45,13 +45,6 @@ namespace Dune
       typedef SPGeometryCache< ctype, dimension, codim > GeometryCache;
     };
 
-  private:
-    template< int codim >
-    struct BuildGeometryCache;
-    template< int codim >
-    struct DestroyGeometryCache;
-
-  public:
     SPGeometricGridLevel ( const ReferenceCubeContainer &refCubes, const GlobalVector &h );
     SPGeometricGridLevel ( const This &other );
 
@@ -93,42 +86,6 @@ namespace Dune
 
 
 
-  // SPGeometricGridLevel::BuildGeometryCache
-  // ----------------------------------------
-
-  template< class ct, int dim >
-  template< int codim >
-  struct SPGeometricGridLevel< ct, dim >::BuildGeometryCache
-  {
-    static void apply ( const GlobalVector &h, std::array< void *, numDirections > &geometryCache )
-    {
-      typedef typename Codim< codim >::GeometryCache GeometryCache;
-      for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
-        geometryCache[ (*dirIt).bits() ] = new GeometryCache( h, *dirIt );
-    }
-  };
-
-
-
-  // SPGeometricGridLevel::DestroyGeometryCache
-  // ------------------------------------------
-
-  template< class ct, int dim >
-  template< int codim >
-  struct SPGeometricGridLevel< ct, dim >::DestroyGeometryCache
-  {
-    static void apply ( std::array< void *, numDirections > &geometryCache )
-    {
-      for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
-      {
-        delete static_cast< typename Codim< codim >::GeometryCache * >( geometryCache[ (*dirIt).bits() ] );
-        geometryCache[ (*dirIt).bits() ] = nullptr;
-      }
-    }
-  };
-
-
-
   // Implementation of SPGeometricGridLevel
   // --------------------------------------
 
@@ -154,15 +111,25 @@ namespace Dune
   template< class ct, int dim >
   inline SPGeometricGridLevel< ct, dim >::~SPGeometricGridLevel ()
   {
-    ForLoop< DestroyGeometryCache, 0, dimension >::apply( geometryCache_ );
+    Hybrid::forEach( std::make_integer_sequence< int, dimension+1 >(), [ this ] ( auto codim ) {
+        for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
+        {
+          delete static_cast< typename Codim< codim >::GeometryCache * >( geometryCache_[ (*dirIt).bits() ] );
+          geometryCache_[ (*dirIt).bits() ] = nullptr;
+        }
+      } );
   }
 
 
   template< class ct, int dim >
   inline void SPGeometricGridLevel< ct, dim >::buildGeometry ()
   {
-    ForLoop< BuildGeometryCache, 0, dimension >::apply( h_, geometryCache_ );
-    
+    Hybrid::forEach( std::make_integer_sequence< int, dimension+1 >(), [ this ] ( auto codim ) {
+        typedef typename Codim< codim >::GeometryCache GeometryCache;
+        for( SPDirectionIterator< dimension, codim > dirIt; dirIt; ++dirIt )
+          geometryCache_[ (*dirIt).bits() ] = new GeometryCache( h_, *dirIt );
+      } );
+
     const ctype volume = geometryCache( Dune::Codim< 0 >() ).volume();
     for( int face = 0; face < ReferenceCube::numFaces; ++face )
     {

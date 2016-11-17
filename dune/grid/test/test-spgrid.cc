@@ -4,8 +4,10 @@
 #error "DIMGRID not defined. Please compile with -DDIMGRID=n"
 #endif
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/parallel/mpihelper.hh>
+
+#include <dune/grid/common/rangegenerators.hh>
 
 #include <dune/grid/spgrid.hh>
 #include <dune/grid/spgrid/dgfparser.hh>
@@ -24,37 +26,29 @@
 static const int dimGrid = DIMGRID;
 
 
-template< int codim >
-struct CheckSubIndex
-{
-  template< class GridView >
-  static void apply ( const GridView &gridView )
-  {
-    std::cerr << ">>> Checking subIndex() for codim " << codim << "..." << std::endl;
-    typedef typename GridView::ctype ctype;
-
-    static const int dimension = GridView::dimension;
-    static const int mydimension = dimension - codim;
-
-    const typename GridView::IndexSet &indexSet = gridView.indexSet();
-
-    typedef typename GridView::template Codim< codim >::Iterator Iterator;
-    const Iterator end = gridView.template end< codim >();
-    for( Iterator it = gridView.template begin< codim >(); it != end; ++it )
-    {
-      const typename Iterator::Entity &entity = *it;
-      const Dune::ReferenceElement< ctype, mydimension > &referenceElement
-        = Dune::ReferenceElements< ctype, mydimension >::general( entity.type() );
-      for( int i = 0; i < referenceElement.size( mydimension ); ++i )
-        indexSet.subIndex( entity, i, dimension );
-    }
-  }
-};
-
 template< class GridView >
 void checkSubIndex ( const GridView &gridView )
 {
-  Dune::ForLoop< CheckSubIndex, 0, GridView::dimension >::apply( gridView );
+  Dune::Hybrid::forEach( std::make_integer_sequence< int, GridView::dimension+1 >(), [ &gridView ] ( auto codim ) {
+      if( gridView.comm().rank() == 0 )
+        std::cerr << ">>> Checking subIndex() for codim " << codim << "..." << std::endl;
+
+      typedef typename GridView::ctype ctype;
+      typedef typename GridView::template Codim< codim >::Entity Entity;
+
+      static const int dimension = GridView::dimension;
+      static const int mydimension = dimension - codim;
+
+      const typename GridView::IndexSet &indexSet = gridView.indexSet();
+
+      for( const Entity &entity : entities( gridView, Dune::Codim< codim >() )  )
+      {
+        const Dune::ReferenceElement< ctype, mydimension > &referenceElement
+          = Dune::ReferenceElements< ctype, mydimension >::general( entity.type() );
+        for( int i = 0; i < referenceElement.size( mydimension ); ++i )
+          indexSet.subIndex( entity, i, dimension );
+      }
+    } );
 }
 
 

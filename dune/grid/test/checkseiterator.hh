@@ -3,8 +3,9 @@
 
 #include <type_traits>
 #include <vector>
+#include <utility>
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/typetraits.hh>
 
 #include <dune/grid/common/gridview.hh>
@@ -34,40 +35,32 @@ namespace Dune
     typedef typename GridView::Grid Grid;
 
     template< int codim >
-    struct Codim
+    struct Check
     {
-      template< bool b >
-      struct Check
-      {
-        static void apply ( const GridView &gridView );
-      };
+      static void apply ( const GridView &gridView );
+    };
 
-      template< bool b >
-      struct NoCheck
-      {
-        static void apply ( const GridView &gridView )
-        {}
-      };
-
+    template< int codim >
+    struct NoCheck
+    {
       static void apply ( const GridView &gridView )
-      {
-        const bool check = Extensions::SuperEntityIterator< Grid, codim >::v;
-        std::conditional< check, Check< true >, NoCheck< false > >::type::apply( gridView );
-      }
+      {}
     };
 
     static void apply ( const GridView &gridView )
     {
-      Dune::ForLoop< Codim, 1, GridView::dimension >::apply( gridView );
+      Hybrid::forEach( std::make_integer_sequence< int, GridView::dimension >(), [ &gridView ] ( auto dim ) {
+          const int codim = GridView::dimension - dim;
+          const bool check = Extensions::SuperEntityIterator< Grid, codim >::v;
+          std::conditional< check, Check< codim >, NoCheck< codim > >::type::apply( gridView );
+        } );
     }
   };
 
 
   template< class VT >
   template< int codim >
-  template< bool b >
-  inline void CheckSuperEntityIterator< VT >::Codim< codim >::Check< b >
-    ::apply ( const GridView &gridView )
+  inline void CheckSuperEntityIterator< VT >::Check< codim >::apply ( const GridView &gridView )
   {
 #if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
     typedef typename GridView::IndexSet IndexSet;

@@ -1,7 +1,9 @@
 #ifndef DUNE_SPGRID_CHECKIDCOMMUNICATION_HH
 #define DUNE_SPGRID_CHECKIDCOMMUNICATION_HH
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
+
+#include <dune/geometry/dimension.hh>
 
 #include <dune/grid/common/capabilities.hh>
 #include <dune/grid/common/gridview.hh>
@@ -45,22 +47,13 @@ namespace Dune
     typedef typename Grid::GlobalIdSet GlobalIdSet;
     typedef typename GlobalIdSet::IdType IdType;
 
-  private:
-    template< int codim >
-    struct Contains
-    {
-      static void apply ( bool (&contains)[ dimension+1 ] )
-      {
-        contains[ codim ] = Dune::Capabilities::canCommunicate< Grid, codim >::v;
-      }
-    };
-
-  public:
     explicit CheckIdCommunicationDataHandle ( const GridView &gridView )
-    : rank_( gridView.grid().comm().rank() ),
-      idSet_( gridView.grid().globalIdSet() )
+      : rank_( gridView.grid().comm().rank() ),
+        idSet_( gridView.grid().globalIdSet() )
     {
-      Dune::ForLoop< Contains, 0, dimension >::apply( contains_ );
+      Hybrid::forEach( std::make_integer_sequence< int, dimension+1 >(), [ this ] ( auto codim ) {
+          contains_[ codim ] = Dune::Capabilities::canCommunicate< Grid, codim >::v;
+        } );
     }
 
     bool contains ( int const dim, const int codim ) const

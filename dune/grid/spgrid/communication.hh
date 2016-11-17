@@ -1,7 +1,7 @@
 #ifndef DUNE_SPGRID_COMMUNICATION_HH
 #define DUNE_SPGRID_COMMUNICATION_HH
 
-#include <dune/common/forloop.hh>
+#include <dune/common/hybridutilities.hh>
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
@@ -58,12 +58,8 @@ namespace Dune
   // ---------------
 
   template< class Grid, class DataHandle >
-  class SPCommunication
+  struct SPCommunication
   {
-    template< int codim >
-    struct Codim;
-
-  public:
     static const int dimension = Grid::dimension;
 
     typedef SPGridLevel< Grid > GridLevel;
@@ -109,28 +105,6 @@ namespace Dune
 
 
 
-  // SPCommunication::Codim
-  // ----------------------
-
-  template< class Grid, class DataHandle >
-  template< int codim >
-  struct SPCommunication< Grid, DataHandle >::Codim
-  {
-    typedef SPPartitionIterator< codim, const Grid > Iterator;
-
-    static void
-    apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const PartitionList &partitionList, std::size_t &size );
-    static void
-    apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const PartitionList &partitionList, WriteBuffer &buffer );
-    static void
-    apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-            const PartitionList &partitionList, ReadBuffer &buffer );
-  };
-
-
-
   // Implementation of SPCommunication
   // ---------------------------------
 
@@ -157,7 +131,17 @@ namespace Dune
       {
         readBuffers_.emplace_back( gridLevel.grid().comm() );
         std::size_t size = 0;
-        ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir ), size );
+        const PartitionList &partitionList = it->receiveList( dir );
+        Hybrid::forEach( std::make_integer_sequence< int, dimension+1 >(), [ this, &partitionList, &size ] ( auto codim ) {
+            typedef SPPartitionIterator< codim, const Grid > Iterator;
+
+            if( !dataHandle_.contains( dimension, codim ) )
+              return;
+
+            const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
+            for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
+              size += dataHandle_.size( *it );
+          } );
         size *= sizeof( typename DataHandle::DataType );
         readBuffers_.back().receive( it->rank(), tag_, size );
       }
@@ -167,7 +151,22 @@ namespace Dune
     for( typename Interface::Iterator it = interface_->begin(); it != interface_->end(); ++it )
     {
       writeBuffers_.emplace_back( gridLevel.grid().comm() );
-      ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->sendList( dir ), writeBuffers_.back() );
+      const PartitionList &partitionList = it->sendList( dir );
+      Hybrid::forEach( std::make_integer_sequence< int, dimension+1 >(), [ this, &partitionList ] ( auto codim ) {
+          typedef SPPartitionIterator< codim, const Grid > Iterator;
+
+          if( !dataHandle_.contains( dimension, codim ) )
+            return;
+
+          const bool fixedSize = dataHandle_.fixedsize( dimension, codim );
+          const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
+          for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
+          {
+            if( !fixedSize )
+              writeBuffers_.back().write( static_cast< int >( dataHandle_.size( *it ) ) );
+            dataHandle_.gather( writeBuffers_.back(), *it );
+          }
+        } );
       writeBuffers_.back().send( it->rank(), tag_ );
     }
   }
@@ -212,7 +211,25 @@ namespace Dune
       {
         if( it->rank() == buffer->rank() )
         {
-          ForLoop< Codim, 0, dimension >::apply( gridLevel_, dataHandle_, it->receiveList( dir_ ), *buffer );
+          const PartitionList &partitionList = it->receiveList( dir_ );
+          Hybrid::forEach( std::make_integer_sequence< int, dimension+1 >(), [ this, &partitionList, buffer ] ( auto codim ) {
+              typedef SPPartitionIterator< codim, const Grid > Iterator;
+
+              if( !dataHandle_.contains( dimension, codim ) )
+                return;
+
+              const bool fixedSize = dataHandle_.fixedsize( dimension, codim );
+              const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
+              for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
+              {
+                int size;
+                if( !fixedSize )
+                  buffer->read( size );
+                else
+                  size = dataHandle_.size( *it );
+                dataHandle_.scatter( *buffer, *it, size );
+              }
+            } );
           break;
         }
       }
@@ -224,68 +241,6 @@ namespace Dune
     writeBuffers_.clear();
 
     interface_ = nullptr;
-  }
-
-
-
-  // Implementation of SPCommunication::Codim
-  // ----------------------------------------
-
-  template< class Grid, class DataHandle >
-  template< int codim >
-  inline void SPCommunication< Grid, DataHandle >::Codim< codim >
-    ::apply( const GridLevel &gridLevel, DataHandle &dataHandle,
-             const PartitionList &partitionList, std::size_t &size )
-  {
-    if( dataHandle.contains( dimension, codim ) )
-    {
-      const Iterator end( gridLevel, partitionList, typename Iterator::End() );
-      for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
-        size += dataHandle.size( *it );
-    }
-  }
-
-
-  template< class Grid, class DataHandle >
-  template< int codim >
-  inline void SPCommunication< Grid, DataHandle >::Codim< codim >
-    ::apply( const GridLevel &gridLevel, DataHandle &dataHandle,
-             const PartitionList &partitionList, WriteBuffer &buffer )
-  {
-    if( dataHandle.contains( dimension, codim ) )
-    {
-      const bool fixedSize = dataHandle.fixedsize( dimension, codim );
-      const Iterator end( gridLevel, partitionList, typename Iterator::End() );
-      for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
-      {
-        if( !fixedSize )
-          buffer.write( static_cast< int >( dataHandle.size( *it ) ) );
-        dataHandle.gather( buffer, *it );
-      }
-    }
-  }
-
-
-  template< class Grid, class DataHandle >
-  template< int codim >
-  inline void SPCommunication< Grid, DataHandle >::Codim< codim >
-    ::apply ( const GridLevel &gridLevel, DataHandle &dataHandle,
-              const PartitionList &partitionList, ReadBuffer &buffer )
-  {
-    if( dataHandle.contains( dimension, codim ) )
-    {
-      const bool fixedSize = dataHandle.fixedsize( dimension, codim );
-      const Iterator end( gridLevel, partitionList, typename Iterator::End() );
-      for( Iterator it( gridLevel, partitionList, typename Iterator::Begin() ); it != end; ++it )
-      {
-        int size;
-        if( !fixedSize )
-          buffer.read( size );
-        else
-          size = dataHandle.size( *it );
-        dataHandle.scatter( buffer, *it, size );
-      }
-    }
   }
 
 } // namespace Dune
