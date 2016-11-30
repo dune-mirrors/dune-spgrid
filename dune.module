@@ -1,6 +1,6 @@
 Module: dune-spgrid
-Version: 3.0
+Version: 2.5
 Maintainer: nolte@mathematik.uni-freiburg.de
 Whitespace-Hook: Yes
-Depends: dune-grid (>= 3.0)
+Depends: dune-grid (>= 2.5)
 Suggests: dune-corepy
