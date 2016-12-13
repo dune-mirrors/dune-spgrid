@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <utility>
+#include <vector>
+
 
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpicollectivecommunication.hh>
