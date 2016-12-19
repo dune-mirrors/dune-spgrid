@@ -10,7 +10,7 @@ dune_project()
 add_subdirectory(cmake/modules)
 add_subdirectory(doc)
 add_subdirectory(dune)
-if(HAVE_DUNE_COREPY)
+if(dune-corepy_FOUND)
   add_subdirectory(python)
 endif()
 
