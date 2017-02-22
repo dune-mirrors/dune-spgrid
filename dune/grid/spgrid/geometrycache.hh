@@ -115,6 +115,18 @@ namespace Dune
 
 
 
+  // FieldTraits for SPGeometryCache::JacobianTransposed
+  // ---------------------------------------------------
+
+  template< class ct, int dim, int codim >
+  struct FieldTraits< SPGeometryCache< ct, dim, codim >::JacobianTransposed >
+  {
+    typedef typename FieldTraits< ct >::field_type field_type;
+    typedef typename FieldTraits< ct >::real_type real_type;
+  };
+
+
+
   // SPGeometryCache::JacobianTransposed
   // -----------------------------------
 
@@ -169,6 +181,18 @@ namespace Dune
     const LocalVector h () const { return storage_.h; }
 
     MatrixStorage storage_;
+  };
+
+
+
+  // FieldTraits for SPGeometryCache::JacobianInverseTransposed
+  // ----------------------------------------------------------
+
+  template< class ct, int dim, int codim >
+  struct FieldTraits< SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed >
+  {
+    typedef typename FieldTraits< ct >::field_type field_type;
+    typedef typename FieldTraits< ct >::real_type real_type;
   };
 
 
