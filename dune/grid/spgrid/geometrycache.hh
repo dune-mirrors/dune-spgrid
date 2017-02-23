@@ -1,6 +1,7 @@
 #ifndef DUNE_SPGRID_GEOMETRYCACHE_HH
 #define DUNE_SPGRID_GEOMETRYCACHE_HH
 
+#include <dune/common/exception.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 
@@ -176,7 +177,7 @@ namespace Dune
       if( rows == cols )
         return det();
       else
-        DUNE_THROW( FMatrixError, "There is no determinant for a " << rows() << "x" << cols() << " matrix" );
+        DUNE_THROW( FMatrixError, "There is no determinant for a " << rows << "x" << cols << " matrix" );
     }
 
     real_type frobenius_norm () const { return h().two_norm(); }
@@ -254,7 +255,7 @@ namespace Dune
       if( rows == cols )
         return det();
       else
-        DUNE_THROW( FMatrixError, "There is no determinant for a " << rows() << "x" << cols() << " matrix" );
+        DUNE_THROW( FMatrixError, "There is no determinant for a " << rows << "x" << cols << " matrix" );
     }
 
     real_type frobenius_norm () const { return hInv().two_norm(); }
