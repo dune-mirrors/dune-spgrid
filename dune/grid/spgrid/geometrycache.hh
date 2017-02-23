@@ -171,6 +171,14 @@ namespace Dune
 
     field_type det () const;
 
+    field_type determinant () const
+    {
+      if( rows == cols )
+        return det();
+      else
+        DUNE_THROW( FMatrixError, "There is no determinant for a " << rows() << "x" << cols() << " matrix" );
+    }
+
     real_type frobenius_norm () const { return h().two_norm(); }
     real_type frobenius_norm2 () const { return h().two_norm2(); }
     real_type infinity_norm () const { return h().infinity_norm(); }
@@ -240,6 +248,14 @@ namespace Dune
     template< class X, class Y > void mmhv ( const X &x, Y &y ) const;
 
     field_type det () const;
+
+    field_type determinant () const
+    {
+      if( rows == cols )
+        return det();
+      else
+        DUNE_THROW( FMatrixError, "There is no determinant for a " << rows() << "x" << cols() << " matrix" );
+    }
 
     real_type frobenius_norm () const { return hInv().two_norm(); }
     real_type frobenius_norm2 () const { return hInv().two_norm2(); }
