@@ -1,7 +1,9 @@
 #ifndef DUNE_SPGRID_GEOMETRYCACHE_HH
 #define DUNE_SPGRID_GEOMETRYCACHE_HH
 
-#include <dune/common/exception.hh>
+#include <utility>
+
+#include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 
@@ -64,92 +66,35 @@ namespace Dune
 
 
 
-  // SPGeometryCache
-  // ---------------
+  // SPJacobianTransposed
+  // --------------------
 
-  template< class ct, int dim, int codim >
-  class SPGeometryCache
+  template< class ct, int dim, int mydim >
+  class SPJacobianTransposed
+    : private SPGeometryPattern< dim, dim - mydim >
   {
-    typedef SPGeometryCache< ct, dim, codim > This;
+    typedef SPGeometryPattern< dim, dim - mydim > Pattern;
 
   public:
-    typedef ct ctype;
-
-    static const int dimension = dim;
-    static const int codimension = codim;
-    static const int mydimension = dimension - codimension;
-
-    typedef SPDirection< dimension > Direction;
-
-    typedef FieldVector< ctype, dimension > GlobalVector;
-    typedef FieldVector< ctype, mydimension > LocalVector;
-
-  private:
-    typedef SPGeometryPattern< dimension, codimension > Pattern;
-
-    struct MatrixStorage
-      : public Pattern
-    {
-      explicit MatrixStorage ( Direction dir ) : Pattern( dir ) {}
-
-      LocalVector h;
-    };
-
-  public:
-    struct JacobianTransposed;
-    struct JacobianInverseTransposed;
-
-    SPGeometryCache ( const GlobalVector &h, Direction dir )
-      : jacobianTransposed_( h, dir ),
-        jacobianInverseTransposed_( h, dir ),
-        volume_( jacobianTransposed_.det() )
-    {}
-
-    const ctype &volume () const;
-    const JacobianTransposed &jacobianTransposed () const;
-    const JacobianInverseTransposed &jacobianInverseTransposed () const;
-
-    JacobianTransposed jacobianTransposed_;
-    JacobianInverseTransposed jacobianInverseTransposed_;
-    ctype volume_;
-  };
-
-
-
-  // FieldTraits for SPGeometryCache::JacobianTransposed
-  // ---------------------------------------------------
-
-  template< class ct, int dim, int codim >
-  struct FieldTraits< SPGeometryCache< ct, dim, codim >::JacobianTransposed >
-  {
-    typedef typename FieldTraits< ct >::field_type field_type;
-    typedef typename FieldTraits< ct >::real_type real_type;
-  };
-
-
-
-  // SPGeometryCache::JacobianTransposed
-  // -----------------------------------
-
-  template< class ct, int dim, int codim >
-  struct SPGeometryCache< ct, dim, codim >::JacobianTransposed
-  {
     typedef ct field_type;
     typedef ct value_type;
 
     typedef std::size_t size_type;
 
-    static const int rows = mydimension;
-    static const int cols = dimension;
+    static const int rows = mydim;
+    static const int cols = dim;
+
+    typedef FieldVector< field_type, dim > GlobalVector;
+    typedef FieldVector< field_type, mydim > LocalVector;
 
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
-    JacobianTransposed ( const GlobalVector &h, Direction dir )
-      : storage_( dir )
+    SPJacobianTransposed ( const GlobalVector &h, SPDirection< dim > dir )
+      : Pattern( std::move( dir ) )
     {
-      for( int k = 0; k < mydimension; ++k )
-        storage_.h[ k ] = h[ pattern().nonzero( k ) ];
+      for( int k = 0; k < rows; ++k )
+        h_[ k ] = h[ pattern().nonzero( k ) ];
     }
 
     operator FieldMatrix () const;
@@ -186,19 +131,19 @@ namespace Dune
     real_type infinity_norm_real () const { return h().infinity_norm_real(); }
 
   private:
-    const SPGeometryPattern< dimension, codimension > &pattern () const { return storage_; }
-    const LocalVector h () const { return storage_.h; }
+    const Pattern &pattern () const { return static_cast< const Pattern & >( *this ); }
+    const LocalVector &h () const { return h_; }
 
-    MatrixStorage storage_;
+    LocalVector h_;
   };
 
 
 
-  // FieldTraits for SPGeometryCache::JacobianInverseTransposed
-  // ----------------------------------------------------------
+  // FieldTraits for SPJacobianTransposed
+  // ------------------------------------
 
-  template< class ct, int dim, int codim >
-  struct FieldTraits< SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed >
+  template< class ct, int dim, int mydim >
+  struct FieldTraits< SPJacobianTransposed< ct, dim, mydim > >
   {
     typedef typename FieldTraits< ct >::field_type field_type;
     typedef typename FieldTraits< ct >::real_type real_type;
@@ -206,28 +151,35 @@ namespace Dune
 
 
 
-  // SPGeometryCache::JacobianInverseTransposed
-  // ------------------------------------------
+  // SPJacobianInverseTransposed
+  // ---------------------------
 
-  template< class ct, int dim, int codim >
-  struct SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed
+  template< class ct, int dim, int mydim >
+  class SPJacobianInverseTransposed
+    : private SPGeometryPattern< dim, dim - mydim >
   {
+    typedef SPGeometryPattern< dim, dim - mydim > Pattern;
+
+  public:
     typedef ct field_type;
     typedef ct value_type;
 
     typedef std::size_t size_type;
 
-    static const int rows = dimension;
-    static const int cols = mydimension;
+    static const int rows = dim;
+    static const int cols = mydim;
+
+    typedef FieldVector< field_type, dim > GlobalVector;
+    typedef FieldVector< field_type, mydim > LocalVector;
 
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
-    JacobianInverseTransposed ( const GlobalVector &h, Direction dir )
-      : storage_( dir )
+    SPJacobianInverseTransposed ( const GlobalVector &h, SPDirection< dim > dir )
+      : Pattern( dir )
     {
-      for( int k = 0; k < mydimension; ++k )
-        storage_.h[ k ] = ctype( 1 ) / h[ pattern().nonzero( k ) ];
+      for( int k = 0; k < cols; ++k )
+        hInv_[ k ] = field_type( 1 ) / h[ pattern().nonzero( k ) ];
     }
 
     operator FieldMatrix () const;
@@ -264,10 +216,60 @@ namespace Dune
     real_type infinity_norm_real () const { return hInv().infinity_norm_real(); }
 
   private:
-    const SPGeometryPattern< dimension, codimension > &pattern () const { return storage_; }
-    const LocalVector hInv () const { return storage_.h; }
+    const Pattern &pattern () const { return static_cast< const Pattern & >( *this ); }
+    const LocalVector &hInv () const { return hInv_; }
 
-    MatrixStorage storage_;
+    LocalVector hInv_;
+  };
+
+
+
+  // FieldTraits for SPJacobianInverseTransposed
+  // -------------------------------------------
+
+  template< class ct, int dim, int mydim >
+  struct FieldTraits< SPJacobianInverseTransposed< ct, dim, mydim > >
+  {
+    typedef typename FieldTraits< ct >::field_type field_type;
+    typedef typename FieldTraits< ct >::real_type real_type;
+  };
+
+
+
+  // SPGeometryCache
+  // ---------------
+
+  template< class ct, int dim, int codim >
+  class SPGeometryCache
+  {
+    typedef SPGeometryCache< ct, dim, codim > This;
+
+  public:
+    typedef ct ctype;
+
+    static const int dimension = dim;
+    static const int codimension = codim;
+    static const int mydimension = dimension - codimension;
+
+    typedef SPDirection< dimension > Direction;
+
+    typedef FieldVector< ctype, dimension > GlobalVector;
+    typedef FieldVector< ctype, mydimension > LocalVector;
+
+    typedef SPJacobianTransposed< ctype, dimension, mydimension > JacobianTransposed;
+    typedef SPJacobianInverseTransposed< ctype, dimension, mydimension > JacobianInverseTransposed;
+
+    SPGeometryCache ( const GlobalVector &h, Direction dir )
+      : jacobianTransposed_( h, dir ), jacobianInverseTransposed_( h, dir ), volume_( jacobianTransposed_.det() )
+    {}
+
+    const ctype &volume () const { return volume_; }
+    const JacobianTransposed &jacobianTransposed () const { return jacobianTransposed_; }
+    const JacobianInverseTransposed &jacobianInverseTransposed () const { return jacobianInverseTransposed_; }
+
+    JacobianTransposed jacobianTransposed_;
+    JacobianInverseTransposed jacobianInverseTransposed_;
+    ctype volume_;
   };
 
 
@@ -353,324 +355,270 @@ namespace Dune
 
 
 
-  // Implementation of SPGeometryCache
-  // ---------------------------------
+  // Implementation of SPJacobianTransposed
+  // --------------------------------------
 
-  template< class ct, int dim, int codim >
-  inline const typename SPGeometryCache< ct, dim, codim >::ctype &
-  SPGeometryCache< ct, dim, codim >::volume () const
+  template< class ct, int dim, int mydim >
+  inline SPJacobianTransposed< ct, dim, mydim >::operator FieldMatrix () const
   {
-    return volume_;
-  }
-
-
-  template< class ct, int dim, int codim >
-  inline const typename SPGeometryCache< ct, dim, codim >::JacobianTransposed &
-  SPGeometryCache< ct, dim, codim >::jacobianTransposed () const
-  {
-    return jacobianTransposed_;
-  }
-
-
-  template< class ct, int dim, int codim >
-  inline const typename SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed &
-  SPGeometryCache< ct, dim, codim >::jacobianInverseTransposed () const
-  {
-    return jacobianInverseTransposed_;
-  }
-
-
-
-  // Implementation of SPGeometryCache::JacobianTransposed
-  // -----------------------------------------------------
-
-  template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianTransposed::operator FieldMatrix () const
-  {
-    FieldMatrix matrix( ctype( 0 ) );
-    for( int k = 0; k < mydimension; ++k )
+    FieldMatrix matrix( field_type( 0 ) );
+    for( int k = 0; k < rows; ++k )
       matrix[ k ][ pattern().nonzero( k ) ] = h()[ k ];
     return matrix;
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::mv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ k ] = h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mtv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::mtv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] = h()[ k ] * x[ k ];
-    for( int k = 0; k < codimension; ++k )
-      y[ pattern().zero( k ) ] = ctype( 0 );
+    for( int k = 0; k < cols - rows; ++k )
+      y[ pattern().zero( k ) ] = field_type( 0 );
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mhv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::mhv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] = conjugateComplex( h()[ k ] ) * x[ k ];
-    for( int k = 0; k < codimension; ++k )
-      y[ pattern().zero( k ) ] = ctype( 0 );
+    for( int k = 0; k < cols - rows; ++k )
+      y[ pattern().zero( k ) ] = field_type( 0 );
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::umv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::umv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ k ] += h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::umtv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::umtv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] += h()[ k ] * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::umhv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::umhv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] += conjugateComplex( h()[ k ] ) * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::usmv ( const field_type &alpha, const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::usmv ( const field_type &alpha, const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ k ] += alpha * h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::usmtv ( const field_type &alpha, const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::usmtv ( const field_type &alpha, const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] += alpha * h()[ k ] * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::usmhv ( const field_type &alpha, const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::usmhv ( const field_type &alpha, const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] += alpha * conjugateComplex( h()[ k ] ) * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::mmv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ k ] -= h()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmtv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::mmtv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] -= h()[ k ] * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::mmhv ( const X &x, Y &y ) const
+  inline void SPJacobianTransposed< ct, dim, mydim >::mmhv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < rows; ++k )
       y[ pattern().nonzero( k ) ] -= conjugateComplex( h()[ k ] ) * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
-  inline typename SPGeometryCache< ct, dim, codim >::ctype
-  SPGeometryCache< ct, dim, codim >::JacobianTransposed::det () const
+  template< class ct, int dim, int mydim >
+  inline typename SPJacobianTransposed< ct, dim, mydim >::field_type SPJacobianTransposed< ct, dim, mydim >::det () const
   {
-    ctype det( 1 );
-    for( int k = 0; k < mydimension; ++k )
+    field_type det( 1 );
+    for( int k = 0; k < rows; ++k )
       det *= h()[ k ];
     return det;
   }
 
 
 
-  // Implementation of SPGeometryCache::JacobianInverseTransposed
-  // ------------------------------------------------------------
+  // Implementation of SPJacobianInverseTransposed
+  // ---------------------------------------------
 
-  template< class ct, int dim, int codim >
-  inline SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::operator FieldMatrix () const
+  template< class ct, int dim, int mydim >
+  inline SPJacobianInverseTransposed< ct, dim, mydim >::operator FieldMatrix () const
   {
-    FieldMatrix matrix( ctype( 0 ) );
-    for( int k = 0; k < mydimension; ++k )
+    FieldMatrix matrix( field_type( 0 ) );
+    for( int k = 0; k < cols; ++k )
       matrix[ pattern().nonzero( k ) ][ k ] = hInv()[ k ];
     return matrix;
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::mv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ pattern().nonzero( k ) ] = hInv()[ k ] * x[ k ];
-    for( int k = 0; k < codimension; ++k )
-      y[ pattern().zero( k ) ] = ctype( 0 );
+    for( int k = 0; k < rows - cols; ++k )
+      y[ pattern().zero( k ) ] = field_type( 0 );
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mtv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::mtv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] = hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mhv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::mhv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] = conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::umv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ pattern().nonzero( k ) ] += hInv()[ k ] * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umtv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::umtv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] += hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::umhv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::umhv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] += conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::usmv ( const field_type &alpha, const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::usmv ( const field_type &alpha, const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ pattern().nonzero( k ) ] += alpha * hInv()[ k ] * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::usmtv ( const field_type &alpha, const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::usmtv ( const field_type &alpha, const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] += alpha * hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::usmhv ( const field_type &alpha, const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::usmhv ( const field_type &alpha, const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] += alpha * conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::mmv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ pattern().nonzero( k ) ] -= hInv()[ k ] * x[ k ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmtv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::mmtv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] -= hInv()[ k ] * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
+  template< class ct, int dim, int mydim >
   template< class X, class Y >
-  inline void
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::mmhv ( const X &x, Y &y ) const
+  inline void SPJacobianInverseTransposed< ct, dim, mydim >::mmhv ( const X &x, Y &y ) const
   {
-    for( int k = 0; k < mydimension; ++k )
+    for( int k = 0; k < cols; ++k )
       y[ k ] -= conjugateComplex( hInv()[ k ] ) * x[ pattern().nonzero( k ) ];
   }
 
 
-  template< class ct, int dim, int codim >
-  inline typename SPGeometryCache< ct, dim, codim >::ctype
-  SPGeometryCache< ct, dim, codim >::JacobianInverseTransposed::det () const
+  template< class ct, int dim, int mydim >
+  inline typename SPJacobianInverseTransposed< ct, dim, mydim >::field_type SPJacobianInverseTransposed< ct, dim, mydim >::det () const
   {
-    ctype det( 1 );
-    for( int k = 0; k < mydimension; ++k )
+    field_type det( 1 );
+    for( int k = 0; k < cols; ++k )
       det *= hInv()[ k ];
     return det;
   }
