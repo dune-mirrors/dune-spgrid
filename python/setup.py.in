@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(name="dune.spgrid",
     namespace_packages=['dune'],
     description="Structured Parallel Grid for DUNE",
-    version="2.6",
+    version="${DUNE_SPGRID_VERSION}",
     author="Andreas Dedner and Martin Nolte",
     packages = find_packages(),
     zip_safe = 0,
