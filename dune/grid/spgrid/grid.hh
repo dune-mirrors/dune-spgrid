@@ -192,8 +192,6 @@ namespace Dune
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
   public:
-    SPGrid ( const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
-
     SPGrid ( const Domain &domain, const MultiIndex &cells,
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
@@ -501,20 +499,6 @@ namespace Dune
 
   // Implementation of SPGrid
   // ------------------------
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
-  inline SPGrid< ct, dim, Ref, Comm >::SPGrid ( const CollectiveCommunication &comm )
-  : domain_( Domain::unitCube() ),
-    globalMesh_( Mesh::unitMesh() ),
-    overlap_( MultiIndex::zero() ),
-    leafGridView_( LeafGridViewImpl() ),
-    hierarchicIndexSet_( *this ),
-    comm_( comm )
-  {
-    createLocalGeometries();
-    setupMacroGrid();
-  }
-
 
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline SPGrid< ct, dim, Ref, Comm >
