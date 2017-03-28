@@ -3,6 +3,10 @@
 
 #include <cstddef>
 
+#include <array>
+#include <memory>
+#include <utility>
+
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 
 #include <dune/grid/albertagrid/geometryreference.hh>
@@ -192,8 +196,6 @@ namespace Dune
     typedef typename LeafGridView::Traits::GridViewImp LeafGridViewImpl;
 
   public:
-    SPGrid ( const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
-
     SPGrid ( const Domain &domain, const MultiIndex &cells,
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
@@ -207,12 +209,8 @@ namespace Dune
              const MultiIndex &overlap,
              const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
-    ~SPGrid ()
-    {
-      clear();
-      for( int face = 0; face < ReferenceCube::numFaces; ++face )
-        delete localFaceGeometry_[ face ];
-    }
+    SPGrid ( const This & ) = delete;
+    SPGrid ( This &&other );
 
     using Base::getRealImplementation;
 
@@ -473,8 +471,6 @@ namespace Dune
       return typename Codim< 1 >::LocalGeometry( *localFaceGeometry_[ face ] );
     }
 
-    void clear ();
-
     void createLocalGeometries ();
     void setupMacroGrid ();
     void setupBoundaryIndices ();
@@ -485,7 +481,7 @@ namespace Dune
     Mesh globalMesh_;
     MultiIndex overlap_;
     ReferenceCubeContainer refCubes_;
-    std::vector< GridLevel * > gridLevels_;
+    std::vector< std::unique_ptr< GridLevel > > gridLevels_;
     std::vector< LevelGridView > levelGridViews_;
     LeafGridView leafGridView_;
     HierarchicIndexSet hierarchicIndexSet_;
@@ -493,28 +489,14 @@ namespace Dune
     LocalIdSet localIdSet_;
     CollectiveCommunication comm_;
     std::size_t boundarySize_;
-    std::vector< array< std::size_t, 2*dimension > > boundaryOffset_;
-    const typename Codim< 1 >::LocalGeometryImpl *localFaceGeometry_[ ReferenceCube::numFaces ];
+    std::vector< std::array< std::size_t, 2*dimension > > boundaryOffset_;
+    std::array< std::unique_ptr< const typename Codim< 1 >::LocalGeometryImpl >, ReferenceCube::numFaces > localFaceGeometry_;
   };
 
 
 
   // Implementation of SPGrid
   // ------------------------
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
-  inline SPGrid< ct, dim, Ref, Comm >::SPGrid ( const CollectiveCommunication &comm )
-  : domain_( Domain::unitCube() ),
-    globalMesh_( Mesh::unitMesh() ),
-    overlap_( MultiIndex::zero() ),
-    leafGridView_( LeafGridViewImpl() ),
-    hierarchicIndexSet_( *this ),
-    comm_( comm )
-  {
-    createLocalGeometries();
-    setupMacroGrid();
-  }
-
 
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline SPGrid< ct, dim, Ref, Comm >
@@ -581,6 +563,20 @@ namespace Dune
 
 
   template< class ct, int dim, template< int > class Ref, class Comm >
+  inline SPGrid< ct, dim, Ref, Comm >::SPGrid ( This &&other )
+  : domain_( std::move( other.domain_ ) ),
+    globalMesh_( std::move( other.globalMesh_ ) ),
+    overlap_( std::move( other.overlap_ ) ),
+    leafGridView_( LeafGridViewImpl() ),
+    hierarchicIndexSet_( *this ),
+    comm_( std::move( other.comm_ ) )
+  {
+    createLocalGeometries();
+    setupMacroGrid();
+  }
+
+
+  template< class ct, int dim, template< int > class Ref, class Comm >
   inline bool SPGrid< ct, dim, Ref, Comm >
     ::mark ( const int refCount, const typename Codim< 0 >::Entity &e )
   {
@@ -630,7 +626,7 @@ namespace Dune
   {
     for( int i = 0; i < refCount; ++i )
     {
-      gridLevels_.push_back( new GridLevel( leafLevel(), policy ) );
+      gridLevels_.emplace_back( new GridLevel( leafLevel(), policy ) );
       levelGridViews_.push_back( LevelGridViewImpl( leafLevel() ) );
     }
     getRealImplementation( leafGridView_ ).update( leafLevel() );
@@ -649,7 +645,7 @@ namespace Dune
     {
       const LevelGridView fatherView = levelGridView( maxLevel() );
 
-      gridLevels_.push_back( new GridLevel( leafLevel(), policy ) );
+      gridLevels_.emplace_back( new GridLevel( leafLevel(), policy ) );
       levelGridViews_.push_back( LevelGridViewImpl( leafLevel() ) );
 
       hierarchicIndexSet_.update();
@@ -731,20 +727,6 @@ namespace Dune
 
 
   template< class ct, int dim, template< int > class Ref, class Comm >
-  inline void SPGrid< ct, dim, Ref, Comm >::clear ()
-  {
-    levelGridViews_.clear();
-    leafGridView_ = LeafGridView( LeafGridViewImpl() );
-
-    typedef typename std::vector< GridLevel * >::iterator Iterator;
-    const Iterator end = gridLevels_.end();
-    for( Iterator it = gridLevels_.begin(); it != end; ++it )
-      delete *it;
-    gridLevels_.clear();
-  }
-
-
-  template< class ct, int dim, template< int > class Ref, class Comm >
   inline void SPGrid< ct, dim, Ref, Comm >::createLocalGeometries ()
   {
     typedef typename Codim< 1 >::LocalGeometryImpl LocalGeometryImpl;
@@ -761,7 +743,7 @@ namespace Dune
       GlobalVector origin( ctype( 0 ) );
       origin[ face/2 ] = ctype( face & 1 );
       const SPGeometryCache< ctype, dimension, 1 > cache( unitH, direction );
-      localFaceGeometry_[ face ] = new LocalGeometryImpl( cache, origin );
+      localFaceGeometry_[ face ].reset( new LocalGeometryImpl( cache, origin ) );
     }
   }
 
@@ -769,12 +751,10 @@ namespace Dune
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline void SPGrid< ct, dim, Ref, Comm >::setupMacroGrid ()
   {
-    clear();
-
     SPDecomposition< dimension > decomposition( globalMesh_, comm().size() );
 
     GridLevel *leafLevel = new GridLevel( *this, decomposition );
-    gridLevels_.push_back( leafLevel );
+    gridLevels_.emplace_back( leafLevel );
     levelGridViews_.push_back( LevelGridViewImpl( *leafLevel ) );
     getRealImplementation( leafGridView_ ).update( *leafLevel );
     hierarchicIndexSet_.update();

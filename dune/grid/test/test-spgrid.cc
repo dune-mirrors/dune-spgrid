@@ -4,6 +4,8 @@
 #error "DIMGRID not defined. Please compile with -DDIMGRID=n"
 #endif
 
+#include <type_traits>
+
 #include <dune/common/hybridutilities.hh>
 #include <dune/common/parallel/mpihelper.hh>
 
@@ -83,8 +85,25 @@ void checkHierarchicSearch ( const GridView &gridView )
 
 
 template< class Grid >
+Grid backupAndRestore ( const Grid &grid, const std::string &filename )
+{
+  std::cerr << ">>> Writing out grid..." << std::endl;
+  Dune::BackupRestoreFacility< Grid >::backup( grid, filename );
+
+  std::cerr << ">>> Reading back grid..." << std::endl;
+  std::unique_ptr< Grid > rgrid( Dune::BackupRestoreFacility< Grid >::restore( filename ) );
+  if( rgrid )
+    return std::move( *rgrid );
+  else
+    DUNE_THROW( Dune::IOError, "Could not read back grid." );
+}
+
+
+template< class Grid >
 void performCheck ( Grid &grid, int maxLevel, const typename Grid::RefinementPolicy &policy = typename Grid::RefinementPolicy() )
 {
+  static_assert( std::is_move_constructible< Grid >::value, "Grid is not move constructible." );
+
   for( int i = 0; i <= maxLevel; ++i )
   {
     if( i > 0 )
@@ -125,32 +144,16 @@ void performCheck ( Grid &grid, int maxLevel, const typename Grid::RefinementPol
       Dune::checkEntityTree< 0 >( grid.levelGridView( level ) );
   }
 
-  std::ostringstream sFilename;
-  sFilename << "gridcheck." << Grid::Refinement::type() << ".spgrid";
-  const std::string filename = sFilename.str();
-
-  std::cerr << ">>> Writing out grid..." << std::endl;
-  Dune::BackupRestoreFacility< Grid >::backup( grid, filename );
-
-  std::cerr << ">>> Reading back grid..." << std::endl;
-  Grid *rgrid = Dune::BackupRestoreFacility< Grid >::restore( filename );
-
-  if( rgrid )
+  Grid rgrid = backupAndRestore( grid, "gridcheck." + Grid::Refinement::type() + ".spgrid" );
+  std::cerr << ">>> Checking grid..." << std::endl;
+  gridcheck( rgrid );
+  std::cerr << ">>> Checking intersections..." << std::endl;
+  checkIntersectionIterator( rgrid );
+  if( rgrid.maxLevel() > 0 )
   {
-    std::cerr << ">>> Checking grid..." << std::endl;
-    gridcheck( *rgrid );
-    std::cerr << ">>> Checking intersections..." << std::endl;
-    checkIntersectionIterator( *rgrid );
-    if( rgrid->maxLevel() > 0 )
-    {
-      std::cerr << ">>> Checking geometry in father..." << std::endl;
-      checkGeometryInFather( *rgrid );
-    }
-
-    delete rgrid;
+    std::cerr << ">>> Checking geometry in father..." << std::endl;
+    checkGeometryInFather( rgrid );
   }
-  else
-    std::cerr << "Could not read back grid." << std::endl;
 }
 
 
