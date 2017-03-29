@@ -9,7 +9,7 @@ def spBisectionGrid(constructor, dimgrid, ctype="double"):
     checkconfiguration.have("HAVE_DUNE_SPGRID")
 
     typeName = "Dune::SPGrid< " + ctype + ", " + str(dimgrid) + ", Dune::SPBisectionRefinement >"
-    includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh"]
+    includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh", "dune/grid/spgrid/pickle.hh"]
     gridModule = module(includes, typeName)
 
     return gridModule.LeafGrid(gridModule.reader(constructor))
@@ -21,7 +21,7 @@ def spIsotropicGrid(constructor, dimgrid, ctype="double"):
     checkconfiguration.have("HAVE_DUNE_SPGRID")
 
     typeName = "Dune::SPGrid< " + ctype + ", " + str(dimgrid) + ", Dune::SPIsotropicRefinement >"
-    includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh"]
+    includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh", "dune/grid/spgrid/pickle.hh"]
     gridModule = module(includes, typeName)
 
     return gridModule.LeafGrid(gridModule.reader(constructor))

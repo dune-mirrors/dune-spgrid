@@ -38,6 +38,7 @@ set( HEADERS
   partitionlist.hh
   partitionpool.hh
   persistentcontainer.hh
+  pickle.hh
   referencecube.hh
   refinement.hh
   superentityiterator.hh
