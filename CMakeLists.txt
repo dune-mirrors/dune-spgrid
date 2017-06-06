@@ -10,8 +10,12 @@ dune_project()
 add_subdirectory(cmake/modules)
 add_subdirectory(doc)
 add_subdirectory(dune)
+
 if(dune-corepy_FOUND)
   add_subdirectory(python)
+  if(NOT (${DUNE_COMMON_VERSION} VERSION_LESS 2.6))
+    dune_python_install_package(PATH "python")
+  endif()
 endif()
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
