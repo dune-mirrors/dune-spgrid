@@ -61,7 +61,7 @@ namespace Dune
     static This unitMesh ();
 
   private:
-    Dune::array< MultiIndex, 2 > bound_;
+    std::array< MultiIndex, 2 > bound_;
   };
 
 
