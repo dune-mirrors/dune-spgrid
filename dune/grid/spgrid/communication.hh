@@ -6,6 +6,7 @@
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
 
+#include <dune/grid/common/exceptions.hh>
 #include <dune/grid/common/datahandleif.hh>
 
 #include <dune/grid/spgrid/iterator.hh>
@@ -54,6 +55,19 @@ namespace Dune
 
 
 
+  namespace __SPGrid
+  {
+
+    static int getCommTag ()
+    {
+      static unsigned char counter = 0;
+      return int( counter++ ) + 1536;
+    };
+
+  } // namespace __SPGrid
+
+
+
   // SPCommunication
   // ---------------
 
@@ -87,12 +101,6 @@ namespace Dune
     void wait ();
 
   private:
-    static int getTag ()
-    {
-      static unsigned char counter = 0;
-      return int( counter++ ) + 1536;
-    };
-
     const GridLevel &gridLevel_;
     DataHandle &dataHandle_;
     const Interface *interface_;
@@ -116,7 +124,7 @@ namespace Dune
       dataHandle_( dataHandle ),
       interface_( &gridLevel.commInterface( iftype ) ),
       dir_( dir ),
-      tag_( getTag() ),
+      tag_( __SPGrid::getCommTag() ),
       fixedSize_( true )
   {
     for( int codim = 0; codim <= dimension; ++codim )
@@ -142,7 +150,7 @@ namespace Dune
             for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
               size += dataHandle_.size( *it );
           } );
-        size *= sizeof( typename DataHandle::DataType );
+        size *= sizeof( DataType );
         readBuffers_.back().receive( it->rank(), tag_, size );
       }
     }
@@ -162,9 +170,19 @@ namespace Dune
           const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
           for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
           {
+            const auto &entity = *it;
             if( !fixedSize )
-              writeBuffers_.back().write( static_cast< int >( dataHandle_.size( *it ) ) );
-            dataHandle_.gather( writeBuffers_.back(), *it );
+              writeBuffers_.back().write( static_cast< int >( dataHandle_.size( entity ) ) );
+#ifndef NDEBUG
+            const std::size_t posBeforeGather = writeBuffers_.back().position();
+#endif // #ifndef NDEBUG
+            dataHandle_.gather( writeBuffers_.back(), entity );
+#ifndef NDEBUG
+            const std::size_t posAfterGather = writeBuffers_.back().position();
+            const std::size_t sizeInBytes = dataHandle_.size( entity ) * sizeof( DataType );
+            if( posAfterGather - posBeforeGather != sizeInBytes )
+              DUNE_THROW( GridError, "Number of bytes written (" << (posAfterGather - posBeforeGather) << ") does not coincide with reported size (" << sizeInBytes << ")" );
+#endif // #ifndef NDEBUG
           }
         } );
       writeBuffers_.back().send( it->rank(), tag_ );
@@ -222,12 +240,23 @@ namespace Dune
               const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
               for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
               {
+                const auto &entity = *it;
+
                 int size;
                 if( !fixedSize )
                   buffer->read( size );
                 else
-                  size = dataHandle_.size( *it );
-                dataHandle_.scatter( *buffer, *it, size );
+                  size = dataHandle_.size( entity );
+#ifndef NDEBUG
+                const std::size_t posBeforeGather = buffer->position();
+#endif // #ifndef NDEBUG
+                dataHandle_.scatter( *buffer, entity, size );
+#ifndef NDEBUG
+                const std::size_t posAfterGather = buffer->position();
+                const std::size_t sizeInBytes = static_cast< std::size_t >( size ) * sizeof( DataType );
+                if( posAfterGather - posBeforeGather != sizeInBytes )
+                  DUNE_THROW( GridError, "Number of bytes read (" << (posAfterGather - posBeforeGather) << ") does not coincide with reported size (" << sizeInBytes << ")" );
+#endif // #ifndef NDEBUG
               }
             } );
           break;

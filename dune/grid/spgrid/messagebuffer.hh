@@ -55,6 +55,8 @@ namespace Dune
       position_ += sizeof( T );
     }
 
+    std::size_t position () const { return position_; }
+
   protected:
     void initialize () { buffer_ = nullptr; position_ = 0; capacity_ = 0; }
 
@@ -172,6 +174,8 @@ namespace Dune
         DUNE_THROW( IOError, "Cannot read beyond the buffer's end." );
     }
 
+    std::size_t position () const { return position_; }
+
   protected:
     void initialize () { buffer_ = nullptr; position_ = 0; size_ = 0; }
 
@@ -267,7 +271,7 @@ namespace Dune
       for( std::size_t i = 0; i < numBuffers; ++i )
         requests[ i ] = readBuffers[ i ].request_;
 
-      int index;
+      int index = MPI_UNDEFINED;
       MPI_Waitany( numBuffers, requests.data(), &index, MPI_STATUS_IGNORE );
       if( index == MPI_UNDEFINED )
         return readBuffers.end();
