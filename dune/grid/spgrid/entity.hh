@@ -3,6 +3,8 @@
 
 #include <utility>
 
+#include <dune/geometry/type.hh>
+
 #include <dune/grid/common/gridenums.hh>
 
 #include <dune/grid/spgrid/entityseed.hh>
@@ -79,11 +81,7 @@ namespace Dune
       return entityInfo().partitionType();
     }
 
-    GeometryType type () const
-    {
-      typedef typename Impl::CubeTopology< mydimension >::type Topology;
-      return GeometryType( Topology() );
-    }
+    GeometryType type () const { return GeometryTypes::cube( mydimension ); }
 
     Geometry geometry () const
     {

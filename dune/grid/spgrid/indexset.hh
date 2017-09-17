@@ -69,12 +69,7 @@ namespace Dune
     template< int cd >
     IndexType subIndex ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const;
 
-    Types types ( int codim ) const
-    {
-      GeometryType type;
-      type.makeCube( dimension - codim );
-      return {{ GeometryType( type ) }};
-    }
+    Types types ( int codim ) const { return {{ GeometryTypes::cube( dimension - codim ) }}; }
 
     IndexType size ( const GeometryType &type ) const;
     IndexType size ( const int codim ) const;

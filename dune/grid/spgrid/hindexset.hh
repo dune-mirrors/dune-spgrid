@@ -107,12 +107,7 @@ namespace Dune
       return offset + levelIndexSet( level ).subIndex( entity, i, codim );
     }
 
-    Types types ( int codim ) const
-    {
-      GeometryType type;
-      type.makeCube( dimension - codim );
-      return {{ GeometryType( type ) }};
-    }
+    Types types ( int codim ) const { return {{ GeometryTypes::cube( dimension - codim ) }}; }
 
     const std::vector< GeometryType > &geomTypes ( const int codim ) const
     {

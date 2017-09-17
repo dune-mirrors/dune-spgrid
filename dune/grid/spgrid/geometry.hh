@@ -3,6 +3,8 @@
 
 #include <type_traits>
 
+#include <dune/geometry/type.hh>
+
 #include <dune/common/typetraits.hh>
 
 #include <dune/geometry/type.hh>
@@ -53,7 +55,7 @@ namespace Dune
     {}
 
   public:
-    GeometryType type () const;
+    GeometryType type () const { return GeometryTypes::cube( mydimension ); }
 
     int corners () const { return numCorners; }
     GlobalVector corner ( const int i ) const { return global( ReferenceCube::corner( i ) ); }
@@ -198,14 +200,6 @@ namespace Dune
 
   // Implementation of SPBasicGeometry
   // ---------------------------------
-
-  template< int mydim, int cdim, class Grid, class Impl >
-  inline GeometryType SPBasicGeometry< mydim, cdim, Grid, Impl >::type () const
-  {
-    typedef typename Dune::Impl::CubeTopology< mydimension >::type Topology;
-    return GeometryType( Topology() );
-  }
-
 
   template< int mydim, int cdim, class Grid, class Impl >
   inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::GlobalVector

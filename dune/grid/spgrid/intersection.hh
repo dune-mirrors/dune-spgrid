@@ -5,6 +5,8 @@
 
 #include <dune/common/typetraits.hh>
 
+#include <dune/geometry/type.hh>
+
 #include <dune/grid/common/intersection.hh>
 
 #include <dune/grid/spgrid/geometry.hh>
@@ -130,11 +132,7 @@ namespace Dune
       return Geometry( GeometryImpl( entityInfo() ) );
     }
 
-    GeometryType type () const
-    {
-      typedef typename Impl::CubeTopology< mydimension >::type Topology;
-      return GeometryType( Topology() );
-    }
+    GeometryType type () const { return GeometryTypes::cube( mydimension ); }
 
     int indexInInside () const { return normalId_.face(); }
     int indexInOutside () const { return (-normalId_).face(); }
