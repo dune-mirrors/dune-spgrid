@@ -45,8 +45,7 @@ void checkSubIndex ( const GridView &gridView )
 
       for( const Entity &entity : entities( gridView, Dune::Codim< codim >() )  )
       {
-        const Dune::ReferenceElement< ctype, mydimension > &referenceElement
-          = Dune::ReferenceElements< ctype, mydimension >::general( entity.type() );
+        const auto &referenceElement = Dune::ReferenceElements< ctype, mydimension >::general( entity.type() );
         for( int i = 0; i < referenceElement.size( mydimension ); ++i )
           indexSet.subIndex( entity, i, dimension );
       }
