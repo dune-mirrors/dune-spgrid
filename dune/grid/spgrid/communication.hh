@@ -59,7 +59,7 @@ namespace Dune
   namespace __SPGrid
   {
 
-    DUNE_EXPORT inline static int getCommTag ()
+    DUNE_EXPORT inline int getCommTag ()
     {
       static unsigned char counter = 0;
       return int( counter++ ) + 1536;
