@@ -5,6 +5,7 @@
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <dune/common/parallel/mpicollectivecommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
+#include <dune/common/visibility.hh>
 
 #include <dune/grid/common/exceptions.hh>
 #include <dune/grid/common/datahandleif.hh>
@@ -58,7 +59,7 @@ namespace Dune
   namespace __SPGrid
   {
 
-    static int getCommTag ()
+    DUNE_EXPORT inline static int getCommTag ()
     {
       static unsigned char counter = 0;
       return int( counter++ ) + 1536;
