@@ -49,7 +49,7 @@ namespace Dune
 
   private:
     ElementInfo insideInfo_;
-    int face_;
+    int face_ = 0;
   };
 
 } // namespace Dune
