@@ -1,5 +1,6 @@
+cmake_minimum_required(VERSION 3.1)
+
 project("dune-spgrid" C CXX)
-cmake_minimum_required(VERSION 2.8.6)
 
 find_package(dune-common)
 list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
