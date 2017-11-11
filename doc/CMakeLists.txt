@@ -1,1 +1,1 @@
-add_subdirectory(progs)
+add_subdirectory(doxygen)

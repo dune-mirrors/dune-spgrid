@@ -1,0 +1,3 @@
+INPUT                 += @top_srcdir@/dune \
+                         @srcdir@/main.page
+                         @srcdir@/structure.page
