@@ -1,5 +1,3 @@
-# Master (will become 2.7)
-
 # Release 2.6
 
 - Optional support for the brand-new `dune-python` module was added.
