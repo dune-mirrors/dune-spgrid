@@ -22,7 +22,6 @@ namespace Dune
   template< class VT >
   void checkBoundarySegmentIterator ( const Dune::GridView< VT > &gridView )
   {
-#if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
     // get grid view types
     typedef Dune::GridView< VT > GridView;
     typedef typename GridView::IntersectionIterator IntersectionIterator;
@@ -122,11 +121,6 @@ namespace Dune
         if( (*vit)[ face ] != 0 )
           DUNE_THROW( GridError, "Not all boundary intersections were found" );
     }
-#else // #if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
-    std::cerr << ">>> Skipping check for BoundarySegmentIterator"
-              << "because experimental grid extensions are disabled."
-              << std::endl;
-#endif // #else // #if DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS
   }
 
 }
