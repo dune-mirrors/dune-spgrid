@@ -1,6 +1,6 @@
 Module: dune-spgrid
 Version: 2.6
-Maintainer: nolte@mathematik.uni-freiburg.de
+Maintainer: Martin Nolte <nolte.mrtn@gmail.com>
 Whitespace-Hook: Yes
 Depends: dune-grid (>= 2.6)
 Suggests: dune-python (>= 2.6)
