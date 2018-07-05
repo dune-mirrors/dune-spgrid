@@ -40,3 +40,5 @@ foreach(test test-spgrid)
       )
   endforeach()
 endforeach()
+
+dune_add_test(SOURCES test-jacobians.cc)
