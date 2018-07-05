@@ -21,6 +21,7 @@ namespace Dune
   {
     typedef SPDirection< dim > Direction;
 
+    SPGeometryPattern ();
     explicit SPGeometryPattern ( Direction dir );
 
     int nonzero ( const int k ) const;
@@ -36,6 +37,7 @@ namespace Dune
   {
     typedef SPDirection< dim > Direction;
 
+    SPGeometryPattern () = default;
     explicit SPGeometryPattern ( Direction dir ) {}
 
     int nonzero ( const int k ) const;
@@ -47,6 +49,7 @@ namespace Dune
   {
     typedef SPDirection< dim > Direction;
 
+    SPGeometryPattern () = default;
     explicit SPGeometryPattern ( Direction dir ) {}
 
     int nonzero ( const int k ) const;
@@ -58,6 +61,7 @@ namespace Dune
   {
     typedef SPDirection< 0 > Direction;
 
+    SPGeometryPattern () = default;
     explicit SPGeometryPattern ( Direction dir ) {}
 
     int nonzero ( const int k ) const;
@@ -89,6 +93,8 @@ namespace Dune
 
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
+
+    SPJacobianTransposed () = default;
 
     SPJacobianTransposed ( const GlobalVector &h, SPDirection< dim > dir )
       : Pattern( std::move( dir ) )
@@ -174,6 +180,8 @@ namespace Dune
 
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
+
+    SPJacobianInverseTransposed () = default;
 
     SPJacobianInverseTransposed ( const GlobalVector &h, SPDirection< dim > dir )
       : Pattern( dir )
@@ -276,6 +284,16 @@ namespace Dune
 
   // Implementation of SPGeometryPattern
   // -----------------------------------
+
+  template< int dim, int codim >
+  inline SPGeometryPattern< dim, codim >::SPGeometryPattern ()
+  {
+    const int mydim = dim - codim;
+    for( int k = 0; k < mydim; ++k )
+      nonzero_[ k ] = k;
+    for( int k = 0; k < codim; ++k )
+      zero_[ k ] = mydim + k;
+  }
 
   template< int dim, int codim >
   inline SPGeometryPattern< dim, codim >::SPGeometryPattern ( Direction dir )
