@@ -67,7 +67,7 @@ namespace Dune
       explicit TreeIterator ( const IsLeaf &isLeaf ) : isLeaf_( isLeaf ) {}
 
       explicit TreeIterator ( const Entity &entity, const IsLeaf &isLeaf )
-        : entityInfo_( Grid::getRealImplementation( entity ).entityInfo() ),
+        : entityInfo_( entity.impl().entityInfo() ),
           rootLevel_( &gridLevel() ),
           isLeaf_( isLeaf )
       {}
@@ -136,7 +136,7 @@ namespace Dune
 
       explicit TreeIterator ( const Intersection &intersection, const IsLeaf &isLeaf )
         : intersection_( intersection ),
-          rootLevel_( &Grid::getRealImplementation( intersection ).gridLevel() ),
+          rootLevel_( &intersection.impl().gridLevel() ),
           isLeaf_( isLeaf )
       {}
 
@@ -150,7 +150,7 @@ namespace Dune
 
       bool equals ( const This &other ) const
       {
-        return Grid::getRealImplementation( intersection_ ).equals( Grid::getRealImplementation( other.intersection_ ) );
+        return intersection_.impl().equals( other.intersection_.impl() );
       }
 
       void increment ()
@@ -162,23 +162,23 @@ namespace Dune
           {
             if( info.nextChild() )
             {
-              Grid::getRealImplementation( intersection_ ).setEntityInfo( info );
+              intersection_.impl().setEntityInfo( info );
               return;
             }
             info.up();
           }
-          Grid::getRealImplementation( intersection_ ).setInside( ElementInfo() );
+          intersection_.impl().setInside( ElementInfo() );
         }
         else
         {
           EntityInfo info = entityInfo();
           info.down();
-          Grid::getRealImplementation( intersection_ ).setEntityInfo( info );
+          intersection_.impl().setEntityInfo( info );
         }
       }
 
     private:
-      EntityInfo entityInfo () const { return Grid::getRealImplementation( intersection_ ).entityInfo(); }
+      EntityInfo entityInfo () const { return intersection_.impl().entityInfo(); }
 
       const GridLevel &gridLevel () const  { return entityInfo().gridLevel(); }
       const GridLevel &leafLevel () const { return gridLevel().grid().leafLevel(); }

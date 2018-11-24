@@ -206,7 +206,7 @@ namespace Dune
   {
     assert( contains( entity ) );
     const typename Codim< codim >::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
+      = entity.impl().entityInfo();
     return index( entityInfo.id(), entityInfo.partitionNumber() );
   }
 
@@ -228,7 +228,7 @@ namespace Dune
   {
     assert( contains( entity ) );
     const typename Codim< cd >::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
+      = entity.impl().entityInfo();
     // for the ghost approach, the partition number has to be corrected
     return subIndex( entityInfo.id(), i, codim, entityInfo.partitionNumber(), std::integral_constant< int, cd >() );
   }
@@ -265,7 +265,7 @@ namespace Dune
     ::contains ( const typename Codim< codim >::Entity &entity ) const
   {
     const typename Codim< codim >::EntityInfo &entityInfo
-      = Grid::getRealImplementation( entity ).entityInfo();
+      = entity.impl().entityInfo();
     assert( partitions().contains( entityInfo.partitionNumber() ) );
     return (&entityInfo.gridLevel() == &gridLevel());
   }

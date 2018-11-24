@@ -43,10 +43,10 @@ namespace Dune
 
     //! \brief entity type
     typedef typename Intersection::Entity Entity;
-    
+
     //! \brief grid dimension
     static const int dimension = IntersectionImpl::dimension;
-    //! \brief single coordinate type 
+    //! \brief single coordinate type
     typedef typename IntersectionImpl::ctype ctype;
     //! \brief entity info type
     typedef typename IntersectionImpl::EntityInfo EntityInfo;
@@ -94,9 +94,9 @@ namespace Dune
 
   private:
     // return intersection implementation
-    IntersectionImpl &intersectionImpl () { return Grid::getRealImplementation( intersection_ ); }
+    IntersectionImpl &intersectionImpl () { return intersection_.impl(); }
     // return intersection implementation
-    const IntersectionImpl &intersectionImpl () const { return Grid::getRealImplementation( intersection_ ); }
+    const IntersectionImpl &intersectionImpl () const { return intersection_.impl(); }
 
     Intersection intersection_;
     PartitionIterator pit_;
@@ -109,7 +109,7 @@ namespace Dune
 
   template< class Grid >
   inline SPBoundarySegmentIterator< Grid >
-    ::SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, Begin ) 
+    ::SPBoundarySegmentIterator ( const GridLevel &gridLevel, int face, Begin )
   : intersection_( IntersectionImpl( EntityInfo( gridLevel ), face ) ),
     pit_( gridLevel, gridLevel.boundaryPartition( face ), Begin() )
   {
@@ -134,7 +134,7 @@ namespace Dune
 
   template< class Grid >
   inline const typename SPBoundarySegmentIterator< Grid >::This &
-  SPBoundarySegmentIterator< Grid >::operator= ( const This &other ) 
+  SPBoundarySegmentIterator< Grid >::operator= ( const This &other )
   {
     intersectionImpl() = other.intersectionImpl();
     pit_ = other.pit_;
@@ -161,7 +161,7 @@ namespace Dune
   inline void SPBoundarySegmentIterator< Grid >::increment ()
   {
     // get current face
-    int face = This::face(); 
+    int face = This::face();
 
     // try to increment internal iterator
     ++pit_;
@@ -194,7 +194,7 @@ namespace Dune
       return;
 
     // compute id
-    const SPEntity< 1, dimension, Grid > &entityImpl = Grid::getRealImplementation( *pit_ );
+    const SPEntity< 1, dimension, Grid > &entityImpl = ( *pit_ ).impl();
     MultiIndex id = entityImpl.entityInfo().id();
     const int i = face >> 1;
     const int j = 2*(face & 1) - 1;

@@ -212,8 +212,6 @@ namespace Dune
     SPGrid ( const This & ) = delete;
     SPGrid ( This &&other );
 
-    using Base::getRealImplementation;
-
     const ReferenceCube &referenceCube () const
     {
       return refCubes_.get();
@@ -267,7 +265,7 @@ namespace Dune
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
     {
       const LevelGridView &view = levelGridView( level );
-      return getRealImplementation( view ).template begin< codim, pitype >( sweepDir );
+      return view.impl().template begin< codim, pitype >( sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
@@ -275,7 +273,7 @@ namespace Dune
     lend ( const int level, const unsigned int sweepDir = 0 ) const
     {
       const LevelGridView &view = levelGridView( level );
-      return getRealImplementation( view ).template end< codim, pitype >( sweepDir );
+      return view.impl().template end< codim, pitype >( sweepDir );
     }
 
     template< int codim >
@@ -283,7 +281,7 @@ namespace Dune
     lbegin ( const int level, const unsigned int sweepDir = 0 ) const
     {
       const LevelGridView &view = levelGridView( level );
-      return getRealImplementation( view ).template begin< codim >( sweepDir );
+      return view.impl().template begin< codim >( sweepDir );
     }
 
     template< int codim >
@@ -291,7 +289,7 @@ namespace Dune
     lend ( const int level, const unsigned int sweepDir = 0 ) const
     {
       const LevelGridView &view = levelGridView( level );
-      return getRealImplementation( view ).template end< codim >( sweepDir );
+      return view.impl().template end< codim >( sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
@@ -299,7 +297,7 @@ namespace Dune
     leafbegin ( const unsigned int sweepDir = 0 ) const
     {
       const LeafGridView &view = leafGridView();
-      return getRealImplementation( view ).template begin< codim, pitype >( sweepDir );
+      return view.impl().template begin< codim, pitype >( sweepDir );
     }
 
     template< int codim, PartitionIteratorType pitype >
@@ -307,7 +305,7 @@ namespace Dune
     leafend ( const unsigned int sweepDir = 0 ) const
     {
       const LeafGridView &view = leafGridView();
-      return getRealImplementation( view ).template end< codim, pitype >( sweepDir );
+      return view.impl().template end< codim, pitype >( sweepDir );
     }
 
     template< int codim >
@@ -315,7 +313,7 @@ namespace Dune
     leafbegin ( const unsigned int sweepDir = 0 ) const
     {
       const LeafGridView &view = leafGridView();
-      return getRealImplementation( view ).template begin< codim >( sweepDir );
+      return view.impl().template begin< codim >( sweepDir );
     }
 
     template< int codim >
@@ -323,7 +321,7 @@ namespace Dune
     leafend ( const unsigned int sweepDir = 0 ) const
     {
       const LeafGridView &view = leafGridView();
-      return getRealImplementation( view ).template end< codim >( sweepDir );
+      return view.impl().template end< codim >( sweepDir );
     }
 
     const GlobalIdSet &globalIdSet () const
@@ -398,7 +396,7 @@ namespace Dune
                   int level ) const
     {
       LevelGridView view = levelGridView( level );
-      return getRealImplementation( view ).communicate( data, interface, dir );
+      return view.impl().communicate( data, interface, dir );
     }
 
     template< class DataHandle, class Data >
@@ -407,7 +405,7 @@ namespace Dune
                   InterfaceType interface, CommunicationDirection dir ) const
     {
       LeafGridView view = leafGridView();
-      return getRealImplementation( view ).communicate( data, interface, dir );
+      return view.impl().communicate( data, interface, dir );
     }
 
     const CollectiveCommunication &comm () const;
@@ -417,19 +415,19 @@ namespace Dune
     {
       typedef typename Traits::template Codim< Seed::codimension >::Entity Entity;
       typedef SPEntity< Seed::codimension, dimension, const This > EntityImpl;
-      typename EntityImpl::EntityInfo entityInfo( gridLevel( getRealImplementation( seed ).level() ), getRealImplementation( seed ).id(), getRealImplementation( seed ).partitionNumber() );
+      typename EntityImpl::EntityInfo entityInfo( gridLevel( seed.impl().level() ), seed.impl().id(), seed.impl().partitionNumber() );
       return Entity( EntityImpl( std::move( entityInfo ) ) );
     }
 
     template< int codim >
     bool hasFather ( const Dune::Entity< codim, dimension, const This, SPEntity > &entity ) const
     {
-      return ((entity.level() > 0) && getRealImplementation( entity ).entityInfo().hasFather());
+      return ((entity.level() > 0) && entity.impl().entityInfo().hasFather());
     }
 
     bool hasFather ( const Dune::Intersection< const This, SPIntersection< const This > > &intersection ) const
     {
-      return ((getRealImplementation( intersection ).gridLevel().level() > 0) && getRealImplementation( intersection ).entityInfo().hasFather());
+      return ((intersection.impl().gridLevel().level() > 0) && intersection.impl().entityInfo().hasFather());
     }
 
     template< int codim >
@@ -438,7 +436,7 @@ namespace Dune
     {
       assert( hasFather( entity ) );
       Dune::Entity< codim, dimension, const This, SPEntity > father( entity );
-      getRealImplementation( father ).entityInfo().up();
+      father.impl().entityInfo().up();
       return std::move( father );
     }
 
@@ -449,7 +447,7 @@ namespace Dune
       typedef Dune::Intersection< const This, IntersectionImpl > Intersection;
 
       assert( hasFather( intersection ) );
-      typename IntersectionImpl::EntityInfo fatherInfo( getRealImplementation( intersection ).entityInfo() );
+      typename IntersectionImpl::EntityInfo fatherInfo( intersection.impl().entityInfo() );
       fatherInfo.up();
       return Intersection( IntersectionImpl( std::move( fatherInfo ), intersection.indexInInside() ) );
     }
@@ -629,7 +627,7 @@ namespace Dune
       gridLevels_.emplace_back( new GridLevel( leafLevel(), policy ) );
       levelGridViews_.push_back( LevelGridViewImpl( leafLevel() ) );
     }
-    getRealImplementation( leafGridView_ ).update( leafLevel() );
+    leafGridView_.impl().update( leafLevel() );
     hierarchicIndexSet_.update();
   }
 
@@ -649,7 +647,7 @@ namespace Dune
       levelGridViews_.push_back( LevelGridViewImpl( leafLevel() ) );
 
       hierarchicIndexSet_.update();
-      getRealImplementation( leafGridView_ ).update( leafLevel() );
+      leafGridView_.impl().update( leafLevel() );
 
       handle.preAdapt( leafLevel().size() );
       typedef typename Codim< 0 >::LevelIterator LevelIterator;
@@ -704,7 +702,7 @@ namespace Dune
     assert( (face >= 0) && (face < 2*dimension) );
 
     const LevelGridView &macroView = levelGridView( 0 );
-    const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
+    const GridLevel &gridLevel = macroView.impl().gridLevel();
     const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
     const typename PartitionList::Partition &partition = partitions.partition( partitionNumber );
 
@@ -756,7 +754,7 @@ namespace Dune
     GridLevel *leafLevel = new GridLevel( *this, decomposition );
     gridLevels_.emplace_back( leafLevel );
     levelGridViews_.push_back( LevelGridViewImpl( *leafLevel ) );
-    getRealImplementation( leafGridView_ ).update( *leafLevel );
+    leafGridView_.impl().update( *leafLevel );
     hierarchicIndexSet_.update();
     setupBoundaryIndices();
   }
@@ -766,7 +764,7 @@ namespace Dune
   inline void SPGrid< ct, dim, Ref, Comm >::setupBoundaryIndices ()
   {
     const LevelGridView &macroView = levelGridView( 0 );
-    const GridLevel &gridLevel = getRealImplementation( macroView ).gridLevel();
+    const GridLevel &gridLevel = macroView.impl().gridLevel();
     const PartitionList &partitions = gridLevel.template partition< OverlapFront_Partition >();
 
     boundarySize_ = 0;

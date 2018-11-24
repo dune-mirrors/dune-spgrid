@@ -269,7 +269,7 @@ namespace Dune
   inline typename SPGridView< ViewTraits >::IntersectionIterator
   SPGridView< ViewTraits >::ibegin ( const typename Codim< 0 >::Entity &entity ) const
   {
-    return IntersectionIteratorImpl( Grid::getRealImplementation( entity ).entityInfo(), 0 );
+    return IntersectionIteratorImpl( entity.impl().entityInfo(), 0 );
   }
 
 
@@ -277,7 +277,7 @@ namespace Dune
   inline typename SPGridView< ViewTraits >::IntersectionIterator
   SPGridView< ViewTraits >::iend ( const typename Codim< 0 >::Entity &entity ) const
   {
-    return IntersectionIteratorImpl( Grid::getRealImplementation( entity ).entityInfo(), GridLevel::ReferenceCube::numFaces );
+    return IntersectionIteratorImpl( entity.impl().entityInfo(), GridLevel::ReferenceCube::numFaces );
   }
 
 
@@ -287,7 +287,7 @@ namespace Dune
   SPGridView< ViewTraits >::superEntityBegin ( const Entity &entity ) const
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
-    return Impl( Grid::getRealImplementation( entity ).entityInfo(), typename Impl::Begin() );
+    return Impl( entity.impl().entityInfo(), typename Impl::Begin() );
   }
 
 
@@ -297,7 +297,7 @@ namespace Dune
   SPGridView< ViewTraits >::superEntityEnd ( const Entity &entity ) const
   {
     typedef SPSuperEntityIterator< const Grid > Impl;
-    return Impl( Grid::getRealImplementation( entity ).entityInfo(), typename Impl::End() );
+    return Impl( entity.impl().entityInfo(), typename Impl::End() );
   }
 
 

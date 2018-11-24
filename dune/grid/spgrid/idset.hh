@@ -64,7 +64,7 @@ namespace Dune
     IdType id ( const typename Codim< codim >::Entity &entity ) const
     {
       const typename Codim< codim >::EntityInfo &entityInfo
-        = Grid::getRealImplementation( entity ).entityInfo();
+        = entity.impl().entityInfo();
       return computeId( entityInfo.gridLevel(), entityInfo.id() );
     }
 
@@ -78,7 +78,7 @@ namespace Dune
     IdType subId ( const typename Codim< cd >::Entity &entity, int i, unsigned int codim ) const
     {
       const typename Codim< cd >::EntityInfo &entityInfo
-        = Grid::getRealImplementation( entity ).entityInfo();
+        = entity.impl().entityInfo();
       const GridLevel &gridLevel = entityInfo.gridLevel();
       return computeSubId( gridLevel, entityInfo.id(), i, codim, std::integral_constant< int, cd >() );
     }
