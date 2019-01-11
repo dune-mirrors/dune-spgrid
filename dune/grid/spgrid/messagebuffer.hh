@@ -167,7 +167,7 @@ namespace Dune
     {
       if( position_ + sizeof( T ) <= size_ )
       {
-        std::memcpy( &value, static_cast< char * >( buffer_ ) + position_, sizeof( T ) );
+        std::memcpy( static_cast< void * >( &value ), static_cast< char * >( buffer_ ) + position_, sizeof( T ) );
         position_ += sizeof( T );
       }
       else
