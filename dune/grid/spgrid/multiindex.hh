@@ -42,7 +42,8 @@ namespace Dune
      *
      * \param[in]  index  int array to copy
      */
-    SPMultiIndex ( const int (&index)[ dimension ] ) { *this = index; }
+    template <int d, std::enable_if_t<(d == dimension && d > 0), int> = 0>
+    SPMultiIndex ( const int (&index)[ d ] ) { *this = index; }
 
     /**
      * \brief constructor from int array
@@ -75,7 +76,8 @@ namespace Dune
     }
 
     /** \brief assignment operator from int array */
-    This &operator= ( const int (&index)[ dimension ] )
+    template <int d, std::enable_if_t<(d == dimension && d > 0), int> = 0>
+    This &operator= ( const int (&index)[ d ] )
     {
       for( int i = 0; i < dimension; ++i )
         index_[ i ] = index[ i ];
@@ -135,7 +137,7 @@ namespace Dune
         equals &= (index_[ i ] == other.index_[ i ]);
       return equals;
     }
-    
+
     /** \brief compare two multiindices for inequality */
     bool operator!= ( const This &other ) const
     {
@@ -262,7 +264,7 @@ namespace Dune
     return c;
   }
 
-  
+
   template< int dim >
   inline SPMultiIndex< dim >
   operator* ( const int &a, const SPMultiIndex< dim > &b )
