@@ -63,7 +63,7 @@ namespace Dune
     {
       static unsigned char counter = 0;
       return int( counter++ ) + 1536;
-    };
+    }
 
   } // namespace __SPGrid
 
