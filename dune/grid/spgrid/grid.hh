@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include <dune/common/parallel/mpicollectivecommunication.hh>
+#include <dune/common/parallel/mpicommunication.hh>
 
 #include <dune/grid/albertagrid/geometryreference.hh>
 #include <dune/grid/common/grid.hh>

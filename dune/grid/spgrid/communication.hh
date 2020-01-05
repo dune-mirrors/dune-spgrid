@@ -2,8 +2,8 @@
 #define DUNE_SPGRID_COMMUNICATION_HH
 
 #include <dune/common/hybridutilities.hh>
-#include <dune/common/parallel/collectivecommunication.hh>
-#include <dune/common/parallel/mpicollectivecommunication.hh>
+#include <dune/common/parallel/communication.hh>
+#include <dune/common/parallel/mpicommunication.hh>
 #include <dune/common/parallel/mpitraits.hh>
 #include <dune/common/visibility.hh>
 
