@@ -9,20 +9,11 @@ debian:10  gcc:c++17:
   script: duneci-standard-test
   variables: {DUNECI_OPTS: /duneci/opts.gcc.c++17}
 
-debian:9 gcc:
-  image: duneci/base:9
+ubuntu:18.04--gcc:
+  image: duneci/ubuntu:18.04
   script: duneci-standard-test
 
-debian:9 clang:
-  image: duneci/base:9
-  script: duneci-standard-test
-  variables: {DUNECI_OPTS: /duneci/opts.clang}
-
-ubuntu:16.04 gcc:
-  image: duneci/base:16.04
-  script: duneci-standard-test
-
-ubuntu:16.04 clang:
-  image: duneci/base:16.04
+ubuntu:18.04--clang:
+  image: duneci/ubuntu:18.04
   script: duneci-standard-test
   variables: {DUNECI_OPTS: /duneci/opts.clang}
