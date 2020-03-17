@@ -61,7 +61,7 @@ namespace Dune
       return ((codim >= 0) && (codim <= dimension) ? contains_[ codim ] : false);
     }
 
-    bool fixedsize ( const int dim, const int codim ) const
+    bool fixedSize ( const int dim, const int codim ) const
     {
       return true;
     }

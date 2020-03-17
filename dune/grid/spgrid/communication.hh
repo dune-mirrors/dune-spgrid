@@ -129,7 +129,7 @@ namespace Dune
       fixedSize_( true )
   {
     for( int codim = 0; codim <= dimension; ++codim )
-      fixedSize_ &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedsize( dimension, codim );
+      fixedSize_ &= !dataHandle_.contains( dimension, codim ) || dataHandle_.fixedSize( dimension, codim );
 
     const std::size_t numLinks = interface_->size();
     readBuffers_.reserve( numLinks );
@@ -167,7 +167,7 @@ namespace Dune
           if( !dataHandle_.contains( dimension, codim ) )
             return;
 
-          const bool fixedSize = dataHandle_.fixedsize( dimension, codim );
+          const bool fixedSize = dataHandle_.fixedSize( dimension, codim );
           const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
           for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
           {
@@ -237,7 +237,7 @@ namespace Dune
               if( !dataHandle_.contains( dimension, codim ) )
                 return;
 
-              const bool fixedSize = dataHandle_.fixedsize( dimension, codim );
+              const bool fixedSize = dataHandle_.fixedSize( dimension, codim );
               const Iterator end( gridLevel_, partitionList, typename Iterator::End() );
               for( Iterator it( gridLevel_, partitionList, typename Iterator::Begin() ); it != end; ++it )
               {
