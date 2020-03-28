@@ -12,10 +12,11 @@ debian:10  gcc:c++17:
 ubuntu:18.04--gcc:
   image: duneci/ubuntu:18.04
   script: duneci-standard-test
-  variables: DUNECI_TOOLCHAIN: gcc-7-17
+  variables:
+    DUNECI_TOOLCHAIN: gcc-7-17
 
 ubuntu:18.04--clang:
   image: duneci/ubuntu:18.04
   script: duneci-standard-test
-  variables: DUNECI_TOOLCHAIN: clang-6-17
-
+  variables:
+    DUNECI_TOOLCHAIN: clang-6-17
