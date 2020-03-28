@@ -12,9 +12,7 @@ add_subdirectory(cmake/modules)
 add_subdirectory(doc)
 add_subdirectory(dune)
 
-if(dune-python_FOUND)
-  add_subdirectory(python)
-  dune_python_install_package(PATH "python")
-endif()
+add_subdirectory(python)
+dune_python_install_package(PATH "python")
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
