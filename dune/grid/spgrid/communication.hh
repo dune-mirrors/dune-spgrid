@@ -97,10 +97,12 @@ namespace Dune
 
     ~SPCommunication () { wait(); }
 
-    bool pending () const { return bool( interface_ ); }
+    bool ready () const { return !( bool( interface_ )); }
 
     void wait ();
 
+    [[deprecated]]
+    bool pending () const { return !ready(); }
   private:
     const GridLevel &gridLevel_;
     DataHandle &dataHandle_;
@@ -209,7 +211,7 @@ namespace Dune
   template< class Grid, class DataHandle >
   inline void SPCommunication< Grid, DataHandle >::wait ()
   {
-    if( !pending() )
+    if( ready() )
       return;
 
     const std::size_t numLinks = interface_->size();
