@@ -75,6 +75,17 @@ namespace Dune
       static const bool v = ((codim >= 0) && (codim <= dim));
     };
 
+    /** \brief Does a grid implement entity iterators of a codimension?
+     *
+     *  \tparam  Grid   grid for which the information is desired
+     *  \tparam  codim  codimension in question
+     */
+    template< class ct, int dim, template< int > class Ref, class Comm, int codim >
+    struct hasEntityIterator< SPGrid< ct, dim, Ref, Comm >, codim >
+     : public hasEntity< SPGrid< ct, dim, Ref, Comm >, codim >
+    {
+    };
+
 #if HAVE_MPI
     /** \brief Can a parallel grid communicate on a given codimension?
      *
