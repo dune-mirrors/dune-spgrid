@@ -28,7 +28,7 @@ namespace Dune
     out.reserve( size );
     for( const T &v : in )
       out.push_back( op( v ) );
-    return std::move( out );
+    return out;
   }
 
 } // namespace Dune
