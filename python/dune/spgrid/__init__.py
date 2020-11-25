@@ -43,14 +43,15 @@ def spAnisotropicGrid(domain, dimgrid=None, ctype="double"):
     typeName = "Dune::SPGrid< " + ctype + ", " + str(dimgrid) + ", Dune::SPAnisotropicRefinement >"
     includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh"]
     globalRefineMethod = Method('globalRefine', '''[]( DuneType &self, int level, std::vector<int> refDir )
-                            { std::bitset< '''+str(dimgrid) +''' > s;
-                              for( size_t i=0; i<refDir.size(); ++i )
+                            {
+                              static const int dim = ''' +str(dimgrid)+''';
+                              std::bitset< dim > s(0);
+                              const int size = (int(refDir.size()) >= dim) ? dim : refDir.size();
+                              for( int i=0; i<size; ++i )
                               {
                                 if( refDir[i] ) s[ i ] = 1;
                               }
-                              Dune::SPAnisotropicRefinementPolicy<'''
-                            +str(dimgrid) + '''> policy( s );''' + '''
-                              self.globalRefine(level, policy );
+                              self.globalRefine(level, Dune::SPAnisotropicRefinementPolicy< dim >( s ) );
                               return;
                             }''' )
     gridModule = module(includes, typeName, globalRefineMethod)
