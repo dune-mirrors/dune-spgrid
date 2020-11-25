@@ -41,11 +41,13 @@ def spAnisotropicGrid(domain, dimgrid=None, ctype="double"):
 
     typeName = "Dune::SPGrid< " + ctype + ", " + str(dimgrid) + ", Dune::SPAnisotropicRefinement >"
     includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh"]
-    gridModule = module(includes, typeName)
+    gridModule = module(includes, typeName, globalRefineMethod)
 
     return gridModule.LeafGrid(gridModule.reader(domain))
 
-
+#############################################################
+##  Registry
+#############################################################
 
 registry = {}
 registry["grid"] = {
