@@ -35,12 +35,24 @@ def spIsotropicGrid(domain, dimgrid=None, ctype="double"):
 
 def spAnisotropicGrid(domain, dimgrid=None, ctype="double"):
     from ..grid.grid_generator import module, getDimgrid
+    from dune.generator import Method
 
     if dimgrid is None:
         dimgrid = getDimgrid(domain)
 
     typeName = "Dune::SPGrid< " + ctype + ", " + str(dimgrid) + ", Dune::SPAnisotropicRefinement >"
     includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh"]
+    globalRefineMethod = Method('globalRefine', '''[]( DuneType &self, int level, std::vector<int> refDir )
+                            { std::bitset< '''+str(dimgrid) +''' > s;
+                              for( size_t i=0; i<refDir.size(); ++i )
+                              {
+                                if( refDir[i] ) s[ i ] = 1;
+                              }
+                              Dune::SPAnisotropicRefinementPolicy<'''
+                            +str(dimgrid) + '''> policy( s );''' + '''
+                              self.globalRefine(level, policy );
+                              return;
+                            }''' )
     gridModule = module(includes, typeName, globalRefineMethod)
 
     return gridModule.LeafGrid(gridModule.reader(domain))
