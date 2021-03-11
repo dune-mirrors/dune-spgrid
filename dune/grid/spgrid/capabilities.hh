@@ -39,7 +39,7 @@ namespace Dune
        *         geometry type */
       static const bool v = true;
       /** \brief \ref Dune::SPGrid "SPGrid" has only cube elements */
-      static const unsigned int topologyId = Impl::CubeTopology< dim >::type::id;
+      static const unsigned int topologyId = GeometryTypes::cube(dim).id();
     };
 
     /** \brief Is the grid Cartesian?
