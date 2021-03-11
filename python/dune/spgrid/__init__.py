@@ -64,6 +64,7 @@ def spAnisotropicGrid(domain, dimgrid=None, ctype="double"):
 
 registry = {}
 registry["grid"] = {
+        "SP" : spIsotropicGrid,
         "SPBisection": spBisectionGrid,
         "SPIsotropic": spIsotropicGrid,
         "SPAnisotropic": spAnisotropicGrid
