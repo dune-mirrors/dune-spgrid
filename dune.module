@@ -2,4 +2,4 @@ Module: dune-spgrid
 Version: 2.9-git
 Maintainer: Martin Nolte <nolte.mrtn@gmail.com>
 Whitespace-Hook: Yes
-Depends: dune-grid (>= 2.8)
+Depends: dune-grid (>= 2.9)

@@ -2,12 +2,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from dune.common.checkconfiguration import assertHave, ConfigurationError
 
-try:
-    assertHave("HAVE_DUNE_SPGRID")
-except ConfigurationError:
-    raise ImportError("DUNE module dune-spgrid was not found.")
-
-
 def spBisectionGrid(domain, dimgrid=None, ctype="double"):
     from ..grid.grid_generator import module, getDimgrid
 
