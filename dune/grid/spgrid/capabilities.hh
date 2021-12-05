@@ -156,7 +156,7 @@ namespace Dune
     struct viewThreadSafe< SPGrid< ct, dim, Ref, Comm > >
     {
       /** \brief \ref Dune::SPGrid "SPGrid" is not thread safe */
-      static const bool v = false;
+      static const bool v = true;
     };
 
 
