@@ -2,6 +2,7 @@
 #define DUNE_SPGRID_BACKUPRESTORE_HH
 
 #include <dune/common/exceptions.hh>
+#include <dune/common/version.hh>
 
 #include <dune/grid/common/backuprestore.hh>
 
