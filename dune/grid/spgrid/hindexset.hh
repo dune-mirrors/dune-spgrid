@@ -84,13 +84,6 @@ namespace Dune
       return offset + levelIndexSet( level ).index( entity );
     }
 
-    template< int codim >
-    [[deprecated]]
-    IndexType subIndex ( const typename Codim< 0 >::Entity &entity, const int i ) const
-    {
-      DUNE_THROW( NotImplemented, "SPHierarchyIndexSet does not implement the old subIndex method." );
-    }
-
     template< class Entity >
     IndexType subIndex ( const Entity &entity,
                          const int i, const unsigned int codim ) const
