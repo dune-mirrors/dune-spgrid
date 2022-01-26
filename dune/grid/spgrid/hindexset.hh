@@ -85,8 +85,8 @@ namespace Dune
     }
 
     template< int codim >
-    IndexType DUNE_DEPRECATED
-    subIndex ( const typename Codim< 0 >::Entity &entity, const int i ) const
+    [[deprecated]]
+    IndexType subIndex ( const typename Codim< 0 >::Entity &entity, const int i ) const
     {
       DUNE_THROW( NotImplemented, "SPHierarchyIndexSet does not implement the old subIndex method." );
     }
