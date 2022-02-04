@@ -22,7 +22,7 @@ namespace Dune
   template< class Comm >
   struct SPCommunicationTraits
   {
-    typedef Dune::CollectiveCommunication< Comm > CollectiveCommunication;
+    typedef Dune::Communication< Comm > CollectiveCommunication;
 
     template< class C >
     static CollectiveCommunication comm ( const C & )
@@ -40,7 +40,7 @@ namespace Dune
   template<>
   struct SPCommunicationTraits< MPI_Comm >
   {
-    typedef Dune::CollectiveCommunication< MPI_Comm > CollectiveCommunication;
+    typedef Dune::Communication< MPI_Comm > CollectiveCommunication;
 
     static CollectiveCommunication comm ( const MPI_Comm &mpiComm )
     {
