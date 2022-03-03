@@ -113,6 +113,8 @@ namespace Dune
 
     const IndexSet &indexSet () const;
 
+    bool isConforming() const { return bool(ViewTraits::conforming); }
+
     int size ( int codim ) const;
     int size ( const GeometryType &type ) const;
 
