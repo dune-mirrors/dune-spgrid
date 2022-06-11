@@ -50,6 +50,9 @@ namespace Dune
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
 
+    using Jacobian = std::decay_t<decltype(Dune::transposedView(std::declval<const JacobianTransposed&>()))>;
+    using JacobianInverse = std::decay_t<decltype(Dune::transposedView(std::declval<const JacobianInverseTransposed&>()))>;
+
   protected:
     SPBasicGeometry ()
     {}
@@ -71,6 +74,9 @@ namespace Dune
 
     const JacobianTransposed &jacobianTransposed ( const LocalVector &local ) const;
     const JacobianInverseTransposed &jacobianInverseTransposed ( const LocalVector &local ) const;
+
+    auto jacobian ( const LocalVector &local ) const;
+    auto jacobianInverse ( const LocalVector &local ) const;
 
   protected:
     const Impl &asImpl () const { return static_cast< const Impl & >( *this ); }
@@ -127,6 +133,9 @@ namespace Dune
 
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
+
+    using Base::jacobian;
+    using Base::jacobianInverse;
 
     GlobalVector origin () const { return origin_; }
     const GeometryCache &geometryCache () const { return entityInfo().geometryCache(); }
@@ -188,6 +197,9 @@ namespace Dune
     using Base::jacobianTransposed;
     using Base::jacobianInverseTransposed;
 
+    using Base::jacobian;
+    using Base::jacobianInverse;
+
     GlobalVector origin () const { return origin_; }
     const GeometryCache &geometryCache () const { return geometryCache_; }
 
@@ -235,6 +247,23 @@ namespace Dune
   SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianInverseTransposed ( const LocalVector &local ) const
   {
     return asImpl().geometryCache().jacobianInverseTransposed();
+  }
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline auto SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobian ( const LocalVector &local ) const
+  {
+    // Handing out a transposedView is OK, because jacobianTransposed
+    // returns a reference to a cached value.
+    return Dune::transposedView(jacobianTransposed(local));
+  }
+
+
+  template< int mydim, int cdim, class Grid, class Impl >
+  inline auto SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianInverse ( const LocalVector &local ) const
+  {
+    // Handing out a transposedView is OK, because jacobianInverseTransposed
+    // returns a reference to a cached value.
+    return Dune::transposedView(jacobianInverseTransposed(local));
   }
 
 } // namespace Dune
