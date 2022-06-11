@@ -6,6 +6,7 @@
 #include <dune/geometry/type.hh>
 
 #include <dune/common/typetraits.hh>
+#include <dune/common/transpose.hh>
 
 #include <dune/geometry/type.hh>
 #include <dune/geometry/referenceelements.hh>
@@ -50,8 +51,8 @@ namespace Dune
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
 
-    using Jacobian = std::decay_t<decltype(Dune::transposedView(std::declval<const JacobianTransposed&>()))>;
-    using JacobianInverse = std::decay_t<decltype(Dune::transposedView(std::declval<const JacobianInverseTransposed&>()))>;
+    using Jacobian = std::decay_t<decltype(transposedView(std::declval<const JacobianTransposed&>()))>;
+    using JacobianInverse = std::decay_t<decltype(transposedView(std::declval<const JacobianInverseTransposed&>()))>;
 
   protected:
     SPBasicGeometry ()
@@ -254,7 +255,7 @@ namespace Dune
   {
     // Handing out a transposedView is OK, because jacobianTransposed
     // returns a reference to a cached value.
-    return Dune::transposedView(jacobianTransposed(local));
+    return transposedView(jacobianTransposed(local));
   }
 
 
@@ -263,7 +264,7 @@ namespace Dune
   {
     // Handing out a transposedView is OK, because jacobianInverseTransposed
     // returns a reference to a cached value.
-    return Dune::transposedView(jacobianInverseTransposed(local));
+    return transposedView(jacobianInverseTransposed(local));
   }
 
 } // namespace Dune
