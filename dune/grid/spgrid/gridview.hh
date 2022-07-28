@@ -45,7 +45,8 @@ namespace Dune
     static const bool hasBoundarySegmentIterator = true;
     typedef Dune::IntersectionIterator< const Grid, SPBoundarySegmentIterator< const Grid >, SPIntersection< const Grid > > BoundarySegmentIterator;
 
-    typedef typename Grid::CollectiveCommunication CollectiveCommunication;
+    typedef typename Grid::Communication Communication;
+    typedef Communication CollectiveCommunication;
 
     static const bool conforming = true;
 
@@ -90,7 +91,8 @@ namespace Dune
     typedef typename ViewTraits::IndexSet IndexSet;
     typedef typename ViewTraits::IntersectionIterator IntersectionIterator;
     typedef typename ViewTraits::BoundarySegmentIterator BoundarySegmentIterator;
-    typedef typename ViewTraits::CollectiveCommunication CollectiveCommunication;
+    typedef typename ViewTraits::Communication Communication;
+    typedef Communication CollectiveCommunication;
 
     typedef SPGridLevel< Grid > GridLevel;
 
@@ -151,7 +153,7 @@ namespace Dune
     BoundarySegmentIterator boundarySegmentBegin ( int face = 0 ) const;
     BoundarySegmentIterator boundarySegmentEnd ( int face = GridLevel::numFaces-1 ) const;
 
-    const CollectiveCommunication &comm () const { return grid().comm(); }
+    const Communication &comm () const { return grid().comm(); }
 
     template< class DataHandle, class Data >
     SPCommunication< Grid, CommDataHandleIF< DataHandle, Data > >

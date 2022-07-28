@@ -81,7 +81,7 @@ namespace Dune
     typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
     typedef MPIHelper::MPICommunicator MPICommunicatorType;
-    typedef typename Grid::CollectiveCommunication CollectiveCommunication;
+    typedef typename Grid::Communication Communication;
 
     static const int dimension = Grid::dimension;
     typedef typename Grid::template Codim< 0 >::Entity Element;
@@ -159,7 +159,7 @@ namespace Dune
     }
 
   private:
-    void generate ( std::istream &input, const CollectiveCommunication &comm );
+    void generate ( std::istream &input, const Communication &comm );
 
     template< class Geometry >
     static void getCorners ( const Geometry &geometry, std::vector< Point > &corners )
@@ -205,7 +205,7 @@ namespace Dune
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline void
   DGFGridFactory< SPGrid< ct, dim, Ref, Comm > >
-    ::generate ( std::istream &input, const CollectiveCommunication &comm )
+    ::generate ( std::istream &input, const Communication &comm )
   {
     dgf::IntervalBlock intervalBlock( input );
 

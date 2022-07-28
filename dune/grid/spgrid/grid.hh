@@ -72,7 +72,8 @@ namespace Dune
       typedef Ref< dim > Refinement;
       typedef typename Refinement::Policy RefinementPolicy;
 
-      typedef typename SPCommunicationTraits< Comm >::CollectiveCommunication CollectiveCommunication;
+      typedef typename SPCommunicationTraits< Comm >::Communication Communication;
+      typedef Communication CollectiveCommunication;
 
       typedef Dune::Intersection< const Grid, SPIntersection< const Grid > > LevelIntersection;
       typedef LevelIntersection LeafIntersection;
@@ -165,7 +166,8 @@ namespace Dune
     typedef typename Traits::GlobalIdSet GlobalIdSet;
     typedef typename Traits::LocalIdSet LocalIdSet;
 
-    typedef typename Traits::CollectiveCommunication CollectiveCommunication;
+    typedef typename Traits::Communication Communication;
+    typedef Communication CollectiveCommunication;
 
     template< int codim >
     struct Codim
@@ -197,17 +199,17 @@ namespace Dune
 
   public:
     SPGrid ( const Domain &domain, const MultiIndex &cells,
-             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
+             const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
-             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
+             const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
+             const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
              const MultiIndex &overlap,
-             const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() );
+             const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() );
 
     SPGrid ( const This & ) = delete;
     SPGrid ( This &&other );
@@ -408,7 +410,7 @@ namespace Dune
       return view.impl().communicate( data, interface, dir );
     }
 
-    const CollectiveCommunication &comm () const;
+    const Communication &comm () const;
 
     template< class Seed >
     typename Traits::template Codim< Seed::codimension >::Entity entity ( const Seed &seed ) const
@@ -473,7 +475,7 @@ namespace Dune
     void setupMacroGrid ();
     void setupBoundaryIndices ();
 
-    static CollectiveCommunication defaultCommunication ();
+    static Communication defaultCommunication ();
 
     Domain domain_;
     Mesh globalMesh_;
@@ -485,7 +487,7 @@ namespace Dune
     HierarchicIndexSet hierarchicIndexSet_;
     GlobalIdSet globalIdSet_;
     LocalIdSet localIdSet_;
-    CollectiveCommunication comm_;
+    Communication comm_;
     std::size_t boundarySize_;
     std::vector< std::array< std::size_t, 2*dimension > > boundaryOffset_;
     std::array< std::unique_ptr< const typename Codim< 1 >::LocalGeometryImpl >, ReferenceCube::numFaces > localFaceGeometry_;
@@ -499,7 +501,7 @@ namespace Dune
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells,
-               const CollectiveCommunication &comm )
+               const Communication &comm )
   : domain_( domain ),
     globalMesh_( cells ),
     overlap_( MultiIndex::zero() ),
@@ -515,7 +517,7 @@ namespace Dune
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const Domain &domain, const MultiIndex &cells, const MultiIndex &overlap,
-               const CollectiveCommunication &comm )
+               const Communication &comm )
   : domain_( domain ),
     globalMesh_( cells ),
     overlap_( overlap ),
@@ -531,7 +533,7 @@ namespace Dune
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-               const CollectiveCommunication &comm )
+               const Communication &comm )
   : domain_( a, b ),
     globalMesh_( cells ),
     overlap_( MultiIndex::zero() ),
@@ -547,7 +549,7 @@ namespace Dune
   template< class ct, int dim, template< int > class Ref, class Comm >
   inline SPGrid< ct, dim, Ref, Comm >
     ::SPGrid ( const GlobalVector &a, const GlobalVector &b, const MultiIndex &cells,
-               const MultiIndex &overlap, const CollectiveCommunication &comm )
+               const MultiIndex &overlap, const Communication &comm )
   : domain_( a, b ),
     globalMesh_( cells ),
     overlap_( overlap ),
@@ -660,7 +662,7 @@ namespace Dune
 
 
   template< class ct, int dim, template< int > class Ref, class Comm >
-  inline const typename SPGrid< ct, dim, Ref, Comm >::CollectiveCommunication &
+  inline const typename SPGrid< ct, dim, Ref, Comm >::Communication &
   SPGrid< ct, dim, Ref, Comm >::comm () const
   {
     return comm_;

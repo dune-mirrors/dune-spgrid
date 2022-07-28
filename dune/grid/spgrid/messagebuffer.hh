@@ -87,7 +87,7 @@ namespace Dune
   // SPPackedMessageWriteBuffer
   // --------------------------
 
-  template< class CollectiveCommunication >
+  template< class Communication >
   class SPPackedMessageWriteBuffer;
 
   template< class C >
@@ -200,7 +200,7 @@ namespace Dune
   // SPPackedMessageReadBuffer
   // -------------------------
 
-  template< class CollectiveCommunication >
+  template< class Communication >
   class SPPackedMessageReadBuffer;
 
   template< class C >

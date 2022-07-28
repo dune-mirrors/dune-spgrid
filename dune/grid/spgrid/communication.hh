@@ -22,17 +22,17 @@ namespace Dune
   template< class Comm >
   struct SPCommunicationTraits
   {
-    typedef Dune::Communication< Comm > CollectiveCommunication;
+    typedef Dune::Communication< Comm > Communication;
 
     template< class C >
-    static CollectiveCommunication comm ( const C & )
+    static Communication comm ( const C & )
     {
       return defaultComm();
     }
 
-    static CollectiveCommunication defaultComm ()
+    static Communication defaultComm ()
     {
-      return CollectiveCommunication();
+      return Communication();
     }
   };
 
@@ -40,14 +40,14 @@ namespace Dune
   template<>
   struct SPCommunicationTraits< MPI_Comm >
   {
-    typedef Dune::Communication< MPI_Comm > CollectiveCommunication;
+    typedef Dune::Communication< MPI_Comm > Communication;
 
-    static CollectiveCommunication comm ( const MPI_Comm &mpiComm )
+    static Communication comm ( const MPI_Comm &mpiComm )
     {
-      return CollectiveCommunication( mpiComm );
+      return Communication( mpiComm );
     }
 
-    static CollectiveCommunication defaultComm ()
+    static Communication defaultComm ()
     {
       return comm( MPI_COMM_WORLD );
     }
@@ -85,8 +85,8 @@ namespace Dune
     typedef typename GridLevel::CommInterface Interface;
 
   private:
-    typedef SPPackedMessageWriteBuffer< typename Grid::CollectiveCommunication > WriteBuffer;
-    typedef SPPackedMessageReadBuffer< typename Grid::CollectiveCommunication > ReadBuffer;
+    typedef SPPackedMessageWriteBuffer< typename Grid::Communication > WriteBuffer;
+    typedef SPPackedMessageReadBuffer< typename Grid::Communication > ReadBuffer;
 
   public:
     SPCommunication ( const GridLevel &gridLevel, DataHandle &dataHandle,

@@ -38,7 +38,7 @@ namespace Dune
   {
     typedef SPGrid< ct, dim, Ref, Comm > Grid;
 
-    typedef typename Grid::CollectiveCommunication CollectiveCommunication;
+    typedef typename Grid::Communication Communication;
 
     /** \brief write a hierarchic grid to disk
      *
@@ -100,7 +100,7 @@ namespace Dune
      *  \returns a pointer to the grid (allocated by new)
      */
     static Grid *restore ( const std::string &path, const std::string &fileprefix,
-                           const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
+                           const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       return restore( path + "/" + fileprefix + ".spgrid" );
     }
@@ -113,7 +113,7 @@ namespace Dune
      *  \returns a pointer to the grid (allocated by new)
      */
     static Grid *restore ( const std::string &filename,
-                           const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
+                           const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       std::ifstream stream( filename.c_str() );
       if( !stream )
@@ -138,7 +138,7 @@ namespace Dune
      *  \param[in]  comm        collective communication (optional)
      */
     static Grid *restore ( std::istream &stream,
-                           const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
+                           const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       Grid *grid = 0;
       SPGridIOData< ct, dim, Ref > ioData;
@@ -169,7 +169,7 @@ namespace Dune
     }
 
     static Grid *restore ( const SPGridIOData< ct, dim, Ref > &ioData,
-                           const CollectiveCommunication &comm = SPCommunicationTraits< Comm >::defaultComm() )
+                           const Communication &comm = SPCommunicationTraits< Comm >::defaultComm() )
     {
       if( ioData.partitions != comm.size() )
       {
@@ -190,7 +190,7 @@ namespace Dune
       return grid;
     }
 
-    static bool parallelAnd ( const CollectiveCommunication &comm, bool condition )
+    static bool parallelAnd ( const Communication &comm, bool condition )
     {
       int result( condition );
       result = comm.sum( result );
