@@ -103,7 +103,7 @@ namespace Dune
       bool isDone () const { return (&gridLevel() == rootLevel_); }
 
       EntityInfo entityInfo_;
-      const GridLevel *rootLevel_;
+      const GridLevel *rootLevel_ = nullptr;
       IsLeaf isLeaf_;
     };
 
