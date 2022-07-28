@@ -38,7 +38,7 @@ namespace Dune
     typedef SPDirection< dim > Direction;
 
     SPGeometryPattern () = default;
-    explicit SPGeometryPattern ( Direction dir ) {}
+    explicit SPGeometryPattern ( Direction /*dir*/ ) {}
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;
@@ -50,7 +50,7 @@ namespace Dune
     typedef SPDirection< dim > Direction;
 
     SPGeometryPattern () = default;
-    explicit SPGeometryPattern ( Direction dir ) {}
+    explicit SPGeometryPattern ( Direction /*dir*/ ) {}
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;
@@ -62,7 +62,7 @@ namespace Dune
     typedef SPDirection< 0 > Direction;
 
     SPGeometryPattern () = default;
-    explicit SPGeometryPattern ( Direction dir ) {}
+    explicit SPGeometryPattern ( Direction /*dir*/ ) {}
 
     int nonzero ( const int k ) const;
     int zero ( const int k ) const;

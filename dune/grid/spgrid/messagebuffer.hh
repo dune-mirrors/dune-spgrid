@@ -91,14 +91,14 @@ namespace Dune
   class SPPackedMessageWriteBuffer;
 
   template< class C >
-  class SPPackedMessageWriteBuffer< CollectiveCommunication< C > >
+  class SPPackedMessageWriteBuffer< Communication< C > >
     : public SPBasicPackedMessageWriteBuffer
   {
-    typedef SPPackedMessageWriteBuffer< CollectiveCommunication< C > > This;
+    typedef SPPackedMessageWriteBuffer< Communication< C > > This;
     typedef SPBasicPackedMessageWriteBuffer Base;
 
   public:
-    explicit SPPackedMessageWriteBuffer ( const CollectiveCommunication< C > &comm ) {}
+    explicit SPPackedMessageWriteBuffer ( const Communication< C > &comm ) {}
 
     void send ( int rank, int tag ) {}
     void wait () {}
@@ -106,14 +106,14 @@ namespace Dune
 
 #if HAVE_MPI
   template<>
-  class SPPackedMessageWriteBuffer< CollectiveCommunication< MPI_Comm > >
+  class SPPackedMessageWriteBuffer< Communication< MPI_Comm > >
     : public SPBasicPackedMessageWriteBuffer
   {
-    typedef SPPackedMessageWriteBuffer< CollectiveCommunication< MPI_Comm > > This;
+    typedef SPPackedMessageWriteBuffer< Communication< MPI_Comm > > This;
     typedef SPBasicPackedMessageWriteBuffer Base;
 
   public:
-    explicit SPPackedMessageWriteBuffer ( const CollectiveCommunication< MPI_Comm > &comm ) : comm_( comm ) {}
+    explicit SPPackedMessageWriteBuffer ( const Communication< MPI_Comm > &comm ) : comm_( comm ) {}
 
     void send ( int rank, int tag )
     {
@@ -204,14 +204,14 @@ namespace Dune
   class SPPackedMessageReadBuffer;
 
   template< class C >
-  class SPPackedMessageReadBuffer< CollectiveCommunication< C > >
+  class SPPackedMessageReadBuffer< Communication< C > >
     : public SPBasicPackedMessageReadBuffer
   {
-    typedef SPPackedMessageReadBuffer< CollectiveCommunication< C > > This;
+    typedef SPPackedMessageReadBuffer< Communication< C > > This;
     typedef SPBasicPackedMessageReadBuffer Base;
 
   public:
-    explicit SPPackedMessageReadBuffer ( const CollectiveCommunication< C > &comm ) {}
+    explicit SPPackedMessageReadBuffer ( const Communication< C > &comm ) {}
 
     void receive ( int rank, int rag, std::size_t size )
     {
@@ -233,14 +233,14 @@ namespace Dune
 
 #if HAVE_MPI
   template<>
-  class SPPackedMessageReadBuffer< CollectiveCommunication< MPI_Comm > >
+  class SPPackedMessageReadBuffer< Communication< MPI_Comm > >
     : public SPBasicPackedMessageReadBuffer
   {
-    typedef SPPackedMessageReadBuffer< CollectiveCommunication< MPI_Comm > > This;
+    typedef SPPackedMessageReadBuffer< Communication< MPI_Comm > > This;
     typedef SPBasicPackedMessageReadBuffer Base;
 
   public:
-    SPPackedMessageReadBuffer ( const CollectiveCommunication< MPI_Comm > &comm ) : comm_( comm ) {}
+    SPPackedMessageReadBuffer ( const Communication< MPI_Comm > &comm ) : comm_( comm ) {}
 
     void receive ( int rank, int tag, std::size_t size )
     {
