@@ -1,9 +1,9 @@
 Module: dune-spgrid
-Version: 2.9-git
+Version: 2.10-git
 Author: Martin Nolte
 Maintainer: Martin Nolte <nolte.mrtn@gmail.com>
 Description: module providing a structured grid
 URL: https://gitlab.dune-project.org/extensions/dune-spgrid
 Whitespace-Hook: Yes
 Python-Requires:
-Depends: dune-grid (>= 2.9)
+Depends: dune-grid (>= 2.10)
