@@ -45,7 +45,7 @@ namespace Dune
     {
       return out << ((1 << dimension)-1);
     }
-    
+
     template< class char_type, class traits >
     friend std::basic_istream< char_type, traits > &
     operator>> ( std::basic_istream< char_type, traits > &in, This &policy )
@@ -431,7 +431,7 @@ namespace Dune
     {
       bool copy = true;
       for( int i = 0; i < dimension; ++i )
-        copy &= (factor( i ) == 1) | ((id[ i ] & 3) == 0);
+        copy &= (factor( i ) == 1) || ((id[ i ] & 3) == 0);
       return copy;
     }
   };
