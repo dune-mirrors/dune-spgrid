@@ -1,4 +1,6 @@
-# Master (will become 2.7)
+# Master (will become release 2.10)
+
+# Release 2.7
 
 # Release 2.6
 
