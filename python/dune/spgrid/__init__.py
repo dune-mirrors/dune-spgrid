@@ -52,6 +52,9 @@ def spAnisotropicGrid(domain, dimgrid=None, ctype="double"):
 
     return gridModule.LeafGrid(gridModule.reader(domain))
 
+def spGrid(*args, **kwargs):
+    return spIsotropicGrid(*args, **kwargs)
+
 #############################################################
 ##  Registry
 #############################################################
