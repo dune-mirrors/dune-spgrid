@@ -94,6 +94,8 @@ namespace Dune
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
+    typedef Dune::FieldMatrix< field_type, cols, rows > TransposedFieldMatrix;
+
     SPJacobianTransposed () = default;
 
     SPJacobianTransposed ( const GlobalVector &h, SPDirection< dim > dir )
@@ -104,6 +106,8 @@ namespace Dune
     }
 
     operator FieldMatrix () const;
+
+    TransposedFieldMatrix transposed() const;
 
     template< class X, class Y > void mv ( const X &x, Y &y ) const;
     template< class X, class Y > void mtv ( const X &x, Y &y ) const;
@@ -181,6 +185,8 @@ namespace Dune
     typedef Dune::FieldMatrix< field_type, rows, cols > FieldMatrix;
     typedef typename Dune::FieldTraits< field_type >::real_type real_type;
 
+    typedef Dune::FieldMatrix< field_type, cols, rows > TransposedFieldMatrix;
+
     SPJacobianInverseTransposed () = default;
 
     SPJacobianInverseTransposed ( const GlobalVector &h, SPDirection< dim > dir )
@@ -191,6 +197,8 @@ namespace Dune
     }
 
     operator FieldMatrix () const;
+
+    TransposedFieldMatrix transposed() const;
 
     template< class X, class Y > void mv ( const X &x, Y &y ) const;
     template< class X, class Y > void mtv ( const X &x, Y &y ) const;
@@ -385,6 +393,13 @@ namespace Dune
     return matrix;
   }
 
+  template< class ct, int dim, int mydim >
+  typename SPJacobianTransposed< ct, dim, mydim >::TransposedFieldMatrix
+  inline SPJacobianTransposed< ct, dim, mydim >::transposed () const
+  {
+    return FieldMatrix(*this).transposed();
+  }
+
 
   template< class ct, int dim, int mydim >
   template< class X, class Y >
@@ -519,6 +534,13 @@ namespace Dune
     for( int k = 0; k < cols; ++k )
       matrix[ pattern().nonzero( k ) ][ k ] = hInv()[ k ];
     return matrix;
+  }
+
+  template< class ct, int dim, int mydim >
+  typename SPJacobianInverseTransposed< ct, dim, mydim >::TransposedFieldMatrix
+  inline SPJacobianInverseTransposed< ct, dim, mydim >::transposed () const
+  {
+    return FieldMatrix(*this).transposed();
   }
 
 

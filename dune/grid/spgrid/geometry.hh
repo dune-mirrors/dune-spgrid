@@ -51,8 +51,11 @@ namespace Dune
     typedef typename GeometryCache::JacobianTransposed JacobianTransposed;
     typedef typename GeometryCache::JacobianInverseTransposed JacobianInverseTransposed;
 
-    using Jacobian = std::decay_t<decltype(transposedView(std::declval<const JacobianTransposed&>()))>;
-    using JacobianInverse = std::decay_t<decltype(transposedView(std::declval<const JacobianInverseTransposed&>()))>;
+    typedef typename JacobianTransposed::TransposedFieldMatrix Jacobian;
+    typedef typename JacobianInverseTransposed::TransposedFieldMatrix JacobianInverse;
+
+    //using Jacobian = std::decay_t<decltype(transposedView(std::declval<const JacobianTransposed&>()))>;
+    //using JacobianInverse = std::decay_t<decltype(transposedView(std::declval<const JacobianInverseTransposed&>()))>;
 
   protected:
     SPBasicGeometry ()
@@ -76,8 +79,8 @@ namespace Dune
     const JacobianTransposed &jacobianTransposed ( const LocalVector &local ) const;
     const JacobianInverseTransposed &jacobianInverseTransposed ( const LocalVector &local ) const;
 
-    auto jacobian ( const LocalVector &local ) const;
-    auto jacobianInverse ( const LocalVector &local ) const;
+    Jacobian jacobian ( const LocalVector &local ) const;
+    JacobianInverse jacobianInverse ( const LocalVector &local ) const;
 
   protected:
     const Impl &asImpl () const { return static_cast< const Impl & >( *this ); }
@@ -234,7 +237,7 @@ namespace Dune
     return x;
   }
 
-  
+
   template< int mydim, int cdim, class Grid, class Impl >
   inline const typename SPBasicGeometry< mydim, cdim, Grid, Impl >::JacobianTransposed &
   SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianTransposed ( const LocalVector &local ) const
@@ -251,20 +254,26 @@ namespace Dune
   }
 
   template< int mydim, int cdim, class Grid, class Impl >
-  inline auto SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobian ( const LocalVector &local ) const
+  //inline auto
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::Jacobian
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobian ( const LocalVector &local ) const
   {
+    return jacobianTransposed(local).transposed();
     // Handing out a transposedView is OK, because jacobianTransposed
     // returns a reference to a cached value.
-    return transposedView(jacobianTransposed(local));
+    //return transposedView(jacobianTransposed(local));
   }
 
 
   template< int mydim, int cdim, class Grid, class Impl >
-  inline auto SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianInverse ( const LocalVector &local ) const
+  //inline auto
+  inline typename SPBasicGeometry< mydim, cdim, Grid, Impl >::JacobianInverse
+  SPBasicGeometry< mydim, cdim, Grid, Impl >::jacobianInverse ( const LocalVector &local ) const
   {
+    return jacobianInverseTransposed(local).transposed();
     // Handing out a transposedView is OK, because jacobianInverseTransposed
     // returns a reference to a cached value.
-    return transposedView(jacobianInverseTransposed(local));
+    //return transposedView(jacobianInverseTransposed(local));
   }
 
 } // namespace Dune
