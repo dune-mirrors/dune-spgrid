@@ -14,4 +14,4 @@ ubuntu:20.04--clang:
   image: registry.dune-project.org/docker/ci/ubuntu:20.04
   script: duneci-standard-test
   variables:
-    DUNECI_TOOLCHAIN: clang-11-20
+    DUNECI_TOOLCHAIN: clang-10-17
