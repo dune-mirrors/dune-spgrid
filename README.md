@@ -29,7 +29,7 @@ this list can be extended by downstream modules.
 By default, isotropic refinement is used.
 
 If no policy is given, both, isotropic and anisotropic refinement, split each
-cube into $2^dim$ child cubes.
+cube into $2^{dim}$ child cubes.
 For anisotropic refinement, a policy may be used to say which directions
 to split.
 
