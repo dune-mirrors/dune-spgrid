@@ -24,7 +24,7 @@ namespace Dune
 
     typedef typename Partition::MultiIndex MultiIndex;
     typedef typename Partition::Mesh Mesh;
-    
+
     struct Iterator;
 
     SPPartitionList () : head_( nullptr ) {}
@@ -120,8 +120,13 @@ namespace Dune
 
   template< int dim >
   struct SPPartitionList< dim >::Iterator
-    : public std::iterator< std::forward_iterator_tag, const Partition >
   {
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = const Partition;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const Partition *;
+    using reference = const Partition &;
+
     explicit Iterator ( const Node *node = nullptr )
       : node_( node )
     {}
