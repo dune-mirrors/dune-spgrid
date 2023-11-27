@@ -459,6 +459,10 @@ namespace Dune
 
     std::size_t numBoundarySegments () const;
 
+    static std::string name () { return std::string("SPGrid"); }
+
+    size_t memoryUsed() const { return sizeof(*this); }
+
   private:
     // note: this method ignores the last bit of the macroId
     std::size_t boundaryIndex ( const MultiIndex &macroId,
