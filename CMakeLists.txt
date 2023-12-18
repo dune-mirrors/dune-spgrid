@@ -7,6 +7,9 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} "${PROJECT_SOURCE_DIR}/
 
 include(DuneMacros)
 dune_project()
+dune_add_library(dunespgrid INTERFACE
+  EXPORT_NAME SPGrid
+  LINK_LIBRARIES Dune::Grid)
 
 add_subdirectory(cmake/modules)
 add_subdirectory(doc)
@@ -17,4 +20,4 @@ if( DUNE_ENABLE_PYTHONBINDINGS )
   add_subdirectory(python)
 endif()
 
-finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+finalize_dune_project()
