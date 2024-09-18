@@ -28,8 +28,20 @@ namespace Dune
     int zero ( const int k ) const;
 
   private:
-    int nonzero_[ dim - codim ];
-    int zero_[ codim ];
+    template <int len>
+    struct MyArray : std::array<int, len>
+    {
+      MyArray() {
+        // initialize all entries with -1
+        for(int i=0; i<len; ++i)
+          (*this)[i] = -1;
+      }
+    };
+
+    MyArray< dim - codim > nonzero_;
+    MyArray< codim >       zero_;
+    //int nonzero_[ dim - codim ];
+    //int zero_[ codim ];
   };
 
   template< int dim >
@@ -322,6 +334,7 @@ namespace Dune
   inline int SPGeometryPattern< dim, codim >::nonzero ( const int k ) const
   {
     assert( (k >= 0) && (k < dim - codim) );
+    assert( nonzero_[ k ] != -1 );
     return nonzero_[ k ];
   }
 
@@ -353,6 +366,7 @@ namespace Dune
   inline int SPGeometryPattern< dim, codim >::zero ( const int k ) const
   {
     assert( (k >= 0) && (k < codim) );
+    assert( zero_[ k ] != -1 );
     return zero_[ k ];
   }
 
