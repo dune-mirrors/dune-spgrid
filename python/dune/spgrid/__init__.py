@@ -14,6 +14,22 @@ def spBisectionGrid(domain, dimgrid=None, ctype="double"):
 
     return gridModule.LeafGrid(gridModule.reader(domain))
 
+#-------------------------------------------------------------------
+# grid module loading
+def _checkModule(includes, typeName, typeTag):
+    from importlib import import_module
+
+    # check if pre-compiled module exists and if so load it
+    try:
+        gridModule = import_module("dune.spgrid._spgrid._spgrid_" + typeTag)
+        return gridModule
+    except ImportError:
+        from dune.grid.grid_generator import module
+        # otherwise proceed with generate, compile, load
+        gridModule = module(includes, typeName)
+        return gridModule
+
+
 
 def spIsotropicGrid(domain, dimgrid=None, ctype="double"):
     from ..grid.grid_generator import module, getDimgrid
@@ -23,7 +39,8 @@ def spIsotropicGrid(domain, dimgrid=None, ctype="double"):
 
     typeName = "Dune::SPGrid< " + ctype + ", " + str(dimgrid) + ", Dune::SPIsotropicRefinement >"
     includes = ["dune/grid/spgrid.hh", "dune/grid/spgrid/dgfparser.hh"]
-    gridModule = module(includes, typeName)
+    typeTag = str(dimgrid) + "_" + ctype
+    gridModule = _checkModule(includes, typeName, typeTag)
 
     return gridModule.LeafGrid(gridModule.reader(domain))
 
