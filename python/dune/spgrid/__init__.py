@@ -31,7 +31,7 @@ def _checkModule(includes, typeName, typeTag):
 
 
 
-def spIsotropicGrid(domain, dimgrid=None, ctype="double"):
+def spIsotropicGrid(domain, dimgrid=None, ctype="double", **kwargs):
     from ..grid.grid_generator import module, getDimgrid
 
     if dimgrid is None:
@@ -44,7 +44,7 @@ def spIsotropicGrid(domain, dimgrid=None, ctype="double"):
 
     return gridModule.LeafGrid(gridModule.reader(domain))
 
-def spAnisotropicGrid(domain, dimgrid=None, ctype="double"):
+def spAnisotropicGrid(domain, dimgrid=None, ctype="double", **kwargs):
     from ..grid.grid_generator import module, getDimgrid
     from dune.generator import Method
 
