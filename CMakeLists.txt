@@ -14,7 +14,7 @@ dune_policy(SET DP_DEFAULT_INCLUDE_DIRS NEW)
 dune_policy(SET DP_TEST_ADD_ALL_FLAGS NEW)
 
 # do not make suggested dependencies required automatically
-dune_policy(SET DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM NEW)
+dune_policy(SET DP_SUGGESTED_MODULE_DEPENDENCIES_REQUIRED_DOWNSTREAM OLD)
 
 # start a dune project with information from dune.module
 dune_project()
