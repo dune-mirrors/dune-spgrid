@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from dune.common.checkconfiguration import assertHave, ConfigurationError
 
 # references for SPGrid
-__cite_dune_module_as__ = """
+def _cite_dune_module_as():
+    return """
 @inproceedings{perf:11,
   title={{Performance Pitfalls in the Dune Grid Interface}},
   author={Kl{\\"o}fkorn, R. and Nolte, M.},
@@ -15,6 +16,7 @@ __cite_dune_module_as__ = """
   publisher={Springer Berlin Heidelberg}
 }
 """
+## end _cite_dune_module_as
 
 def spBisectionGrid(domain, dimgrid=None, ctype="double", **kwargs):
     from ..grid.grid_generator import module, getDimgrid
