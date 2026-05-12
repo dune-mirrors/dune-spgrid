@@ -2,6 +2,22 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from dune.common.checkconfiguration import assertHave, ConfigurationError
 
+# references for SPGrid
+def _cite_dune_module_as():
+    return """
+@inproceedings{perf:11,
+  title={{Performance Pitfalls in the Dune Grid Interface}},
+  author={Kl{\\"o}fkorn, R. and Nolte, M.},
+  year={2012},
+  isbn={978-3-642-28588-2},
+  booktitle={Advances in DUNE},
+  editor={Dedner, A. and Flemisch, B. and Kl{\\"o}fkorn, R.},
+  doi={10.1007/978-3-642-28589-9_4},
+  publisher={Springer Berlin Heidelberg}
+}
+"""
+## end _cite_dune_module_as
+
 def spBisectionGrid(domain, dimgrid=None, ctype="double", **kwargs):
     from ..grid.grid_generator import module, getDimgrid
 
