@@ -4,14 +4,14 @@ before_script:
   - duneci-install-module https://gitlab.dune-project.org/core/dune-geometry.git
   - duneci-install-module https://gitlab.dune-project.org/core/dune-grid.git
 
-debian:12 gcc:c++20:
-  image: registry.dune-project.org/docker/ci/debian:12
+debian:13 gcc:c++23:
+  image: registry.dune-project.org/docker/ci/debian:13
   script: duneci-standard-test
   variables: 
-    DUNECI_TOOLCHAIN: gcc-12-20
+    DUNECI_TOOLCHAIN: gcc-14-23
 
-ubuntu:24.04--clang18:
-  image: registry.dune-project.org/docker/ci/ubuntu:24.04
+ubuntu:26.04--clang21:
+  image: registry.dune-project.org/docker/ci/ubuntu:26.04
   script: duneci-standard-test
   variables:
-    DUNECI_TOOLCHAIN: clang-18-23
+    DUNECI_TOOLCHAIN: clang-21-23
